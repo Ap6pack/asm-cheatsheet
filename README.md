@@ -195,9 +195,9 @@ More details in [tools/screenshots.md](tools/screenshots.md)
 
 **Join the ASM Community!**
 - **[🤝 Contributing Guide](CONTRIBUTING.md)** - How to contribute content, tools, and improvements
-- **[💬 GitHub Discussions](https://github.com/your-repo/discussions)** - Ask questions and share knowledge
-- **[🐛 Report Issues](https://github.com/your-repo/issues)** - Bug reports and feature requests
-- **[⭐ Star the Project](https://github.com/your-repo)** - Show your support and stay updated
+- **[💬 GitHub Discussions](https://github.com/Ap6pack/asm-cheatsheet/discussions)** - Ask questions and share knowledge
+- **[🐛 Report Issues](https://github.com/Ap6pack/asm-cheatsheet/issues)** - Bug reports and feature requests
+- **[⭐ Star the Project](https://github.com/Ap6pack/asm-cheatsheet)** - Show your support and stay updated
 
 **Ways to Contribute:**
 - Share your ASM workflows and case studies

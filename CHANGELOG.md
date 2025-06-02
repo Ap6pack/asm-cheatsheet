@@ -194,11 +194,11 @@ This represents the first major comprehensive release of the ASM cheat sheet, in
 
 ## Support and Feedback
 
-- **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-repo/discussions)
+- **Issues**: [GitHub Issues](https://github.com/Ap6pack/asm-cheatsheet/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Ap6pack/asm-cheatsheet/discussions)
 - **Security**: security@asm-cheatsheet.org
 - **Community**: community@asm-cheatsheet.org
 
 ---
 
-**Note**: This changelog follows the [Keep a Changelog](https://keepachangelog.com/) format. For the complete history of changes, see the [Git commit history](https://github.com/your-repo/commits/main).
+**Note**: This changelog follows the [Keep a Changelog](https://keepachangelog.com/) format. For the complete history of changes, see the [Git commit history](https://github.com/Ap6pack/asm-cheatsheet/commits/main).

@@ -61,8 +61,8 @@ We welcome all types of contributions! See our [Contributing Guide](CONTRIBUTING
 ### Quick Start for Contributors
 
 1. **Read the [Contributing Guide](CONTRIBUTING.md)**
-2. **Check [open issues](https://github.com/your-repo/issues) for opportunities**
-3. **Join our [community discussions](https://github.com/your-repo/discussions)**
+2. **Check [open issues](https://github.com/Ap6pack/asm-cheatsheet/issues) for opportunities**
+3. **Join our [community discussions](https://github.com/Ap6pack/asm-cheatsheet/discussions)**
 4. **Start with beginner-friendly contributions**
 5. **Submit a pull request with your improvements**
 

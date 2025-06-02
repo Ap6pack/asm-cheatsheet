@@ -460,7 +460,7 @@ amass enum -passive -d target.com  # Passive only
 ## 🤝 Getting Help
 
 ### Community Support
-- **GitHub Issues:** [Report problems or ask questions](https://github.com/your-repo/issues)
+- **GitHub Issues:** [Report problems or ask questions](https://github.com/Ap6pack/asm-cheatsheet/issues)
 - **Discord/Slack:** Join our community chat
 - **Reddit:** r/AskNetsec for general security questions
 
@@ -484,4 +484,4 @@ You've taken your first step into Attack Surface Management. This is just the be
 
 ---
 
-*Need help? Have questions? Found an issue with this guide? Please [open an issue](https://github.com/your-repo/issues) or reach out to the community.*
+*Need help? Have questions? Found an issue with this guide? Please [open an issue](https://github.com/Ap6pack/asm-cheatsheet/issues) or reach out to the community.*
