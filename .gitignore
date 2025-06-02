@@ -1,0 +1,78 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# ASM scan results
+asm_results_*/
+asm_scan_*/
+results/
+output/
+screenshots/
+*.png
+*.jpg
+*.jpeg
+
+# Tool outputs
+*.xml
+*.json
+*.txt
+*.csv
+*.nmap
+*.gnmap
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# API keys and secrets
+.env
+.env.local
+.env.production
+config.conf
+secrets.txt
+api_keys.txt
+
+# Backup files
+*.bak
+*.backup
+*.old
