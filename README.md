@@ -261,6 +261,7 @@ Comprehensive reference materials and cheat sheets:
 - **[🛡️ Security Considerations](resources/security_considerations.md)** - Legal, ethical, and technical security guidelines
 - **[🔧 Modern Tools Update 2025](resources/modern_tools_update.md)** - Latest tools and alternatives to legacy software
 - **[📋 Command Cheat Sheet](resources/command_cheatsheet.md)** - Quick reference for common commands
+- **[📚 Recommended Reading List](resources/reading_list.md)** - Curated books covering reconnaissance, OSINT, automation, and threat intelligence
 - **[📝 Changelog](CHANGELOG.md)** - Project history and version updates
 - **[📋 Implementation Strategy](IMPLEMENTATION_STRATEGY.md)** - Strategic roadmap for project expansion
 - **[📖 ASM Terminology Glossary](resources/README.md#asm-terminology-glossary)** - Key concepts and definitions

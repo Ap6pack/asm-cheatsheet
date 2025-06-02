@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **[IMPLEMENTATION_STRATEGY.md](IMPLEMENTATION_STRATEGY.md)** - Comprehensive strategic roadmap for expanding the ASM cheatsheet into a three-tiered resource
+- **[resources/reading_list.md](resources/reading_list.md)** - Curated collection of books covering reconnaissance, OSINT, automation, threat intelligence, and vulnerability management
 - Comprehensive authorization verification prompts across all scanning tools and workflows
 - Legal warning messages displayed before any scanning activities
 - Rate limiting examples and respectful scanning practices throughout documentation
@@ -34,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Jurisdiction-specific legal considerations and compliance guidance
 
 ### Changed
-- **[README.md](README.md)** - Added Project Roadmap section with three-tiered expansion plan and updated planned features
+- **[README.md](README.md)** - Added Project Roadmap section with three-tiered expansion plan, updated planned features, and included new reading list reference
 - **Command examples** - Updated all nmap commands to use respectful timing (-T2 instead of -T4)
 - **Rate limiting** - Added rate limiting parameters to httpx and other tools (--rate-limit 10)
 - **Scanning practices** - Emphasized passive reconnaissance over active scanning for safety
