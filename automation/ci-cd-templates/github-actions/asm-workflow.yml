@@ -1,0 +1,392 @@
+# GitHub Actions ASM Workflow
+# Enterprise-grade continuous attack surface monitoring
+
+name: ASM Security Pipeline
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      target_domain:
+        description: 'Domain to scan'
+        required: true
+        default: 'example.com'
+      scan_type:
+        description: 'Type of scan'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - quick
+          - full
+          - deep
+          - continuous
+
+env:
+  SCAN_OUTPUT_DIR: asm-results
+  ARTIFACT_RETENTION_DAYS: 30
+  MAX_PARALLEL_JOBS: 5
+
+jobs:
+  # Job 1: Asset Discovery
+  discovery:
+    name: Asset Discovery
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    outputs:
+      subdomain_count: ${{ steps.count.outputs.subdomains }}
+      has_new_assets: ${{ steps.compare.outputs.has_new }}
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Setup ASM environment
+        uses: docker/setup-buildx-action@v2
+        
+      - name: Cache ASM tools
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/nuclei-templates
+            ~/.cache/amass
+          key: ${{ runner.os }}-asm-${{ hashFiles('**/requirements.txt') }}
+          
+      - name: Run subdomain discovery
+        id: discovery
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -e DOMAIN=${{ github.event.inputs.target_domain || 'example.com' }} \
+            -e SHODAN_API_KEY=${{ secrets.SHODAN_API_KEY }} \
+            -e CENSYS_API_ID=${{ secrets.CENSYS_API_ID }} \
+            -e CENSYS_API_SECRET=${{ secrets.CENSYS_API_SECRET }} \
+            ghcr.io/asm-toolkit/scanner:latest \
+            bash -c '
+              mkdir -p /workspace/${{ env.SCAN_OUTPUT_DIR }}/discovery
+              
+              # Parallel subdomain discovery
+              {
+                subfinder -d "$DOMAIN" -all -silent
+                amass enum -passive -d "$DOMAIN" -silent
+                curl -s "https://crt.sh/?q=%.$DOMAIN&output=json" | jq -r ".[].name_value"
+              } | sort -u > /workspace/${{ env.SCAN_OUTPUT_DIR }}/discovery/subdomains.txt
+              
+              echo "::set-output name=count::$(wc -l < /workspace/${{ env.SCAN_OUTPUT_DIR }}/discovery/subdomains.txt)"
+            '
+            
+      - name: Compare with baseline
+        id: compare
+        run: |
+          if [ -f "baseline/subdomains.txt" ]; then
+            NEW_ASSETS=$(comm -13 <(sort baseline/subdomains.txt) <(sort ${{ env.SCAN_OUTPUT_DIR }}/discovery/subdomains.txt) | wc -l)
+            if [ "$NEW_ASSETS" -gt 0 ]; then
+              echo "::set-output name=has_new::true"
+              echo "🆕 Found $NEW_ASSETS new subdomains"
+            else
+              echo "::set-output name=has_new::false"
+            fi
+          else
+            echo "::set-output name=has_new::true"
+          fi
+          
+      - name: Upload discovery results
+        uses: actions/upload-artifact@v3
+        with:
+          name: discovery-results
+          path: ${{ env.SCAN_OUTPUT_DIR }}/discovery/
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+  # Job 2: Service Enumeration
+  enumeration:
+    name: Service Enumeration
+    needs: discovery
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    
+    strategy:
+      matrix:
+        batch: [1, 2, 3, 4, 5]
+      max-parallel: ${{ fromJSON(env.MAX_PARALLEL_JOBS) }}
+      
+    steps:
+      - name: Download discovery results
+        uses: actions/download-artifact@v3
+        with:
+          name: discovery-results
+          path: discovery/
+          
+      - name: Split workload
+        run: |
+          TOTAL_LINES=$(wc -l < discovery/subdomains.txt)
+          BATCH_SIZE=$((TOTAL_LINES / 5 + 1))
+          split -l $BATCH_SIZE discovery/subdomains.txt batch_
+          mv batch_${{ matrix.batch }} current_batch.txt || touch current_batch.txt
+          
+      - name: Enumerate services
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            ghcr.io/asm-toolkit/scanner:latest \
+            bash -c '
+              mkdir -p /workspace/${{ env.SCAN_OUTPUT_DIR }}/enumeration
+              
+              # Check live hosts
+              cat /workspace/current_batch.txt | \
+                httpx -silent -status-code -title -tech-detect -json \
+                > /workspace/${{ env.SCAN_OUTPUT_DIR }}/enumeration/live_hosts_${{ matrix.batch }}.json
+              
+              # Port scanning
+              cat /workspace/current_batch.txt | \
+                dnsx -silent -a -resp | cut -d" " -f2 | \
+                naabu -silent -top-ports 1000 \
+                > /workspace/${{ env.SCAN_OUTPUT_DIR }}/enumeration/ports_${{ matrix.batch }}.txt
+            '
+            
+      - name: Upload enumeration results
+        uses: actions/upload-artifact@v3
+        with:
+          name: enumeration-results-${{ matrix.batch }}
+          path: ${{ env.SCAN_OUTPUT_DIR }}/enumeration/
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+  # Job 3: Vulnerability Scanning
+  vulnerability-scan:
+    name: Vulnerability Scanning
+    needs: enumeration
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    
+    steps:
+      - name: Download all enumeration results
+        uses: actions/download-artifact@v3
+        with:
+          path: enumeration/
+          
+      - name: Consolidate results
+        run: |
+          mkdir -p ${{ env.SCAN_OUTPUT_DIR }}/consolidated
+          find enumeration/ -name "live_hosts_*.json" -exec cat {} \; > ${{ env.SCAN_OUTPUT_DIR }}/consolidated/all_live_hosts.json
+          find enumeration/ -name "ports_*.txt" -exec cat {} \; | sort -u > ${{ env.SCAN_OUTPUT_DIR }}/consolidated/all_ports.txt
+          
+      - name: Run Nuclei vulnerability scan
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            projectdiscovery/nuclei:latest \
+            -l /workspace/${{ env.SCAN_OUTPUT_DIR }}/consolidated/all_live_hosts.json \
+            -t cves/ -t vulnerabilities/ -t exposures/ \
+            -severity critical,high,medium \
+            -o /workspace/${{ env.SCAN_OUTPUT_DIR }}/vulnerabilities.txt \
+            -json-export /workspace/${{ env.SCAN_OUTPUT_DIR }}/vulnerabilities.json
+            
+      - name: Check for critical vulnerabilities
+        id: vuln_check
+        run: |
+          if [ -f "${{ env.SCAN_OUTPUT_DIR }}/vulnerabilities.json" ]; then
+            CRITICAL_COUNT=$(jq '[.[] | select(.severity == "critical")] | length' ${{ env.SCAN_OUTPUT_DIR }}/vulnerabilities.json)
+            HIGH_COUNT=$(jq '[.[] | select(.severity == "high")] | length' ${{ env.SCAN_OUTPUT_DIR }}/vulnerabilities.json)
+            
+            if [ "$CRITICAL_COUNT" -gt 0 ]; then
+              echo "::error::Found $CRITICAL_COUNT critical vulnerabilities!"
+              echo "::set-output name=has_critical::true"
+            fi
+            
+            if [ "$HIGH_COUNT" -gt 0 ]; then
+              echo "::warning::Found $HIGH_COUNT high severity vulnerabilities"
+            fi
+          fi
+          
+      - name: Upload vulnerability results
+        uses: actions/upload-artifact@v3
+        with:
+          name: vulnerability-results
+          path: ${{ env.SCAN_OUTPUT_DIR }}/vulnerabilities.*
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+  # Job 4: Security Analysis & Reporting
+  analysis:
+    name: Security Analysis
+    needs: [discovery, enumeration, vulnerability-scan]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts/
+          
+      - name: Generate comprehensive report
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            ghcr.io/asm-toolkit/analyzer:latest \
+            python3 /tools/generate_report.py \
+              --input /workspace/artifacts \
+              --output /workspace/asm_report.html \
+              --format html \
+              --include-screenshots \
+              --risk-scoring
+              
+      - name: Calculate security score
+        id: scoring
+        run: |
+          # Calculate security score based on findings
+          SCORE=100
+          
+          # Deduct points for vulnerabilities
+          if [ -f "artifacts/vulnerability-results/vulnerabilities.json" ]; then
+            CRITICAL=$(jq '[.[] | select(.severity == "critical")] | length' artifacts/vulnerability-results/vulnerabilities.json)
+            HIGH=$(jq '[.[] | select(.severity == "high")] | length' artifacts/vulnerability-results/vulnerabilities.json)
+            MEDIUM=$(jq '[.[] | select(.severity == "medium")] | length' artifacts/vulnerability-results/vulnerabilities.json)
+            
+            SCORE=$((SCORE - CRITICAL * 20 - HIGH * 10 - MEDIUM * 5))
+          fi
+          
+          # Ensure score doesn't go below 0
+          [ $SCORE -lt 0 ] && SCORE=0
+          
+          echo "::set-output name=score::$SCORE"
+          echo "🔒 Security Score: $SCORE/100"
+          
+      - name: Create issue for critical findings
+        if: steps.scoring.outputs.score < 60
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const score = ${{ steps.scoring.outputs.score }};
+            const title = `🚨 Critical Security Findings - Score: ${score}/100`;
+            const body = `
+            ## ASM Security Alert
+            
+            The automated ASM scan has detected critical security issues.
+            
+            **Security Score:** ${score}/100
+            **Scan Date:** ${new Date().toISOString()}
+            
+            ### Summary
+            - New assets discovered: ${{ needs.discovery.outputs.has_new_assets }}
+            - Total subdomains: ${{ needs.discovery.outputs.subdomain_count }}
+            
+            ### Action Required
+            1. Review the full report in the workflow artifacts
+            2. Address critical vulnerabilities immediately
+            3. Update the security baseline
+            
+            [View Workflow Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['security', 'critical', 'asm']
+            });
+            
+      - name: Upload final report
+        uses: actions/upload-artifact@v3
+        with:
+          name: asm-security-report
+          path: |
+            asm_report.html
+            ${{ env.SCAN_OUTPUT_DIR }}/
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+  # Job 5: Notification & Integration
+  notify:
+    name: Send Notifications
+    needs: [analysis]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Slack notification
+        if: env.SLACK_WEBHOOK != ''
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          SCORE="${{ needs.analysis.outputs.score }}"
+          COLOR="good"
+          [ $SCORE -lt 80 ] && COLOR="warning"
+          [ $SCORE -lt 60 ] && COLOR="danger"
+          
+          curl -X POST $SLACK_WEBHOOK \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"attachments\": [{
+                \"color\": \"$COLOR\",
+                \"title\": \"ASM Security Scan Complete\",
+                \"text\": \"Security Score: $SCORE/100\",
+                \"fields\": [
+                  {
+                    \"title\": \"Domain\",
+                    \"value\": \"${{ github.event.inputs.target_domain || 'example.com' }}\",
+                    \"short\": true
+                  },
+                  {
+                    \"title\": \"New Assets\",
+                    \"value\": \"${{ needs.discovery.outputs.has_new_assets }}\",
+                    \"short\": true
+                  }
+                ],
+                \"footer\": \"ASM Pipeline\",
+                \"ts\": $(date +%s)
+              }]
+            }"
+            
+      - name: Update security dashboard
+        run: |
+          # Send metrics to monitoring system
+          curl -X POST https://metrics.example.com/api/v1/metrics \
+            -H "Authorization: Bearer ${{ secrets.METRICS_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"metric\": \"asm.security_score\",
+              \"value\": ${{ needs.analysis.outputs.score }},
+              \"tags\": {
+                \"domain\": \"${{ github.event.inputs.target_domain || 'example.com' }}\",
+                \"scan_type\": \"${{ github.event.inputs.scan_type || 'full' }}\"
+              }
+            }"
+
+  # Job 6: Continuous Monitoring (Optional)
+  monitor:
+    name: Continuous Monitoring
+    needs: [analysis]
+    runs-on: ubuntu-latest
+    if: github.event.inputs.scan_type == 'continuous'
+    
+    steps:
+      - name: Deploy monitoring container
+        run: |
+          # Deploy to Kubernetes or Docker Swarm
+          kubectl apply -f - <<EOF
+          apiVersion: batch/v1
+          kind: CronJob
+          metadata:
+            name: asm-monitor-${{ github.run_id }}
+          spec:
+            schedule: "0 */6 * * *"  # Every 6 hours
+            jobTemplate:
+              spec:
+                template:
+                  spec:
+                    containers:
+                    - name: asm-monitor
+                      image: ghcr.io/asm-toolkit/monitor:latest
+                      env:
+                      - name: DOMAIN
+                        value: "${{ github.event.inputs.target_domain }}"
+                      - name: WEBHOOK_URL
+                        value: "${{ secrets.WEBHOOK_URL }}"
+                    restartPolicy: OnFailure
+          EOF
