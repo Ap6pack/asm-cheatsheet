@@ -16,13 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **[quick-reference/advanced-techniques.md](quick-reference/advanced-techniques.md)** - Enterprise strategies including WAF bypass, ML anomaly detection, and multi-cloud discovery
   - **[quick-reference/docker-quickstart.md](quick-reference/docker-quickstart.md)** - Docker-based instant deployment with zero-installation ASM toolkit
 - **[automation/ci-cd-templates/github-actions/asm-workflow.yml](automation/ci-cd-templates/github-actions/asm-workflow.yml)** - GitHub Actions workflow for automated ASM scanning
+- **[automation/ci-cd-templates/gitlab/.gitlab-ci.yml](automation/ci-cd-templates/gitlab/.gitlab-ci.yml)** - GitLab CI pipeline for enterprise-grade ASM scanning with parallel processing
+- **[automation/ci-cd-templates/jenkins/Jenkinsfile](automation/ci-cd-templates/jenkins/Jenkinsfile)** - Jenkins pipeline for comprehensive ASM security scanning with Docker integration
 
 ### Changed
 - **[README.md](README.md)** - Updated with references to new quick reference materials, implementation guide, and reading list
 - **[CONTRIBUTORS.md](CONTRIBUTORS.md)**, **[GETTING_STARTED.md](GETTING_STARTED.md)** - Minor documentation and formatting improvements
 
 ### Planned
-- Additional CI/CD templates for GitLab and Jenkins
 - Industry-specific ASM playbooks for healthcare, finance, and retail sectors
 - Advanced API integration examples with custom parsing scripts
 - Kubernetes deployment manifests for enterprise scaling

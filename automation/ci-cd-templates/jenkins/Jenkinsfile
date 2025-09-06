@@ -1,0 +1,537 @@
+// Jenkins Pipeline for ASM Security Scanning
+// Enterprise-grade continuous attack surface monitoring
+
+@Library('shared-pipeline-library') _
+
+pipeline {
+    agent {
+        label 'docker-agent'
+    }
+    
+    options {
+        timestamps()
+        timeout(time: 3, unit: 'HOURS')
+        buildDiscarder(logRotator(numToKeepStr: '30'))
+        disableConcurrentBuilds()
+        ansiColor('xterm')
+    }
+    
+    parameters {
+        string(
+            name: 'TARGET_DOMAIN',
+            defaultValue: 'example.com',
+            description: 'Domain to scan'
+        )
+        choice(
+            name: 'SCAN_TYPE',
+            choices: ['quick', 'full', 'deep', 'continuous'],
+            description: 'Type of scan to perform'
+        )
+        booleanParam(
+            name: 'SEND_NOTIFICATIONS',
+            defaultValue: true,
+            description: 'Send Slack/Email notifications'
+        )
+        booleanParam(
+            name: 'FAIL_ON_CRITICAL',
+            defaultValue: true,
+            description: 'Fail pipeline if critical vulnerabilities found'
+        )
+    }
+    
+    environment {
+        SCAN_OUTPUT_DIR = 'asm-results'
+        DOCKER_IMAGE = 'ghcr.io/asm-toolkit/scanner:latest'
+        NUCLEI_IMAGE = 'projectdiscovery/nuclei:latest'
+        ANALYZER_IMAGE = 'ghcr.io/asm-toolkit/analyzer:latest'
+        
+        // Credentials from Jenkins
+        SHODAN_API_KEY = credentials('shodan-api-key')
+        CENSYS_API_ID = credentials('censys-api-id')
+        CENSYS_API_SECRET = credentials('censys-api-secret')
+        SLACK_WEBHOOK = credentials('slack-webhook-url')
+        METRICS_API_KEY = credentials('metrics-api-key')
+    }
+    
+    stages {
+        stage('Initialization') {
+            steps {
+                script {
+                    // Clean workspace and prepare
+                    cleanWs()
+                    
+                    // Display scan configuration
+                    echo """
+                    ========================================
+                    ASM Security Scan Configuration
+                    ========================================
+                    Target Domain: ${params.TARGET_DOMAIN}
+                    Scan Type: ${params.SCAN_TYPE}
+                    Build Number: ${env.BUILD_NUMBER}
+                    Workspace: ${env.WORKSPACE}
+                    ========================================
+                    """
+                    
+                    // Create output directories
+                    sh "mkdir -p ${SCAN_OUTPUT_DIR}/{discovery,enumeration,vulnerabilities,reports}"
+                }
+            }
+        }
+        
+        stage('Asset Discovery') {
+            agent {
+                docker {
+                    image "${DOCKER_IMAGE}"
+                    args '-v ${WORKSPACE}:/workspace'
+                }
+            }
+            steps {
+                script {
+                    echo "🔍 Starting asset discovery for ${params.TARGET_DOMAIN}"
+                    
+                    sh '''#!/bin/bash
+                        set -e
+                        
+                        # Parallel subdomain discovery
+                        {
+                            subfinder -d "${TARGET_DOMAIN}" -all -silent
+                            amass enum -passive -d "${TARGET_DOMAIN}" -silent
+                            curl -s "https://crt.sh/?q=%.${TARGET_DOMAIN}&output=json" | jq -r ".[].name_value" || true
+                        } | sort -u > ${SCAN_OUTPUT_DIR}/discovery/subdomains.txt
+                        
+                        # Count and display results
+                        SUBDOMAIN_COUNT=$(wc -l < ${SCAN_OUTPUT_DIR}/discovery/subdomains.txt)
+                        echo "✅ Discovered ${SUBDOMAIN_COUNT} subdomains"
+                        
+                        # Save count for later stages
+                        echo "${SUBDOMAIN_COUNT}" > ${SCAN_OUTPUT_DIR}/discovery/count.txt
+                        
+                        # Compare with baseline if exists
+                        if [ -f "baseline/subdomains.txt" ]; then
+                            NEW_ASSETS=$(comm -13 <(sort baseline/subdomains.txt) <(sort ${SCAN_OUTPUT_DIR}/discovery/subdomains.txt) | wc -l)
+                            if [ "$NEW_ASSETS" -gt 0 ]; then
+                                echo "🆕 Found ${NEW_ASSETS} new subdomains"
+                                echo "true" > ${SCAN_OUTPUT_DIR}/discovery/has_new.txt
+                            else
+                                echo "false" > ${SCAN_OUTPUT_DIR}/discovery/has_new.txt
+                            fi
+                        else
+                            echo "true" > ${SCAN_OUTPUT_DIR}/discovery/has_new.txt
+                        fi
+                    '''
+                    
+                    // Archive discovery results
+                    archiveArtifacts artifacts: "${SCAN_OUTPUT_DIR}/discovery/**", fingerprint: true
+                }
+            }
+            post {
+                success {
+                    echo "✅ Asset discovery completed successfully"
+                }
+                failure {
+                    echo "❌ Asset discovery failed"
+                }
+            }
+        }
+        
+        stage('Service Enumeration') {
+            parallel {
+                stage('HTTP Services') {
+                    agent {
+                        docker {
+                            image "${DOCKER_IMAGE}"
+                            args '-v ${WORKSPACE}:/workspace'
+                        }
+                    }
+                    steps {
+                        script {
+                            echo "🌐 Enumerating HTTP services"
+                            
+                            sh '''#!/bin/bash
+                                set -e
+                                
+                                # Check live HTTP/HTTPS services
+                                cat ${SCAN_OUTPUT_DIR}/discovery/subdomains.txt | \
+                                    httpx -silent -status-code -title -tech-detect -json \
+                                    -o ${SCAN_OUTPUT_DIR}/enumeration/live_hosts.json
+                                
+                                # Extract live URLs
+                                jq -r '.url' ${SCAN_OUTPUT_DIR}/enumeration/live_hosts.json \
+                                    > ${SCAN_OUTPUT_DIR}/enumeration/live_urls.txt
+                                
+                                LIVE_COUNT=$(wc -l < ${SCAN_OUTPUT_DIR}/enumeration/live_urls.txt)
+                                echo "✅ Found ${LIVE_COUNT} live HTTP services"
+                            '''
+                        }
+                    }
+                }
+                
+                stage('Port Scanning') {
+                    when {
+                        expression { params.SCAN_TYPE in ['full', 'deep'] }
+                    }
+                    agent {
+                        docker {
+                            image "${DOCKER_IMAGE}"
+                            args '-v ${WORKSPACE}:/workspace'
+                        }
+                    }
+                    steps {
+                        script {
+                            echo "🔌 Scanning for open ports"
+                            
+                            sh '''#!/bin/bash
+                                set -e
+                                
+                                # Resolve IPs and scan ports
+                                cat ${SCAN_OUTPUT_DIR}/discovery/subdomains.txt | \
+                                    dnsx -silent -a -resp | cut -d" " -f2 | sort -u | \
+                                    naabu -silent -top-ports 1000 -rate 500 \
+                                    -o ${SCAN_OUTPUT_DIR}/enumeration/open_ports.txt
+                                
+                                PORT_COUNT=$(wc -l < ${SCAN_OUTPUT_DIR}/enumeration/open_ports.txt)
+                                echo "✅ Found ${PORT_COUNT} open ports"
+                            '''
+                        }
+                    }
+                }
+                
+                stage('Technology Detection') {
+                    agent {
+                        docker {
+                            image "${DOCKER_IMAGE}"
+                            args '-v ${WORKSPACE}:/workspace'
+                        }
+                    }
+                    steps {
+                        script {
+                            echo "🔧 Detecting technologies"
+                            
+                            sh '''#!/bin/bash
+                                set -e
+                                
+                                # Detect technologies using Wappalyzer
+                                if [ -f "${SCAN_OUTPUT_DIR}/enumeration/live_urls.txt" ]; then
+                                    cat ${SCAN_OUTPUT_DIR}/enumeration/live_urls.txt | \
+                                        httpx -silent -tech-detect -json \
+                                        -o ${SCAN_OUTPUT_DIR}/enumeration/technologies.json
+                                fi
+                                
+                                # Extract and summarize technologies
+                                jq -r '.technologies[]' ${SCAN_OUTPUT_DIR}/enumeration/technologies.json 2>/dev/null | \
+                                    sort | uniq -c | sort -rn \
+                                    > ${SCAN_OUTPUT_DIR}/enumeration/tech_summary.txt
+                            '''
+                        }
+                    }
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: "${SCAN_OUTPUT_DIR}/enumeration/**", fingerprint: true
+                }
+            }
+        }
+        
+        stage('Vulnerability Scanning') {
+            agent {
+                docker {
+                    image "${NUCLEI_IMAGE}"
+                    args '-v ${WORKSPACE}:/workspace'
+                }
+            }
+            steps {
+                script {
+                    echo "🔍 Scanning for vulnerabilities"
+                    
+                    sh '''#!/bin/bash
+                        set -e
+                        
+                        # Run Nuclei vulnerability scan
+                        if [ -f "${SCAN_OUTPUT_DIR}/enumeration/live_urls.txt" ]; then
+                            nuclei -l ${SCAN_OUTPUT_DIR}/enumeration/live_urls.txt \
+                                -t cves/ -t vulnerabilities/ -t exposures/ \
+                                -severity critical,high,medium \
+                                -o ${SCAN_OUTPUT_DIR}/vulnerabilities/findings.txt \
+                                -json-export ${SCAN_OUTPUT_DIR}/vulnerabilities/findings.json \
+                                -rate-limit 10 \
+                                -bulk-size 25 \
+                                -concurrency 10 \
+                                -silent
+                        fi
+                        
+                        # Count vulnerabilities by severity
+                        if [ -f "${SCAN_OUTPUT_DIR}/vulnerabilities/findings.json" ]; then
+                            CRITICAL_COUNT=$(jq '[.[] | select(.severity == "critical")] | length' ${SCAN_OUTPUT_DIR}/vulnerabilities/findings.json)
+                            HIGH_COUNT=$(jq '[.[] | select(.severity == "high")] | length' ${SCAN_OUTPUT_DIR}/vulnerabilities/findings.json)
+                            MEDIUM_COUNT=$(jq '[.[] | select(.severity == "medium")] | length' ${SCAN_OUTPUT_DIR}/vulnerabilities/findings.json)
+                            
+                            echo "CRITICAL_VULNS=${CRITICAL_COUNT}" > ${SCAN_OUTPUT_DIR}/vulnerabilities/summary.env
+                            echo "HIGH_VULNS=${HIGH_COUNT}" >> ${SCAN_OUTPUT_DIR}/vulnerabilities/summary.env
+                            echo "MEDIUM_VULNS=${MEDIUM_COUNT}" >> ${SCAN_OUTPUT_DIR}/vulnerabilities/summary.env
+                            
+                            echo "🔴 Critical: ${CRITICAL_COUNT}"
+                            echo "🟠 High: ${HIGH_COUNT}"
+                            echo "🟡 Medium: ${MEDIUM_COUNT}"
+                            
+                            # Fail if critical vulnerabilities found and configured to do so
+                            if [ "${CRITICAL_COUNT}" -gt 0 ] && [ "${FAIL_ON_CRITICAL}" == "true" ]; then
+                                echo "❌ Critical vulnerabilities detected! Failing pipeline."
+                                exit 1
+                            fi
+                        else
+                            echo "No vulnerabilities found or scan did not complete"
+                        fi
+                    '''
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: "${SCAN_OUTPUT_DIR}/vulnerabilities/**", fingerprint: true, allowEmptyArchive: true
+                }
+            }
+        }
+        
+        stage('Security Analysis') {
+            agent {
+                docker {
+                    image "${ANALYZER_IMAGE}"
+                    args '-v ${WORKSPACE}:/workspace'
+                }
+            }
+            steps {
+                script {
+                    echo "📊 Generating security analysis report"
+                    
+                    sh '''#!/bin/bash
+                        set -e
+                        
+                        # Generate comprehensive HTML report
+                        python3 /tools/generate_report.py \
+                            --input ${SCAN_OUTPUT_DIR} \
+                            --output ${SCAN_OUTPUT_DIR}/reports/asm_report.html \
+                            --format html \
+                            --include-screenshots \
+                            --risk-scoring || echo "Report generation failed"
+                        
+                        # Generate JSON report for API consumption
+                        python3 /tools/generate_report.py \
+                            --input ${SCAN_OUTPUT_DIR} \
+                            --output ${SCAN_OUTPUT_DIR}/reports/asm_report.json \
+                            --format json || echo "JSON report generation failed"
+                        
+                        # Calculate security score
+                        SCORE=100
+                        
+                        if [ -f "${SCAN_OUTPUT_DIR}/vulnerabilities/summary.env" ]; then
+                            source ${SCAN_OUTPUT_DIR}/vulnerabilities/summary.env
+                            SCORE=$((SCORE - ${CRITICAL_VULNS:-0} * 20 - ${HIGH_VULNS:-0} * 10 - ${MEDIUM_VULNS:-0} * 5))
+                        fi
+                        
+                        [ $SCORE -lt 0 ] && SCORE=0
+                        
+                        echo "SECURITY_SCORE=${SCORE}" >> ${SCAN_OUTPUT_DIR}/reports/score.env
+                        echo "🔒 Security Score: ${SCORE}/100"
+                        
+                        # Generate executive summary
+                        cat > ${SCAN_OUTPUT_DIR}/reports/executive_summary.md << EOF
+# ASM Security Report - Executive Summary
+
+**Target Domain:** ${TARGET_DOMAIN}
+**Scan Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+**Security Score:** ${SCORE}/100
+**Build Number:** ${BUILD_NUMBER}
+
+## Key Findings
+
+### Asset Discovery
+- Total subdomains discovered: $(cat ${SCAN_OUTPUT_DIR}/discovery/count.txt 2>/dev/null || echo "0")
+- New assets found: $(cat ${SCAN_OUTPUT_DIR}/discovery/has_new.txt 2>/dev/null || echo "unknown")
+
+### Vulnerability Summary
+- Critical vulnerabilities: ${CRITICAL_VULNS:-0}
+- High severity: ${HIGH_VULNS:-0}
+- Medium severity: ${MEDIUM_VULNS:-0}
+
+## Recommendations
+
+$(if [ "${CRITICAL_VULNS:-0}" -gt 0 ]; then
+    echo "⚠️ **URGENT**: Address critical vulnerabilities immediately"
+elif [ "${HIGH_VULNS:-0}" -gt 0 ]; then
+    echo "⚠️ Address high severity vulnerabilities as priority"
+else
+    echo "✅ No critical or high severity vulnerabilities detected"
+fi)
+
+## Report Links
+- [Full HTML Report](asm_report.html)
+- [JSON Data](asm_report.json)
+- [Vulnerability Details](../vulnerabilities/findings.json)
+
+---
+*Generated by ASM Security Pipeline*
+EOF
+                    '''
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: "${SCAN_OUTPUT_DIR}/reports/**", fingerprint: true, allowEmptyArchive: true
+                    
+                    // Publish HTML report
+                    publishHTML(target: [
+                        allowMissing: true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: "${SCAN_OUTPUT_DIR}/reports",
+                        reportFiles: 'asm_report.html',
+                        reportName: 'ASM Security Report',
+                        reportTitles: 'ASM Security Analysis'
+                    ])
+                }
+            }
+        }
+        
+        stage('Notifications') {
+            when {
+                expression { params.SEND_NOTIFICATIONS == true }
+            }
+            steps {
+                script {
+                    // Load vulnerability and score data
+                    def vulnSummary = readProperties file: "${SCAN_OUTPUT_DIR}/vulnerabilities/summary.env", defaults: [:]
+                    def scoreData = readProperties file: "${SCAN_OUTPUT_DIR}/reports/score.env", defaults: [:]
+                    
+                    def score = scoreData.SECURITY_SCORE ?: '0'
+                    def criticalCount = vulnSummary.CRITICAL_VULNS ?: '0'
+                    def highCount = vulnSummary.HIGH_VULNS ?: '0'
+                    
+                    // Determine notification color/priority
+                    def color = 'good'
+                    def priority = 'info'
+                    
+                    if (score.toInteger() < 60) {
+                        color = 'danger'
+                        priority = 'critical'
+                    } else if (score.toInteger() < 80) {
+                        color = 'warning'
+                        priority = 'warning'
+                    }
+                    
+                    // Send Slack notification
+                    if (env.SLACK_WEBHOOK) {
+                        def slackMessage = [
+                            attachments: [[
+                                color: color,
+                                title: "ASM Security Scan Complete",
+                                text: "Security Score: ${score}/100",
+                                fields: [
+                                    [title: "Domain", value: params.TARGET_DOMAIN, short: true],
+                                    [title: "Build", value: "#${env.BUILD_NUMBER}", short: true],
+                                    [title: "Critical Vulns", value: criticalCount, short: true],
+                                    [title: "High Vulns", value: highCount, short: true]
+                                ],
+                                footer: "Jenkins ASM Pipeline",
+                                footer_icon: "https://jenkins.io/images/logos/jenkins/jenkins.png",
+                                ts: System.currentTimeMillis() / 1000
+                            ]]
+                        ]
+                        
+                        httpRequest(
+                            url: env.SLACK_WEBHOOK,
+                            httpMode: 'POST',
+                            contentType: 'APPLICATION_JSON',
+                            requestBody: groovy.json.JsonOutput.toJson(slackMessage)
+                        )
+                    }
+                    
+                    // Send email notification for critical findings
+                    if (criticalCount.toInteger() > 0) {
+                        emailext(
+                            subject: "🚨 Critical Security Vulnerabilities Found - ${params.TARGET_DOMAIN}",
+                            body: '''${FILE,path="''' + "${SCAN_OUTPUT_DIR}/reports/executive_summary.md" + '''"}''',
+                            to: '${DEFAULT_RECIPIENTS}',
+                            mimeType: 'text/html',
+                            attachmentsPattern: "${SCAN_OUTPUT_DIR}/reports/asm_report.html"
+                        )
+                    }
+                    
+                    // Update metrics dashboard
+                    if (env.METRICS_API_KEY) {
+                        httpRequest(
+                            url: 'https://metrics.example.com/api/v1/metrics',
+                            httpMode: 'POST',
+                            customHeaders: [[name: 'Authorization', value: "Bearer ${env.METRICS_API_KEY}"]],
+                            contentType: 'APPLICATION_JSON',
+                            requestBody: groovy.json.JsonOutput.toJson([
+                                metric: 'asm.security_score',
+                                value: score.toInteger(),
+                                tags: [
+                                    domain: params.TARGET_DOMAIN,
+                                    scan_type: params.SCAN_TYPE,
+                                    build_number: env.BUILD_NUMBER
+                                ]
+                            ])
+                        )
+                    }
+                }
+            }
+        }
+        
+        stage('Baseline Update') {
+            when {
+                branch 'main'
+            }
+            steps {
+                script {
+                    echo "📝 Updating baseline for future comparisons"
+                    
+                    sh '''#!/bin/bash
+                        # Update baseline with current findings
+                        mkdir -p baseline
+                        cp ${SCAN_OUTPUT_DIR}/discovery/subdomains.txt baseline/subdomains.txt
+                        
+                        # Commit baseline to repository (if using Git)
+                        if [ -d .git ]; then
+                            git config user.email "jenkins@example.com"
+                            git config user.name "Jenkins ASM"
+                            git add baseline/
+                            git commit -m "Update ASM baseline - Build #${BUILD_NUMBER}" || true
+                            # git push origin main || true  # Uncomment if you want to push
+                        fi
+                    '''
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo "🏁 ASM Security Pipeline completed"
+            
+            // Clean up Docker containers
+            sh 'docker system prune -f || true'
+        }
+        success {
+            echo "✅ Pipeline completed successfully"
+            
+            // Update build description
+            currentBuild.description = "Domain: ${params.TARGET_DOMAIN} | Score: Check Report"
+        }
+        failure {
+            echo "❌ Pipeline failed"
+            
+            // Send failure notification
+            if (params.SEND_NOTIFICATIONS) {
+                emailext(
+                    subject: "❌ ASM Pipeline Failed - ${params.TARGET_DOMAIN}",
+                    body: "The ASM security pipeline failed for ${params.TARGET_DOMAIN}. Check the logs for details.",
+                    to: '${DEFAULT_RECIPIENTS}'
+                )
+            }
+        }
+        unstable {
+            echo "⚠️ Pipeline completed with warnings"
+        }
+    }
+}
