@@ -7,13 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **[resources/reading_list.md](resources/reading_list.md)** - Curated collection of books covering reconnaissance, OSINT, automation, threat intelligence, and vulnerability management
+- **[IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)** - Comprehensive implementation guide for deploying and adopting the enhanced ASM cheatsheet
+- **[quick-reference/](quick-reference/)** - Quick Reference Hub for immediate lookup (get what you need in 30 seconds or less)
+  - **[quick-reference/README.md](quick-reference/README.md)** - Navigation hub with quick access to commands, one-liners, and tool matrices
+  - **[quick-reference/scenario-cards.md](quick-reference/scenario-cards.md)** - Scenario-based command cards for incident response, M&A due diligence, bug bounty, and compliance
+  - **[quick-reference/advanced-techniques.md](quick-reference/advanced-techniques.md)** - Enterprise strategies including WAF bypass, ML anomaly detection, and multi-cloud discovery
+  - **[quick-reference/docker-quickstart.md](quick-reference/docker-quickstart.md)** - Docker-based instant deployment with zero-installation ASM toolkit
+- **[automation/ci-cd-templates/github-actions/asm-workflow.yml](automation/ci-cd-templates/github-actions/asm-workflow.yml)** - GitHub Actions workflow for automated ASM scanning
+
+### Changed
+- **[README.md](README.md)** - Updated with references to new quick reference materials, implementation guide, and reading list
+- **[CONTRIBUTORS.md](CONTRIBUTORS.md)**, **[GETTING_STARTED.md](GETTING_STARTED.md)** - Minor documentation and formatting improvements
+
 ### Planned
-- Quick reference command cards and lookup tables
-- CI/CD integration templates and automation libraries  
-- Industry-specific ASM playbooks and compliance guides
-- Cloud provider enumeration techniques and configurations
-- Advanced API integration examples and parsing scripts
-- Incident response procedures and emergency playbooks
+- Additional CI/CD templates for GitLab and Jenkins
+- Industry-specific ASM playbooks for healthcare, finance, and retail sectors
+- Advanced API integration examples with custom parsing scripts
+- Kubernetes deployment manifests for enterprise scaling
+- Emergency incident response playbooks
 
 ## [v2.1.0] - 2025-06-01
 
@@ -25,7 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **[IMPLEMENTATION_STRATEGY.md](IMPLEMENTATION_STRATEGY.md)** - Comprehensive strategic roadmap for expanding the ASM cheatsheet into a three-tiered resource
-- **[resources/reading_list.md](resources/reading_list.md)** - Curated collection of books covering reconnaissance, OSINT, automation, threat intelligence, and vulnerability management
 - Comprehensive authorization verification prompts across all scanning tools and workflows
 - Legal warning messages displayed before any scanning activities
 - Rate limiting examples and respectful scanning practices throughout documentation
