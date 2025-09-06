@@ -8,22 +8,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **[resources/reading_list.md](resources/reading_list.md)** - Curated collection of books covering reconnaissance, OSINT, automation, threat intelligence, and vulnerability management
-- **[IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)** - Comprehensive implementation guide for deploying and adopting the enhanced ASM cheatsheet
-- **[quick-reference/](quick-reference/)** - Quick Reference Hub for immediate lookup (get what you need in 30 seconds or less)
+- **CI/CD Pipeline Templates**
+  - **[automation/ci-cd-templates/github-actions/asm-workflow.yml](automation/ci-cd-templates/github-actions/asm-workflow.yml)** - GitHub Actions workflow for automated ASM scanning
+  - **[automation/ci-cd-templates/gitlab/.gitlab-ci.yml](automation/ci-cd-templates/gitlab/.gitlab-ci.yml)** - GitLab CI pipeline for enterprise-grade ASM scanning with parallel processing
+  - **[automation/ci-cd-templates/jenkins/Jenkinsfile](automation/ci-cd-templates/jenkins/Jenkinsfile)** - Jenkins pipeline for comprehensive ASM security scanning with Docker integration
+
+- **API Integration Library**
+  - **[automation/api-integration/shodan_api.py](automation/api-integration/shodan_api.py)** - Shodan API integration for organization/domain/network searches and vulnerability detection
+  - **[automation/api-integration/virustotal_api.py](automation/api-integration/virustotal_api.py)** - VirusTotal API integration for reputation checking (domains, IPs, URLs, file hashes)
+  - **[automation/api-integration/github_api.py](automation/api-integration/github_api.py)** - GitHub API integration for finding exposed credentials and security misconfigurations
+  - **[automation/api-integration/notifications.py](automation/api-integration/notifications.py)** - Multi-channel notification system supporting Slack, Teams, Email, and Discord
+
+- **Tool Configuration Library**
+  - **[automation/tool-configs/amass_config.ini](automation/tool-configs/amass_config.ini)** - Comprehensive Amass configuration with multiple data sources and bruteforce settings
+  - **[automation/tool-configs/nuclei_config.yaml](automation/tool-configs/nuclei_config.yaml)** - Nuclei vulnerability scanner configuration with template paths and rate limiting
+  - **[automation/tool-configs/nmap_profiles.conf](automation/tool-configs/nmap_profiles.conf)** - 15 different Nmap scan profiles for various ASM scenarios
+
+- **Quick Reference Materials**
+  - **[quick-reference/](quick-reference/)** - Quick Reference Hub for immediate lookup (get what you need in 30 seconds or less)
   - **[quick-reference/README.md](quick-reference/README.md)** - Navigation hub with quick access to commands, one-liners, and tool matrices
   - **[quick-reference/scenario-cards.md](quick-reference/scenario-cards.md)** - Scenario-based command cards for incident response, M&A due diligence, bug bounty, and compliance
   - **[quick-reference/advanced-techniques.md](quick-reference/advanced-techniques.md)** - Enterprise strategies including WAF bypass, ML anomaly detection, and multi-cloud discovery
   - **[quick-reference/docker-quickstart.md](quick-reference/docker-quickstart.md)** - Docker-based instant deployment with zero-installation ASM toolkit
-- **[automation/ci-cd-templates/github-actions/asm-workflow.yml](automation/ci-cd-templates/github-actions/asm-workflow.yml)** - GitHub Actions workflow for automated ASM scanning
-- **[automation/ci-cd-templates/gitlab/.gitlab-ci.yml](automation/ci-cd-templates/gitlab/.gitlab-ci.yml)** - GitLab CI pipeline for enterprise-grade ASM scanning with parallel processing
-- **[automation/ci-cd-templates/jenkins/Jenkinsfile](automation/ci-cd-templates/jenkins/Jenkinsfile)** - Jenkins pipeline for comprehensive ASM security scanning with Docker integration
+
+- **Documentation Enhancements**
+  - **[resources/reading_list.md](resources/reading_list.md)** - Curated collection of books covering reconnaissance, OSINT, automation, threat intelligence, and vulnerability management
+  - **[IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)** - Comprehensive implementation guide for deploying and adopting the enhanced ASM cheatsheet
 
 ### Changed
 - **[README.md](README.md)** - Updated with references to new quick reference materials, implementation guide, and reading list
 - **[CONTRIBUTORS.md](CONTRIBUTORS.md)**, **[GETTING_STARTED.md](GETTING_STARTED.md)** - Minor documentation and formatting improvements
 
 ### Planned
+- Docker setup files for containerized ASM tools deployment
 - Industry-specific ASM playbooks for healthcare, finance, and retail sectors
 - Advanced API integration examples with custom parsing scripts
 - Kubernetes deployment manifests for enterprise scaling
@@ -137,6 +154,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Release Date | Major Features |
 |---------|--------------|----------------|
+| v2.1.0 | 2025-06-01 | Security enhancements, authorization checks, legal compliance |
 | v2.0.0 | 2025-06-01 | Complete learning framework, case studies, workflows, community |
 | v1.0.0 | 2025-06-01 | Initial comprehensive release with all core documentation |
 
@@ -161,7 +179,7 @@ When contributing to the project, please update this changelog following these g
 
 ### Example Entry
 ```markdown
-## [v2.1.0] - 2025-02-15
+## [v2.2.0] - 2025-02-15
 
 ### Added
 - **[tools/ai_recon.md](tools/ai_recon.md)** - AI-powered reconnaissance techniques
@@ -185,16 +203,16 @@ When contributing to the project, please update this changelog following these g
 
 ## Migration Notes
 
-### Current Release (v2.0.0)
+### Current Release (v2.1.0)
 
-This represents the first major comprehensive release of the ASM cheat sheet, including all core documentation, learning materials, and community framework.
+This release focuses on security enhancements and legal compliance, ensuring all tools and workflows include proper authorization checks and safety measures.
 
-**What's Included:**
-1. Complete learning curriculum from beginner to advanced
-2. Real-world case studies and practical workflows
-3. Comprehensive security and legal guidelines
-4. Modern tool updates and community framework
-5. All existing tools documentation and automation scripts
+**What's New:**
+1. Comprehensive CI/CD pipeline templates for GitHub Actions, GitLab CI, and Jenkins
+2. Complete API integration library (Shodan, VirusTotal, GitHub, notifications)
+3. Tool configuration library with ready-to-use configs for Amass, Nuclei, and Nmap
+4. Quick reference materials for immediate lookup and Docker-based deployment
+5. Enhanced security warnings and authorization requirements throughout
 
 ### Tool Version Compatibility
 
@@ -204,6 +222,8 @@ This represents the first major comprehensive release of the ASM cheat sheet, in
 | httpx | v1.2.0 | v1.3.0+ | Enhanced tech detection in v1.3+ |
 | nmap | v7.80 | v7.94+ | Latest version recommended |
 | gowitness | v2.4.0 | v2.4.2+ | Bug fixes in latest versions |
+| nuclei | v2.9.0 | v3.0.0+ | Major improvements in v3+ |
+| Docker | v20.10 | v24.0+ | Required for containerized deployments |
 
 ## Support and Feedback
 
