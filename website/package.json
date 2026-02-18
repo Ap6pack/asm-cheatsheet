@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npx tsx scripts/generate-search-data.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

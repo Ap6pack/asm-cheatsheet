@@ -85,7 +85,7 @@ export function SearchDialog() {
   React.useEffect(() => {
     if (open && entries.length === 0 && !loading) {
       setLoading(true);
-      fetch("/api/search")
+      fetch("/search-data.json")
         .then((res) => res.json())
         .then((data) => {
           setEntries(data);

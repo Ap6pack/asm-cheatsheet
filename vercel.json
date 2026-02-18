@@ -1,6 +1,4 @@
 {
-  "buildCommand": "cd website && npm install --legacy-peer-deps && npm run build",
-  "outputDirectory": "website/.next",
-  "installCommand": "echo 'Using npm for install'",
-  "framework": null
+  "cleanUrls": true,
+  "trailingSlash": false
 }

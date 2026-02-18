@@ -17,14 +17,12 @@ import type {
 // Base content directory - try multiple locations to support local dev and Vercel
 function getContentDir(): string {
   const candidates = [
-    // From process.cwd() (works when cwd is website/ or repo root)
-    path.resolve(process.cwd(), '../content'),
+    // Vercel: content copied into website/content during build
     path.resolve(process.cwd(), 'content'),
-    // Relative to this file (local dev)
+    // Local dev: content is sibling of website/
+    path.resolve(process.cwd(), '../content'),
+    // Relative to this file (local dev fallback)
     path.resolve(__dirname, '../../../../content'),
-    // Vercel: root directory set to website/, content is sibling
-    path.resolve('/vercel/path0', '../content'),
-    path.resolve('/vercel/path0/content'),
   ];
   for (const dir of candidates) {
     if (fs.existsSync(dir)) return dir;
