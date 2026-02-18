@@ -1,0 +1,74 @@
+import { notFound } from "next/navigation";
+import { getAllScenarios } from "@/lib/content/loader";
+import { CodeBlock } from "@/components/content/code-block";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { AlertTriangle } from "lucide-react";
+
+export async function generateStaticParams() {
+  const scenarios = await getAllScenarios();
+  return scenarios.map((sc) => ({ slug: sc.slug }));
+}
+
+export default async function ScenarioDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const scenarios = await getAllScenarios();
+  const sc = scenarios.find((s) => s.slug === slug);
+
+  if (!sc) notFound();
+
+  return (
+    <div className="max-w-4xl space-y-8">
+      <div>
+        <Badge variant="outline" className="mb-3">
+          Scenario {sc.id}
+        </Badge>
+        <h1 className="text-3xl font-bold">{sc.title}</h1>
+        {sc.subtitle && (
+          <p className="mt-2 text-lg text-[hsl(var(--muted-foreground))]">
+            {sc.subtitle}
+          </p>
+        )}
+      </div>
+
+      {/* Authorization Warning */}
+      <div className="flex items-start gap-3 rounded-lg border border-yellow-500/30 bg-yellow-50/50 p-4 dark:bg-yellow-900/10">
+        <AlertTriangle className="h-5 w-5 text-yellow-600 shrink-0 mt-0.5" />
+        <div className="text-sm">
+          <strong>Authorization Required:</strong> Only scan domains and IP
+          addresses you own or have explicit written permission to test.
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Phases */}
+      <div className="space-y-10">
+        {sc.phases.map((phase) => (
+          <section key={phase.phaseNumber}>
+            <div className="flex items-center gap-3 mb-4">
+              <Badge>Phase {phase.phaseNumber}</Badge>
+              <h2 className="text-xl font-semibold">{phase.title}</h2>
+              {phase.timeEstimate && (
+                <span className="text-sm text-[hsl(var(--muted-foreground))]">
+                  ({phase.timeEstimate})
+                </span>
+              )}
+            </div>
+            {phase.codeBlocks.map((block, i) => (
+              <CodeBlock
+                key={i}
+                code={block.code}
+                language={block.language}
+              />
+            ))}
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
