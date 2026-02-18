@@ -46,23 +46,25 @@ export function AuthorizationGate({ children }: AuthorizationGateProps) {
               <AlertTriangle className="h-5 w-5 text-yellow-600" />
               <DialogTitle>Authorization Required</DialogTitle>
             </div>
-            <DialogDescription className="text-left pt-2 space-y-3">
-              <p>
-                The tools and techniques described in this resource are intended for
-                <strong> authorized security testing only</strong>.
-              </p>
-              <p>
-                Before using any commands or workflows, ensure you have:
-              </p>
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>Written authorization from the asset owner</li>
-                <li>A clearly defined scope of testing</li>
-                <li>Appropriate legal agreements in place</li>
-                <li>Understanding of applicable laws and regulations</li>
-              </ul>
-              <p className="text-sm font-medium">
-                Unauthorized access to computer systems is illegal and unethical.
-              </p>
+            <DialogDescription asChild>
+              <div className="text-left pt-2 space-y-3 text-sm text-[hsl(var(--muted-foreground))]">
+                <p>
+                  The tools and techniques described in this resource are intended for
+                  <strong> authorized security testing only</strong>.
+                </p>
+                <p>
+                  Before using any commands or workflows, ensure you have:
+                </p>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Written authorization from the asset owner</li>
+                  <li>A clearly defined scope of testing</li>
+                  <li>Appropriate legal agreements in place</li>
+                  <li>Understanding of applicable laws and regulations</li>
+                </ul>
+                <p className="text-sm font-medium">
+                  Unauthorized access to computer systems is illegal and unethical.
+                </p>
+              </div>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-row gap-2">
