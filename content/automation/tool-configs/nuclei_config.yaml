@@ -1,0 +1,222 @@
+# Nuclei Configuration for ASM
+# Vulnerability scanning and detection settings
+
+# Basic configuration
+rate-limit: 150
+bulk-size: 25
+concurrency: 25
+timeout: 10
+retries: 2
+max-host-error: 30
+
+# Template configuration
+templates:
+  - cves/
+  - vulnerabilities/
+  - exposures/
+  - misconfiguration/
+  - default-logins/
+  - takeovers/
+  - technologies/
+  - miscellaneous/
+
+# Severity filters
+severity:
+  - critical
+  - high
+  - medium
+  - low
+  - info
+
+# Output configuration
+output:
+  json: true
+  markdown: true
+  sarif: false
+
+# Reporting
+reporting:
+  - json
+  - markdown
+
+# Rate limiting per host
+rate-limit-minute: 0
+
+# Headers
+headers:
+  User-Agent: "Mozilla/5.0 (compatible; ASM-Scanner/1.0)"
+  Accept: "*/*"
+  Accept-Language: "en-US,en;q=0.9"
+
+# Proxy configuration (optional)
+# proxy:
+#   - http://proxy:8080
+#   - socks5://proxy:1080
+
+# Authentication (optional)
+# auth:
+#   username: admin
+#   password: password
+
+# Custom templates path
+custom-templates: /opt/nuclei-templates/custom/
+
+# Exclude templates
+exclude-templates:
+  - dos/
+  - fuzzing/
+  - helpers/
+
+# Tags to include
+tags:
+  - cve
+  - oast
+  - sqli
+  - xss
+  - xxe
+  - ssrf
+  - lfi
+  - rce
+  - disclosure
+  - auth-bypass
+  - config
+  - default-login
+  - exposure
+  - takeover
+
+# Matchers
+matchers:
+  - type: word
+    words:
+      - "admin"
+      - "root"
+      - "password"
+      - "secret"
+      - "token"
+      - "api_key"
+      - "private"
+      - "confidential"
+
+# Extractors
+extractors:
+  - type: regex
+    regex:
+      - "api[_-]?key[\"']?\\s*[:=]\\s*[\"']?([a-zA-Z0-9_-]+)"
+      - "secret[_-]?key[\"']?\\s*[:=]\\s*[\"']?([a-zA-Z0-9_-]+)"
+      - "password[\"']?\\s*[:=]\\s*[\"']?([^\"'\\s]+)"
+      - "token[\"']?\\s*[:=]\\s*[\"']?([a-zA-Z0-9_-]+)"
+
+# Interactsh server settings
+interactsh:
+  server-url: "https://interact.sh"
+  cache-size: 5000
+  eviction: 60
+  poll-duration: 5
+  cooldown-period: 5
+
+# Update templates
+update-templates: true
+update-directory: /opt/nuclei-templates/
+
+# Metrics
+metrics: true
+metrics-port: 9092
+
+# Project settings
+project: true
+project-path: /var/nuclei/projects/
+
+# Cloud settings (optional)
+# cloud:
+#   api-key: "your-api-key"
+#   upload: true
+
+# Stats
+stats: true
+stats-interval: 5
+stats-json: true
+
+# Silent mode
+silent: false
+
+# Verbose mode
+verbose: false
+
+# Debug mode
+debug: false
+
+# No color output
+no-color: false
+
+# Timestamp
+timestamp: true
+
+# Report generation
+markdown-export: /var/reports/nuclei/
+sarif-export: /var/reports/sarif/
+
+# Passive mode
+passive: false
+
+# Follow redirects
+follow-redirects: true
+max-redirects: 10
+
+# HTTP/2
+http2: false
+
+# System resolvers
+system-resolvers: false
+
+# Custom resolvers
+resolvers:
+  - 8.8.8.8
+  - 8.8.4.4
+  - 1.1.1.1
+
+# Scan strategy
+scan-strategy: "auto"
+
+# Store response
+store-resp: true
+store-resp-dir: /var/nuclei/responses/
+
+# Page timeout
+page-timeout: 20
+
+# Headless options
+headless: true
+show-browser: false
+headless-options:
+  - "--disable-gpu"
+  - "--no-sandbox"
+  - "--disable-dev-shm-usage"
+
+# Code protocol
+code: true
+
+# File protocol
+file: true
+
+# Offlinehttp
+offline-http: false
+
+# Environment variables
+env-vars:
+  USER: "nuclei"
+  HOME: "/home/nuclei"
+
+# Config file
+config: "/etc/nuclei/config.yaml"
+
+# Report config
+report-config:
+  - elasticsearch:
+      url: "http://localhost:9200"
+      index: "nuclei-results"
+  - splunk:
+      url: "http://localhost:8089"
+      token: "your-token"
+  - webhook:
+      url: "http://localhost:8080/webhook"
+      method: "POST"
