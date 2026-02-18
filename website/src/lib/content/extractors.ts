@@ -14,19 +14,23 @@ import type {
   SuccessCriterion,
 } from './types';
 
-// Base content directory - resolve relative to this file's location
-const CONTENT_DIR = path.resolve(__dirname, '../../../../content');
-
+// Base content directory - try multiple locations to support local dev and Vercel
 function getContentDir(): string {
-  // Try the standard path first; if it doesn't exist, try alternate locations
-  if (fs.existsSync(CONTENT_DIR)) return CONTENT_DIR;
-  // Fallback: resolve from process.cwd()
-  const fallback = path.resolve(process.cwd(), '../content');
-  if (fs.existsSync(fallback)) return fallback;
-  // Another fallback for when running from website directory
-  const fallback2 = path.resolve(process.cwd(), 'content');
-  if (fs.existsSync(fallback2)) return fallback2;
-  return CONTENT_DIR;
+  const candidates = [
+    // From process.cwd() (works when cwd is website/ or repo root)
+    path.resolve(process.cwd(), '../content'),
+    path.resolve(process.cwd(), 'content'),
+    // Relative to this file (local dev)
+    path.resolve(__dirname, '../../../../content'),
+    // Vercel: root directory set to website/, content is sibling
+    path.resolve('/vercel/path0', '../content'),
+    path.resolve('/vercel/path0/content'),
+  ];
+  for (const dir of candidates) {
+    if (fs.existsSync(dir)) return dir;
+  }
+  // Default fallback
+  return path.resolve(process.cwd(), '../content');
 }
 
 function readContentFile(relativePath: string): string {

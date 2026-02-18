@@ -83,3 +83,4 @@ pnpm-debug.log*
 
 # Logs
 *.log
+.vercel
