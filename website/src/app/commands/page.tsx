@@ -3,6 +3,7 @@ import { CodeBlock } from "@/components/content/code-block";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { BookmarkButton } from "@/components/content/bookmark-button";
 
 export const metadata = {
   title: "Command Reference - ASM Cheatsheet",
@@ -63,7 +64,15 @@ export default async function CommandsPage() {
             }
             return Array.from(toolGroups.entries()).map(([tool, cmds]) => (
               <div key={tool} className="mb-8" id={tool.toLowerCase()}>
-                <h3 className="text-xl font-medium mb-3">{tool}</h3>
+                <div className="flex items-center gap-2 mb-3">
+                  <h3 className="text-xl font-medium">{tool}</h3>
+                  <BookmarkButton
+                    id={`cmd-${tool.toLowerCase()}`}
+                    type="command"
+                    title={tool}
+                    category={category}
+                  />
+                </div>
                 {cmds.map((cmd) => (
                   <CodeBlock
                     key={cmd.id}

@@ -17,7 +17,17 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getAllModules, getAllWorkflows, getAllScenarios, getAllCaseStudies, getAllTools, getAllCommands } from "@/lib/content/loader";
+import { Separator } from "@/components/ui/separator";
+import {
+  getAllModules,
+  getAllWorkflows,
+  getAllScenarios,
+  getAllCaseStudies,
+  getAllTools,
+  getAllCommands,
+} from "@/lib/content/loader";
+import { ProgressOverview } from "@/components/dashboard/progress-overview";
+import { BookmarksList } from "@/components/dashboard/bookmarks-list";
 
 const sections = [
   {
@@ -95,6 +105,23 @@ export default async function Home() {
           <Badge variant="secondary">{caseStudies.length} Case Studies</Badge>
         </div>
       </section>
+
+      {/* Progress Dashboard */}
+      <section>
+        <h2 className="text-2xl font-bold mb-4">Your Progress</h2>
+        <ProgressOverview
+          totalModules={modules.length}
+          totalWorkflows={workflows.length}
+          totalScenarios={scenarios.length}
+        />
+      </section>
+
+      {/* Bookmarks */}
+      <section>
+        <BookmarksList />
+      </section>
+
+      <Separator />
 
       {/* Section Cards */}
       <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

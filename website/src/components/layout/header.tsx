@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Menu, Search, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
+import { SearchDialog } from "@/components/search/search-dialog";
 
 const navLinks = [
   { href: "/learn", label: "Learn" },
@@ -55,29 +56,51 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         {/* Right side actions */}
         <div className="ml-auto flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="hidden h-8 w-48 justify-start text-sm text-[hsl(var(--muted-foreground))] sm:flex"
-            aria-label="Search"
-          >
-            <Search className="mr-2 h-4 w-4" />
-            Search...
-            <kbd className="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] px-1.5 font-mono text-[10px] font-medium text-[hsl(var(--muted-foreground))]">
-              <span className="text-xs">&#8984;</span>K
-            </kbd>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="sm:hidden"
-            aria-label="Search"
-          >
-            <Search className="h-5 w-5" />
-          </Button>
+          <SearchTrigger />
           <ThemeToggle />
         </div>
       </div>
+
+      {/* Search Dialog - rendered here, opens on Cmd+K */}
+      <SearchDialog />
     </header>
+  );
+}
+
+function SearchTrigger() {
+  return (
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        className="hidden h-8 w-48 justify-start text-sm text-[hsl(var(--muted-foreground))] sm:flex"
+        aria-label="Search"
+        onClick={() => {
+          // Dispatch Cmd+K to open search dialog
+          document.dispatchEvent(
+            new KeyboardEvent("keydown", { key: "k", metaKey: true })
+          );
+        }}
+      >
+        <Search className="mr-2 h-4 w-4" />
+        Search...
+        <kbd className="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] px-1.5 font-mono text-[10px] font-medium text-[hsl(var(--muted-foreground))]">
+          <span className="text-xs">&#8984;</span>K
+        </kbd>
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="sm:hidden"
+        aria-label="Search"
+        onClick={() => {
+          document.dispatchEvent(
+            new KeyboardEvent("keydown", { key: "k", metaKey: true })
+          );
+        }}
+      >
+        <Search className="h-5 w-5" />
+      </Button>
+    </>
   );
 }

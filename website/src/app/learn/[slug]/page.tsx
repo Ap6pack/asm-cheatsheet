@@ -1,11 +1,10 @@
 import { notFound } from "next/navigation";
 import { getAllModules } from "@/lib/content/loader";
 import { DifficultyBadge } from "@/components/content/difficulty-badge";
-import { CodeBlock } from "@/components/content/code-block";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Clock, BookOpen, Target, CheckCircle } from "lucide-react";
+import { SuccessCriteriaList } from "@/components/learning/success-criteria-list";
 
 export async function generateStaticParams() {
   const modules = await getAllModules();
@@ -92,29 +91,17 @@ export default async function ModulePage({
         </section>
       )}
 
-      {/* Success Criteria */}
+      {/* Success Criteria - Interactive */}
       {mod.successCriteria.length > 0 && (
         <section>
           <h2 className="text-xl font-semibold flex items-center gap-2 mb-3">
             <CheckCircle className="h-5 w-5" />
             Success Criteria
           </h2>
-          <Card>
-            <CardContent className="pt-6">
-              <ul className="space-y-3">
-                {mod.successCriteria.map((sc) => (
-                  <li key={sc.id} className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-[hsl(var(--border))]"
-                      disabled
-                    />
-                    <span>{sc.text}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+          <SuccessCriteriaList
+            moduleId={`module-${mod.id}`}
+            criteria={mod.successCriteria}
+          />
         </section>
       )}
     </div>

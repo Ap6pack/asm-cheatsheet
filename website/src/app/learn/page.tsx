@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowRight, CheckCircle } from "lucide-react";
+import { ModuleProgressCard } from "@/components/learning/module-progress-card";
 
 export const metadata = {
   title: "Learning Path - ASM Cheatsheet",
@@ -69,6 +70,10 @@ export default async function LearnPage() {
                         {mod.objectives[0]}
                       </p>
                     )}
+                    <ModuleProgressCard
+                      moduleId={`module-${mod.id}`}
+                      totalCriteria={mod.successCriteria.length}
+                    />
                     <span className="mt-3 inline-flex items-center text-sm text-[hsl(var(--primary))]">
                       Start Module <ArrowRight className="ml-1 h-3.5 w-3.5" />
                     </span>
