@@ -11,8 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Layers } from "lucide-react";
 
 export const metadata = {
-  title: "Scenarios - ASM Cheatsheet",
-  description: "Professional-grade command cards for real-world ASM situations.",
+  title: "Scenarios",
+  description: "Professional-grade ASM command cards for real-world situations.",
 };
 
 export default async function ScenariosPage() {

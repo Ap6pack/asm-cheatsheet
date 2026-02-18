@@ -11,8 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Building, Calendar, Users } from "lucide-react";
 
 export const metadata = {
-  title: "Case Studies - ASM Cheatsheet",
-  description: "Real-world ASM case studies with outcomes and lessons learned.",
+  title: "Case Studies",
+  description: "Real-world ASM implementations with outcomes and lessons learned.",
 };
 
 export default async function CaseStudiesPage() {

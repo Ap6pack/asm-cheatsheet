@@ -8,10 +8,11 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, ExternalLink, LayoutGrid } from "lucide-react";
 
 export const metadata = {
-  title: "Tools - ASM Cheatsheet",
+  title: "Tools",
   description: "Detailed documentation for ASM reconnaissance and cloud security tools.",
 };
 
@@ -33,6 +34,12 @@ export default async function ToolsPage() {
         <p className="mt-2 text-[hsl(var(--muted-foreground))]">
           {tools.length} ASM tools with installation guides and usage examples.
         </p>
+        <Link href="/tools/compare" className="mt-3 inline-block">
+          <Button variant="outline" size="sm">
+            <LayoutGrid className="mr-2 h-4 w-4" />
+            Compare All Tools
+          </Button>
+        </Link>
       </div>
 
       {Array.from(categories.entries()).map(([category, catTools]) => (

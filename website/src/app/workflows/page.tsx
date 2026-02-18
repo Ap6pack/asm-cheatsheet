@@ -11,8 +11,8 @@ import {
 import { Clock, ArrowRight, ListChecks } from "lucide-react";
 
 export const metadata = {
-  title: "Workflows - ASM Cheatsheet",
-  description: "Step-by-step procedures for common ASM scenarios.",
+  title: "Workflows",
+  description: "Step-by-step ASM procedures for common scenarios.",
 };
 
 export default async function WorkflowsPage() {

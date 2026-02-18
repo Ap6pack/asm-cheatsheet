@@ -10,9 +10,41 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ASM Cheatsheet - Attack Surface Management Reference",
+  title: {
+    default: "ASM Cheatsheet - Attack Surface Management Reference",
+    template: "%s | ASM Cheatsheet",
+  },
   description:
-    "Interactive Attack Surface Management reference with tools, commands, workflows, and learning paths.",
+    "Interactive Attack Surface Management reference with tools, commands, workflows, and a structured learning path — all in one place.",
+  keywords: [
+    "attack surface management",
+    "ASM",
+    "security",
+    "penetration testing",
+    "reconnaissance",
+    "bug bounty",
+    "cybersecurity",
+    "infosec",
+  ],
+  authors: [{ name: "ASM Cheatsheet" }],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "ASM Cheatsheet",
+    title: "ASM Cheatsheet - Attack Surface Management Reference",
+    description:
+      "Interactive Attack Surface Management reference with tools, commands, workflows, and a structured learning path.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ASM Cheatsheet",
+    description:
+      "Interactive Attack Surface Management reference with tools, commands, workflows, and a structured learning path.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
