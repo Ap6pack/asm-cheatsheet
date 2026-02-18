@@ -3,8 +3,51 @@ import { getAllModules } from "@/lib/content/loader";
 import { DifficultyBadge } from "@/components/content/difficulty-badge";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Clock, BookOpen, Target, CheckCircle } from "lucide-react";
+import { Clock, BookOpen, Target, CheckCircle, ExternalLink } from "lucide-react";
 import { SuccessCriteriaList } from "@/components/learning/success-criteria-list";
+
+const GITHUB_CONTENT_BASE =
+  "https://github.com/Ap6pack/asm-cheatsheet/blob/main/content";
+
+/**
+ * Map markdown resource paths to app routes or GitHub URLs.
+ */
+function resolveResourceUrl(url: string): { href: string; external: boolean } {
+  // Map known internal paths to app routes
+  const routeMap: Record<string, string> = {
+    "command_cheatsheet.md": "/commands",
+    "../tools/recon_tools.md": "/tools",
+    "../tools/screenshots.md": "/tools",
+    "security_considerations.md": "/guides",
+    "../README.md": "/",
+  };
+
+  // Check for exact match (without hash)
+  const basePath = url.split("#")[0];
+  if (routeMap[basePath]) {
+    return { href: routeMap[basePath], external: false };
+  }
+
+  // For markdown file links, point to GitHub content
+  if (url.endsWith(".md") || url.includes(".md#")) {
+    // Normalize relative paths from resources/ directory
+    const normalized = url.replace(/^\.\.\//, "");
+    return {
+      href: `${GITHUB_CONTENT_BASE}/resources/${url}`.replace(
+        "/resources/../",
+        "/"
+      ),
+      external: true,
+    };
+  }
+
+  // External URLs pass through
+  if (url.startsWith("http")) {
+    return { href: url, external: true };
+  }
+
+  return { href: url, external: false };
+}
 
 export async function generateStaticParams() {
   const modules = await getAllModules();
@@ -69,12 +112,26 @@ export default async function ModulePage({
             <BookOpen className="h-5 w-5" />
             Resources
           </h2>
-          <ul className="space-y-1">
-            {mod.resources.map((res, i) => (
-              <li key={i}>
-                <span className="text-[hsl(var(--primary))]">{res.title}</span>
-              </li>
-            ))}
+          <ul className="space-y-2">
+            {mod.resources.map((res, i) => {
+              const resolved = resolveResourceUrl(res.url);
+              return (
+                <li key={i}>
+                  <a
+                    href={resolved.href}
+                    {...(resolved.external
+                      ? { target: "_blank", rel: "noopener noreferrer" }
+                      : {})}
+                    className="inline-flex items-center gap-1.5 text-[hsl(var(--primary))] hover:underline"
+                  >
+                    {res.title}
+                    {resolved.external && (
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    )}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}
