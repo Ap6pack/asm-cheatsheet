@@ -78,3 +78,144 @@
 @utility border-border {
   border-color: hsl(var(--border));
 }
+
+/* ===== Print Stylesheet ===== */
+@media print {
+  /* Force light theme colors */
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --border: 0 0% 75%;
+  }
+
+  *,
+  *::before,
+  *::after {
+    color: #1a1a1a !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body {
+    background: #fff !important;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  /* Hide non-essential UI elements */
+  header,
+  nav,
+  footer,
+  [aria-label="Toggle menu"],
+  [aria-label="Search"],
+  [aria-label="Toggle theme"],
+  [data-radix-dialog-overlay],
+  [data-radix-dialog-content],
+  [role="dialog"] {
+    display: none !important;
+  }
+
+  /* Hide sidebar, theme toggle, search, bookmark & compare buttons */
+  aside,
+  .fixed,
+  button[aria-label="Bookmark"],
+  button:has(> svg.lucide-bookmark),
+  button:has(> svg.lucide-sun),
+  button:has(> svg.lucide-moon),
+  a[href="/tools/compare"],
+  [class*="sticky"] {
+    display: none !important;
+  }
+
+  /* Reset layout: remove sidebar padding and flex columns */
+  main {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .flex,
+  .grid {
+    display: block !important;
+  }
+
+  .container {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Code blocks */
+  pre,
+  code {
+    font-family: "Courier New", Courier, monospace !important;
+    font-size: 10pt !important;
+    border: 1px solid #ccc !important;
+    background: #f5f5f5 !important;
+    color: #1a1a1a !important;
+  }
+
+  pre {
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    overflow: visible !important;
+    padding: 0.5em !important;
+    margin: 0.5em 0 !important;
+    page-break-inside: avoid;
+  }
+
+  code {
+    padding: 0.1em 0.3em !important;
+  }
+
+  /* Cards */
+  [class*="card"],
+  [class*="Card"] {
+    border: 1px solid #ccc !important;
+    page-break-inside: avoid;
+    margin-bottom: 1em;
+    padding: 0.75em !important;
+  }
+
+  /* Page breaks */
+  h2 {
+    page-break-before: always;
+    page-break-after: avoid;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+
+  h1:first-of-type {
+    page-break-before: avoid;
+  }
+
+  img, figure, table {
+    page-break-inside: avoid;
+  }
+
+  /* Show URLs for external links */
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    font-style: italic;
+    word-break: break-all;
+  }
+
+  /* Don't show URL for internal Next.js links */
+  a[href^="/"]::after {
+    content: none;
+  }
+
+  a {
+    text-decoration: underline !important;
+  }
+}

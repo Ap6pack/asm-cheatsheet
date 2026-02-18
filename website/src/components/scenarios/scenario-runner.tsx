@@ -83,7 +83,7 @@ export function ScenarioRunner({ scenarioId, scenarioTitle, phases }: ScenarioRu
   if (!phase) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="region" aria-label={`Scenario: ${scenarioTitle}`}>
       {/* Progress header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
@@ -92,11 +92,16 @@ export function ScenarioRunner({ scenarioId, scenarioTitle, phases }: ScenarioRu
           </span>
           <span className="font-medium">{totalProgress}% complete</span>
         </div>
-        <Progress value={totalProgress} />
+        <Progress value={totalProgress} aria-label={`Scenario progress: ${totalProgress}% complete`} />
+      </div>
+
+      {/* Screen reader progress announcement */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        Phase {currentPhase + 1} of {phases.length}: {phase?.title}. {totalProgress}% complete.
       </div>
 
       {/* Phase indicators */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap" role="tablist" aria-label="Scenario phases">
         {phases.map((p, i) => {
           const isCompleted = completedPhases.includes(i);
           const isCurrent = i === currentPhase;
@@ -104,6 +109,10 @@ export function ScenarioRunner({ scenarioId, scenarioTitle, phases }: ScenarioRu
             <button
               key={i}
               onClick={() => setCurrentPhase(i)}
+              role="tab"
+              aria-selected={isCurrent}
+              aria-current={isCurrent ? "step" : undefined}
+              aria-label={`Phase ${p.phaseNumber}: ${p.title}${isCompleted ? " (completed)" : isCurrent ? " (current)" : ""}`}
               className={cn(
                 "flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors",
                 isCurrent
@@ -114,9 +123,9 @@ export function ScenarioRunner({ scenarioId, scenarioTitle, phases }: ScenarioRu
               )}
             >
               {isCompleted ? (
-                <CheckCircle className="h-3 w-3" />
+                <CheckCircle className="h-3 w-3" aria-hidden="true" />
               ) : (
-                <Circle className="h-3 w-3" />
+                <Circle className="h-3 w-3" aria-hidden="true" />
               )}
               Phase {p.phaseNumber}
             </button>
@@ -145,28 +154,29 @@ export function ScenarioRunner({ scenarioId, scenarioTitle, phases }: ScenarioRu
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between pt-4">
+      <nav className="flex items-center justify-between pt-4" aria-label="Scenario phase navigation">
         <Button
           variant="outline"
           onClick={goPrev}
           disabled={currentPhase === 0}
+          aria-label={currentPhase > 0 ? `Go to previous phase: Phase ${phases[currentPhase - 1]?.phaseNumber}` : "Previous phase (disabled)"}
         >
-          <ChevronLeft className="mr-1 h-4 w-4" />
+          <ChevronLeft className="mr-1 h-4 w-4" aria-hidden="true" />
           Previous
         </Button>
 
         {currentPhase === phases.length - 1 ? (
-          <Button onClick={goNext}>
-            <CheckCircle className="mr-1 h-4 w-4" />
+          <Button onClick={goNext} aria-label="Mark phase as complete and finish scenario">
+            <CheckCircle className="mr-1 h-4 w-4" aria-hidden="true" />
             Complete Scenario
           </Button>
         ) : (
-          <Button onClick={goNext}>
+          <Button onClick={goNext} aria-label={`Mark phase as complete and go to phase ${phases[currentPhase + 1]?.phaseNumber}`}>
             Next Phase
-            <ChevronRight className="ml-1 h-4 w-4" />
+            <ChevronRight className="ml-1 h-4 w-4" aria-hidden="true" />
           </Button>
         )}
-      </div>
+      </nav>
     </div>
   );
 }
@@ -187,7 +197,8 @@ function ClientCodeBlock({ code, language }: { code: string; language: string })
       </pre>
       <button
         onClick={copy}
-        className="absolute right-2 top-2 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100"
+        className="absolute right-2 top-2 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+        aria-label={copied ? "Copied to clipboard" : `Copy ${language} code to clipboard`}
       >
         {copied ? "Copied!" : "Copy"}
       </button>

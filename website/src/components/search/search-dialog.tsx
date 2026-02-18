@@ -150,8 +150,20 @@ export function SearchDialog() {
             placeholder="Search commands, tools, modules..."
             className="flex h-12 w-full bg-transparent text-sm outline-none placeholder:text-[hsl(var(--muted-foreground))]"
             autoFocus
+            aria-label="Search commands, tools, modules"
+            aria-autocomplete="list"
+            aria-controls="search-results-list"
+            aria-activedescendant={results[selectedIndex] ? `search-result-${results[selectedIndex].id}` : undefined}
+            role="combobox"
+            aria-expanded={results.length > 0}
           />
-          {loading && <Loader2 className="h-4 w-4 animate-spin text-[hsl(var(--muted-foreground))]" />}
+          {loading && <Loader2 className="h-4 w-4 animate-spin text-[hsl(var(--muted-foreground))]" aria-label="Loading search results" />}
+        </div>
+
+        {/* Screen reader announcement for result count */}
+        <div className="sr-only" aria-live="polite" aria-atomic="true">
+          {query.length > 1 && !loading && results.length > 0 && `${results.length} results found`}
+          {query.length > 1 && !loading && results.length === 0 && `No results found for ${query}`}
         </div>
 
         <div className="max-h-[300px] overflow-y-auto px-2 py-2">
@@ -162,11 +174,16 @@ export function SearchDialog() {
           )}
 
           {results.length > 0 && (
-            <ul>
+            <ul id="search-results-list" role="listbox" aria-label="Search results">
               {results.map((result, index) => {
                 const Icon = typeIcons[result.type];
                 return (
-                  <li key={result.id}>
+                  <li
+                    key={result.id}
+                    id={`search-result-${result.id}`}
+                    role="option"
+                    aria-selected={index === selectedIndex}
+                  >
                     <button
                       onClick={() => handleSelect(result.url)}
                       onMouseEnter={() => setSelectedIndex(index)}

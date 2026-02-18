@@ -65,7 +65,7 @@ export function WorkflowWizard({ workflowId, workflowTitle, steps }: WorkflowWiz
   if (!step) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="region" aria-label={`Workflow: ${workflowTitle}`}>
       {/* Progress header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
@@ -74,11 +74,16 @@ export function WorkflowWizard({ workflowId, workflowTitle, steps }: WorkflowWiz
           </span>
           <span className="font-medium">{totalProgress}% complete</span>
         </div>
-        <Progress value={totalProgress} />
+        <Progress value={totalProgress} aria-label={`Workflow progress: ${totalProgress}% complete`} />
+      </div>
+
+      {/* Screen reader progress announcement */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        Step {currentStep + 1} of {steps.length}: {step?.title}. {totalProgress}% complete.
       </div>
 
       {/* Step indicators */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap" role="tablist" aria-label="Workflow steps">
         {steps.map((s, i) => {
           const isCompleted = completedSteps.includes(i);
           const isCurrent = i === currentStep;
@@ -86,6 +91,10 @@ export function WorkflowWizard({ workflowId, workflowTitle, steps }: WorkflowWiz
             <button
               key={i}
               onClick={() => goToStep(i)}
+              role="tab"
+              aria-selected={isCurrent}
+              aria-current={isCurrent ? "step" : undefined}
+              aria-label={`Step ${s.stepNumber}: ${s.title}${isCompleted ? " (completed)" : isCurrent ? " (current)" : ""}`}
               className={cn(
                 "flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors",
                 isCurrent
@@ -96,9 +105,9 @@ export function WorkflowWizard({ workflowId, workflowTitle, steps }: WorkflowWiz
               )}
             >
               {isCompleted ? (
-                <CheckCircle className="h-3 w-3" />
+                <CheckCircle className="h-3 w-3" aria-hidden="true" />
               ) : (
-                <Circle className="h-3 w-3" />
+                <Circle className="h-3 w-3" aria-hidden="true" />
               )}
               {s.stepNumber}
             </button>
@@ -128,28 +137,29 @@ export function WorkflowWizard({ workflowId, workflowTitle, steps }: WorkflowWiz
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between pt-4">
+      <nav className="flex items-center justify-between pt-4" aria-label="Workflow step navigation">
         <Button
           variant="outline"
           onClick={goPrev}
           disabled={currentStep === 0}
+          aria-label={currentStep > 0 ? `Go to previous step: Step ${steps[currentStep - 1]?.stepNumber}` : "Previous step (disabled)"}
         >
-          <ChevronLeft className="mr-1 h-4 w-4" />
+          <ChevronLeft className="mr-1 h-4 w-4" aria-hidden="true" />
           Previous
         </Button>
 
         {currentStep === steps.length - 1 ? (
-          <Button onClick={goNext}>
-            <CheckCircle className="mr-1 h-4 w-4" />
+          <Button onClick={goNext} aria-label="Mark step as complete and finish workflow">
+            <CheckCircle className="mr-1 h-4 w-4" aria-hidden="true" />
             Complete Workflow
           </Button>
         ) : (
-          <Button onClick={goNext}>
+          <Button onClick={goNext} aria-label={`Mark step as complete and go to step ${steps[currentStep + 1]?.stepNumber}`}>
             Next Step
-            <ChevronRight className="ml-1 h-4 w-4" />
+            <ChevronRight className="ml-1 h-4 w-4" aria-hidden="true" />
           </Button>
         )}
-      </div>
+      </nav>
     </div>
   );
 }
@@ -171,7 +181,8 @@ function ClientCodeBlock({ code, language }: { code: string; language: string })
       </pre>
       <button
         onClick={copy}
-        className="absolute right-2 top-2 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100"
+        className="absolute right-2 top-2 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+        aria-label={copied ? "Copied to clipboard" : `Copy ${language} code to clipboard`}
       >
         {copied ? "Copied!" : "Copy"}
       </button>

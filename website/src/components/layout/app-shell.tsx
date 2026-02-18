@@ -21,8 +21,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
         />
         <main
+          id="main-content"
+          tabIndex={-1}
           className={cn(
-            "flex-1 transition-all duration-300",
+            "flex-1 transition-all duration-300 outline-none",
             sidebarCollapsed ? "lg:pl-16" : "lg:pl-56"
           )}
         >
