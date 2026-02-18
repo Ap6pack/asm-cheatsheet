@@ -17,25 +17,17 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
-*.log
 
-# ASM scan results
-asm_results_*/
-asm_scan_*/
-results/
-output/
-screenshots/
-*.png
-*.jpg
-*.jpeg
+# ASM scan results (only in root-level output dirs)
+/asm_results_*/
+/asm_scan_*/
+/results/
+/output/
+/screenshots/
 
-# Tool outputs
-*.xml
-*.json
-*.txt
-*.csv
-*.nmap
-*.gnmap
+# Tool outputs (only in root-level dirs, not website)
+/*.nmap
+/*.gnmap
 
 # Python
 __pycache__/
@@ -43,14 +35,11 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
 develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
 parts/
 sdist/
 var/
@@ -76,3 +65,21 @@ api_keys.txt
 *.bak
 *.backup
 *.old
+
+# Next.js
+website/.next/
+website/out/
+website/node_modules/
+
+# Dependencies
+node_modules/
+
+# Build outputs
+website/.vercel/
+
+# Debug
+npm-debug.log*
+pnpm-debug.log*
+
+# Logs
+*.log
