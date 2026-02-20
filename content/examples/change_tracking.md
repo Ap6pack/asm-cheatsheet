@@ -255,6 +255,76 @@ done < "$TARGETS_FILE"
 echo "[$DATE] ASM monitoring completed" >> "$LOG_DIR/monitor.log"
 ```
 
+## GitHub Repository Monitoring
+
+Track commits, releases, events, issues, PRs, and file-level diffs on any public GitHub repo using `github_repo_monitor.py`.
+
+### Prerequisites
+```bash
+export GITHUB_TOKEN="ghp_your_token_here"
+pip install requests
+```
+
+### Single Monitoring Pass
+```bash
+# First run establishes the baseline; subsequent runs report changes
+python3 automation/api-integration/github_repo_monitor.py \
+    --repo owner/repo --monitor --output changes.json
+
+# With notifications (configure SLACK_WEBHOOK, TEAMS_WEBHOOK, etc.)
+python3 automation/api-integration/github_repo_monitor.py \
+    --repo owner/repo --monitor --notify
+```
+
+### Continuous Watch Mode
+```bash
+# Poll every 5 minutes (default), send notifications on change
+python3 automation/api-integration/github_repo_monitor.py \
+    --repo owner/repo --watch --interval 300 --notify
+
+# Reports are saved per-change under monitor_reports/
+```
+
+### One-Off Queries
+```bash
+# Recent commits
+python3 automation/api-integration/github_repo_monitor.py \
+    --repo owner/repo --commits --since 2025-01-01T00:00:00Z
+
+# Releases
+python3 automation/api-integration/github_repo_monitor.py \
+    --repo owner/repo --releases
+
+# Events (pushes, forks, stars, issue actions, PR actions)
+python3 automation/api-integration/github_repo_monitor.py \
+    --repo owner/repo --events
+
+# Issues and PRs updated since a date
+python3 automation/api-integration/github_repo_monitor.py \
+    --repo owner/repo --issues --since 2025-06-01T00:00:00Z
+```
+
+### File-Level Diff Between Commits
+```bash
+# Compare two SHAs to see which files changed
+python3 automation/api-integration/github_repo_monitor.py \
+    --repo owner/repo --compare abc1234 def5678
+```
+
+### Cron Automation
+```bash
+# Add to crontab — monitor every hour, send notifications
+0 * * * * GITHUB_TOKEN=ghp_xxx python3 /path/to/github_repo_monitor.py \
+    --repo owner/repo --monitor --notify --state-file /var/lib/asm/repo_state.json
+```
+
+### How Baseline Tracking Works
+
+1. **First run** — records the current latest commit SHA, release ID, tag name, event ID, and issue check timestamp in a JSON state file.
+2. **Subsequent runs** — fetches current data from the GitHub API and compares against the saved baseline.
+3. **Changes detected** — new commits, releases, tags, events, and updated issues are reported to stdout, exported to JSON, and optionally pushed through the notification system (Slack, Teams, Discord, Email).
+4. **State updated** — the baseline is advanced so the next run only reports newer changes.
+
 ## Integration with Alerting
 
 ### Slack Notifications
