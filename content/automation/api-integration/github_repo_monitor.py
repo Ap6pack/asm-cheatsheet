@@ -379,7 +379,7 @@ class GitHubRepoMonitor:
     # Notification helpers
     # ------------------------------------------------------------------
 
-    def notify_changes(self, changes):
+    def notify_changes(self, changes, email_to=None):
         """Send notifications for detected changes via configured channels."""
         repo = changes['repo']
         parts = []
@@ -422,7 +422,7 @@ class GitHubRepoMonitor:
             details["files_changed"] = len(fc.get('files', []))
             details["total_commits"] = fc.get('total_commits', 0)
 
-        results = self.notifier.send_all(title, message, severity, details)
+        results = self.notifier.send_all(title, message, severity, details, email_to=email_to)
         print(f"    Notification results: {results}")
         return True
 
@@ -441,7 +441,7 @@ class GitHubRepoMonitor:
     # ------------------------------------------------------------------
 
     def watch(self, owner, repo, interval=300, state_file='repo_monitor_state.json',
-              output_dir='monitor_reports', notify=True):
+              output_dir='monitor_reports', notify=True, email_to=None):
         """
         Continuously monitor a repo at a given interval (seconds).
         Press Ctrl+C to stop.
@@ -467,7 +467,7 @@ class GitHubRepoMonitor:
                     self.export_results(changes, report)
 
                     if notify:
-                        self.notify_changes(changes)
+                        self.notify_changes(changes, email_to=email_to)
                 else:
                     print("    [OK] No changes detected")
 
@@ -514,6 +514,7 @@ def main():
                         help='State file for baseline tracking')
     parser.add_argument('--notify', action='store_true',
                         help='Send notifications for detected changes')
+    parser.add_argument('--email-to', help='Email recipient for change notifications')
     parser.add_argument('--output', default='repo_monitor_results.json',
                         help='Output file for results')
     parser.add_argument('--since', help='Filter since ISO timestamp (e.g. 2025-01-01T00:00:00Z)')
@@ -532,13 +533,14 @@ def main():
 
         if args.watch:
             mon.watch(owner, repo, interval=args.interval,
-                      state_file=args.state_file, notify=args.notify)
+                      state_file=args.state_file, notify=args.notify,
+                      email_to=args.email_to)
 
         elif args.monitor:
             changes = mon.monitor(owner, repo, state_file=args.state_file)
             mon.export_results(changes, args.output)
             if args.notify:
-                mon.notify_changes(changes)
+                mon.notify_changes(changes, email_to=args.email_to)
 
         elif args.commits:
             results = mon.get_commits(owner, repo, since=args.since, branch=args.branch)

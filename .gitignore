@@ -18,10 +18,11 @@ Thumbs.db
 *.tmp
 *.temp
 
-# Repo monitor state and reports
+# Repo monitor state, reports, and cron wrapper (contains credentials)
 repo_monitor_state.json
 repo_monitor_results.json
 monitor_reports/
+scripts/repo_monitor_cron.sh
 
 # ASM scan results (only in root-level output dirs)
 /asm_results_*/

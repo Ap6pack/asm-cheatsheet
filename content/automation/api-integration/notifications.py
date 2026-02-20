@@ -174,19 +174,25 @@ class ASMNotifications:
             print(f"Webhook error: {e}")
             return False
     
-    def send_all(self, title, message, severity='info', details=None):
+    def send_all(self, title, message, severity='info', details=None, email_to=None):
         """Send notification to all configured channels"""
         results = {}
-        
+
         if self.slack_webhook:
             results['slack'] = self.send_slack(title, message, severity, details)
-        
+
         if self.teams_webhook:
             results['teams'] = self.send_teams(title, message, severity, details)
-        
+
         if self.discord_webhook:
             results['discord'] = self.send_discord(title, message, severity, details)
-        
+
+        if email_to and self.smtp_user and self.smtp_password:
+            body = f"{message}\n\nSeverity: {severity}"
+            if details:
+                body += "\n\nDetails:\n" + "\n".join(f"  {k}: {v}" for k, v in details.items())
+            results['email'] = self.send_email(email_to, title, body)
+
         return results
     
     def format_scan_results(self, scan_type, findings):
