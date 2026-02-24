@@ -37,7 +37,7 @@ export function BookmarksList() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">
+          <p className="text-sm text-[var(--muted-foreground)]">
             No bookmarks yet. Bookmark commands, tools, and workflows for quick access.
           </p>
         </CardContent>
@@ -61,10 +61,10 @@ export function BookmarksList() {
             const url = getUrl ? getUrl(bm.id) : "#";
             return (
               <li key={bm.id} className="flex items-center gap-2">
-                <Icon className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] shrink-0" />
+                <Icon className="h-3.5 w-3.5 text-[var(--muted-foreground)] shrink-0" />
                 <Link
                   href={url}
-                  className="flex-1 truncate text-sm hover:text-[hsl(var(--primary))] transition-colors"
+                  className="flex-1 truncate text-sm hover:text-[var(--primary)] transition-colors"
                 >
                   {bm.title}
                 </Link>
@@ -87,7 +87,7 @@ export function BookmarksList() {
           })}
         </ul>
         {bookmarks.length > 10 && (
-          <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">
+          <p className="mt-2 text-xs text-[var(--muted-foreground)]">
             +{bookmarks.length - 10} more bookmarks
           </p>
         )}

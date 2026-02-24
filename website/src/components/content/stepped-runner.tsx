@@ -4,49 +4,83 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ChevronLeft, ChevronRight, CheckCircle, Circle, Clock } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle,
+  Circle,
+  Clock,
+  Play,
+} from "lucide-react";
 import { useProgressStore, useHydration } from "@/lib/stores";
 import { cn } from "@/lib/utils/cn";
 
-interface WizardStep {
-  stepNumber: number;
+interface Step {
+  number: number;
   title: string;
   timeEstimate: string;
   codeBlocks: { language: string; code: string }[];
 }
 
-interface WorkflowWizardProps {
-  workflowId: string;
-  workflowTitle: string;
-  steps: WizardStep[];
+interface SteppedRunnerProps {
+  id: string;
+  title: string;
+  steps: Step[];
+  mode: "workflow" | "scenario";
 }
 
-export function WorkflowWizard({ workflowId, workflowTitle, steps }: WorkflowWizardProps) {
+export function SteppedRunner({ id, title, steps, mode }: SteppedRunnerProps) {
   const hydrated = useHydration();
-  const { workflowProgress, startWorkflow, completeWorkflowStep } = useProgressStore();
+  const store = useProgressStore();
   const [currentStep, setCurrentStep] = React.useState(0);
+  const [started, setStarted] = React.useState(mode === "workflow");
 
-  // Initialize workflow on first render
+  const isScenario = mode === "scenario";
+  const stepLabel = isScenario ? "Phase" : "Step";
+
+  // Restore progress from store
   React.useEffect(() => {
-    if (hydrated) {
-      startWorkflow(workflowId);
-      const progress = workflowProgress[workflowId];
+    if (!hydrated) return;
+    if (isScenario) {
+      const progress = store.scenarioProgress[id];
+      if (progress) {
+        setStarted(true);
+        setCurrentStep(progress.currentPhase);
+      }
+    } else {
+      store.startWorkflow(id);
+      const progress = store.workflowProgress[id];
       if (progress) {
         setCurrentStep(progress.currentStep);
       }
     }
-  }, [hydrated, workflowId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [hydrated, id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const progress = hydrated ? workflowProgress[workflowId] : null;
-  const completedSteps = progress?.completedSteps ?? [];
-  const totalProgress = steps.length > 0 ? Math.round((completedSteps.length / steps.length) * 100) : 0;
+  const completedSteps = React.useMemo(() => {
+    if (!hydrated) return [] as number[];
+    if (isScenario) {
+      return store.scenarioProgress[id]?.completedPhases ?? [];
+    }
+    return store.workflowProgress[id]?.completedSteps ?? [];
+  }, [hydrated, isScenario, id, store.scenarioProgress, store.workflowProgress]);
 
-  const step = steps[currentStep];
+  const totalProgress =
+    steps.length > 0
+      ? Math.round((completedSteps.length / steps.length) * 100)
+      : 0;
+
+  const handleStart = () => {
+    store.startScenario(id);
+    setStarted(true);
+  };
 
   const goNext = () => {
-    completeWorkflowStep(workflowId, currentStep);
+    if (isScenario) {
+      store.completeScenarioPhase(id, currentStep);
+    } else {
+      store.completeWorkflowStep(id, currentStep);
+    }
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -58,58 +92,74 @@ export function WorkflowWizard({ workflowId, workflowTitle, steps }: WorkflowWiz
     }
   };
 
-  const goToStep = (index: number) => {
-    setCurrentStep(index);
-  };
+  // Scenario start screen
+  if (!started) {
+    return (
+      <div className="rounded-lg border border-[var(--border)] bg-[var(--background-card)] p-8 text-center">
+        <h2 className="text-xl font-semibold mb-2">{title}</h2>
+        <p className="text-[var(--muted-foreground)] mb-4">
+          {steps.length} phases to complete
+        </p>
+        <Button onClick={handleStart} size="lg">
+          <Play className="mr-2 h-4 w-4" />
+          Start Scenario
+        </Button>
+      </div>
+    );
+  }
 
+  const step = steps[currentStep];
   if (!step) return null;
 
   return (
-    <div className="space-y-6" role="region" aria-label={`Workflow: ${workflowTitle}`}>
+    <div
+      className="space-y-6"
+      role="region"
+      aria-label={`${isScenario ? "Scenario" : "Workflow"}: ${title}`}
+    >
       {/* Progress header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span className="text-[var(--muted-foreground)]">
-            Step {currentStep + 1} of {steps.length}
+            {stepLabel} {currentStep + 1} of {steps.length}
           </span>
           <span className="font-medium">{totalProgress}% complete</span>
         </div>
-        <Progress value={totalProgress} aria-label={`Workflow progress: ${totalProgress}% complete`} />
+        <Progress value={totalProgress} />
       </div>
 
-      {/* Screen reader progress announcement */}
+      {/* Screen reader announcement */}
       <div className="sr-only" aria-live="polite" aria-atomic="true">
-        Step {currentStep + 1} of {steps.length}: {step?.title}. {totalProgress}% complete.
+        {stepLabel} {currentStep + 1} of {steps.length}: {step.title}.{" "}
+        {totalProgress}% complete.
       </div>
 
       {/* Step indicators */}
-      <div className="flex gap-2 flex-wrap" role="tablist" aria-label="Workflow steps">
+      <div className="flex gap-2 flex-wrap" role="tablist">
         {steps.map((s, i) => {
           const isCompleted = completedSteps.includes(i);
           const isCurrent = i === currentStep;
           return (
             <button
               key={i}
-              onClick={() => goToStep(i)}
+              onClick={() => setCurrentStep(i)}
               role="tab"
               aria-selected={isCurrent}
-              aria-current={isCurrent ? "step" : undefined}
-              aria-label={`Step ${s.stepNumber}: ${s.title}${isCompleted ? " (completed)" : isCurrent ? " (current)" : ""}`}
               className={cn(
                 "flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors",
                 isCurrent
                   ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
                   : isCompleted
-                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                  : "bg-[var(--muted)] text-[var(--muted-foreground)]"
+                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                    : "bg-[var(--muted)] text-[var(--muted-foreground)]"
               )}
             >
               {isCompleted ? (
-                <CheckCircle className="h-3 w-3" aria-hidden="true" />
+                <CheckCircle className="h-3 w-3" />
               ) : (
-                <Circle className="h-3 w-3" aria-hidden="true" />
+                <Circle className="h-3 w-3" />
               )}
-              {s.stepNumber}
+              {isScenario ? `Phase ${s.number}` : s.number}
             </button>
           );
         })}
@@ -120,7 +170,9 @@ export function WorkflowWizard({ workflowId, workflowTitle, steps }: WorkflowWiz
       {/* Current step content */}
       <div>
         <div className="flex items-center gap-3 mb-4">
-          <Badge variant="outline">Step {step.stepNumber}</Badge>
+          <Badge variant="outline">
+            {stepLabel} {step.number}
+          </Badge>
           <h2 className="text-xl font-semibold">{step.title}</h2>
           {step.timeEstimate && (
             <span className="flex items-center gap-1 text-sm text-[var(--muted-foreground)]">
@@ -130,33 +182,31 @@ export function WorkflowWizard({ workflowId, workflowTitle, steps }: WorkflowWiz
           )}
         </div>
 
-        {/* Code blocks - rendered as simple pre/code since CodeBlock is server-only */}
         {step.codeBlocks.map((block, i) => (
           <ClientCodeBlock key={i} code={block.code} language={block.language} />
         ))}
       </div>
 
       {/* Navigation */}
-      <nav className="flex items-center justify-between pt-4" aria-label="Workflow step navigation">
+      <nav className="flex items-center justify-between pt-4">
         <Button
           variant="outline"
           onClick={goPrev}
           disabled={currentStep === 0}
-          aria-label={currentStep > 0 ? `Go to previous step: Step ${steps[currentStep - 1]?.stepNumber}` : "Previous step (disabled)"}
         >
-          <ChevronLeft className="mr-1 h-4 w-4" aria-hidden="true" />
+          <ChevronLeft className="mr-1 h-4 w-4" />
           Previous
         </Button>
 
         {currentStep === steps.length - 1 ? (
-          <Button onClick={goNext} aria-label="Mark step as complete and finish workflow">
-            <CheckCircle className="mr-1 h-4 w-4" aria-hidden="true" />
-            Complete Workflow
+          <Button onClick={goNext}>
+            <CheckCircle className="mr-1 h-4 w-4" />
+            Complete {isScenario ? "Scenario" : "Workflow"}
           </Button>
         ) : (
-          <Button onClick={goNext} aria-label={`Mark step as complete and go to step ${steps[currentStep + 1]?.stepNumber}`}>
-            Next Step
-            <ChevronRight className="ml-1 h-4 w-4" aria-hidden="true" />
+          <Button onClick={goNext}>
+            Next {stepLabel}
+            <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         )}
       </nav>
@@ -164,8 +214,13 @@ export function WorkflowWizard({ workflowId, workflowTitle, steps }: WorkflowWiz
   );
 }
 
-// Simple client-side code block with copy button
-function ClientCodeBlock({ code, language }: { code: string; language: string }) {
+function ClientCodeBlock({
+  code,
+  language,
+}: {
+  code: string;
+  language: string;
+}) {
   const [copied, setCopied] = React.useState(false);
 
   const copy = async () => {
@@ -182,7 +237,7 @@ function ClientCodeBlock({ code, language }: { code: string; language: string })
       <button
         onClick={copy}
         className="absolute right-2 top-2 rounded-md border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
-        aria-label={copied ? "Copied to clipboard" : `Copy ${language} code to clipboard`}
+        aria-label={copied ? "Copied to clipboard" : "Copy code"}
       >
         {copied ? "Copied!" : "Copy"}
       </button>

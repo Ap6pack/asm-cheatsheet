@@ -29,7 +29,7 @@ export function ModuleProgressCard({ moduleId, totalCriteria }: ModuleProgressCa
         </div>
       ) : (
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs text-[hsl(var(--muted-foreground))]">
+          <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
             <span>Progress</span>
             <span>{progress}%</span>
           </div>

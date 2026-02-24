@@ -4,8 +4,9 @@ import { DifficultyBadge } from "@/components/content/difficulty-badge";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Clock, AlertTriangle } from "lucide-react";
-import { WorkflowWizard } from "@/components/workflows/workflow-wizard";
+import { SteppedRunner } from "@/components/content/stepped-runner";
 import { AuthorizationGate } from "@/components/content/authorization-gate";
+import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 
 export async function generateStaticParams() {
   const workflows = await getAllWorkflows();
@@ -26,11 +27,12 @@ export default async function WorkflowDetailPage({
   return (
     <AuthorizationGate>
       <div className="max-w-4xl space-y-8">
+        <Breadcrumbs title={wf.title} />
         <div>
           <div className="flex items-center gap-3 mb-3">
             <DifficultyBadge difficulty={wf.difficulty} />
             {wf.timeEstimate.display && (
-              <span className="flex items-center gap-1 text-sm text-[hsl(var(--muted-foreground))]">
+              <span className="flex items-center gap-1 text-sm text-[var(--muted-foreground)]">
                 <Clock className="h-3.5 w-3.5" />
                 {wf.timeEstimate.display}
               </span>
@@ -38,12 +40,12 @@ export default async function WorkflowDetailPage({
           </div>
           <h1 className="text-3xl font-bold">{wf.title}</h1>
           {wf.scenario && (
-            <p className="mt-2 text-[hsl(var(--muted-foreground))]">
+            <p className="mt-2 text-[var(--muted-foreground)]">
               {wf.scenario}
             </p>
           )}
           {wf.prerequisites && (
-            <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+            <p className="mt-1 text-sm text-[var(--muted-foreground)]">
               <strong>Prerequisites:</strong> {wf.prerequisites}
             </p>
           )}
@@ -60,24 +62,23 @@ export default async function WorkflowDetailPage({
 
         <Separator />
 
-        {/* Interactive Workflow Wizard */}
+        {/* Interactive Workflow */}
         {wf.steps.length > 0 ? (
-          <WorkflowWizard
-            workflowId={wf.id}
-            workflowTitle={wf.title}
+          <SteppedRunner
+            id={wf.id}
+            title={wf.title}
+            mode="workflow"
             steps={wf.steps.map((step) => ({
-              stepNumber: step.stepNumber,
+              number: step.stepNumber,
               title: step.title,
               timeEstimate: step.timeEstimate,
               codeBlocks: step.codeBlocks,
             }))}
           />
         ) : (
-          <div className="prose dark:prose-invert max-w-none">
-            <p className="text-[hsl(var(--muted-foreground))]">
-              This workflow contains detailed instructions in the content below.
-            </p>
-          </div>
+          <p className="text-[var(--muted-foreground)]">
+            This workflow contains detailed instructions in the content below.
+          </p>
         )}
       </div>
     </AuthorizationGate>

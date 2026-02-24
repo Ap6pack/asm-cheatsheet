@@ -2,92 +2,134 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 221.2 83.2% 53.3%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 221.2 83.2% 53.3%;
-  --radius: 0.5rem;
+/* ===== Dark-First Theme — Security Tool Identity ===== */
 
-  --success: 142.1 76.2% 36.3%;
-  --warning: 47.9 95.8% 53.1%;
-  --beginner: 142.1 76.2% 36.3%;
-  --intermediate: 47.9 95.8% 53.1%;
-  --advanced: 0 84.2% 60.2%;
+/* Dark mode (default) */
+.dark {
+  --background: #0b1121;
+  --background-card: #111827;
+  --background-elevated: #1e293b;
+  --background-muted: #1e293b;
+
+  --foreground: #e2e8f0;
+  --foreground-muted: #94a3b8;
+  --foreground-accent: #f8fafc;
+
+  --primary: #22d3ee;
+  --primary-hover: #06b6d4;
+  --primary-foreground: #0b1121;
+
+  --accent: #10b981;
+  --accent-foreground: #0b1121;
+
+  --secondary: #1e293b;
+  --secondary-foreground: #e2e8f0;
+
+  --border: #1e293b;
+  --border-bright: #334155;
+  --input: #1e293b;
+  --ring: #22d3ee;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #fef2f2;
+
+  --popover: #111827;
+  --popover-foreground: #e2e8f0;
+
+  --card: #111827;
+  --card-foreground: #e2e8f0;
+
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+
+  --success: #22c55e;
+  --warning: #eab308;
+
+  --severity-critical: #ef4444;
+  --severity-high: #f97316;
+  --severity-medium: #eab308;
+  --severity-low: #22c55e;
+  --severity-info: #3b82f6;
+
+  --beginner: #22c55e;
+  --intermediate: #eab308;
+  --advanced: #ef4444;
+
+  --radius: 0.5rem;
 }
 
-.dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 217.2 91.2% 59.8%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 224.3 76.3% 48%;
+/* Light mode */
+:root {
+  --background: #f8fafc;
+  --background-card: #ffffff;
+  --background-elevated: #f1f5f9;
+  --background-muted: #f1f5f9;
 
-  --success: 142.1 70.6% 45.3%;
-  --warning: 47.9 95.8% 53.1%;
-  --beginner: 142.1 70.6% 45.3%;
-  --intermediate: 47.9 95.8% 53.1%;
-  --advanced: 0 72.2% 50.6%;
+  --foreground: #0f172a;
+  --foreground-muted: #64748b;
+  --foreground-accent: #020617;
+
+  --primary: #0891b2;
+  --primary-hover: #0e7490;
+  --primary-foreground: #f0fdfa;
+
+  --accent: #059669;
+  --accent-foreground: #f0fdf4;
+
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+
+  --border: #e2e8f0;
+  --border-bright: #cbd5e1;
+  --input: #e2e8f0;
+  --ring: #0891b2;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #fef2f2;
+
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+
+  --success: #16a34a;
+  --warning: #ca8a04;
+
+  --severity-critical: #dc2626;
+  --severity-high: #ea580c;
+  --severity-medium: #ca8a04;
+  --severity-low: #16a34a;
+  --severity-info: #2563eb;
+
+  --beginner: #16a34a;
+  --intermediate: #ca8a04;
+  --advanced: #dc2626;
+
+  --radius: 0.5rem;
 }
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: var(--border);
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
   }
-}
-
-/* Custom utility classes */
-@utility bg-background {
-  background-color: hsl(var(--background));
-}
-@utility text-foreground {
-  color: hsl(var(--foreground));
-}
-@utility border-border {
-  border-color: hsl(var(--border));
 }
 
 /* ===== Print Stylesheet ===== */
 @media print {
-  /* Force light theme colors */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --border: 0 0% 75%;
+    --background: #ffffff;
+    --foreground: #1a1a1a;
+    --card: #ffffff;
+    --card-foreground: #1a1a1a;
+    --border: #cccccc;
   }
 
   *,
@@ -107,22 +149,17 @@
     line-height: 1.5;
   }
 
-  /* Hide non-essential UI elements */
   header,
   nav,
   footer,
+  aside,
+  .fixed,
   [aria-label="Toggle menu"],
   [aria-label="Search"],
   [aria-label="Toggle theme"],
   [data-radix-dialog-overlay],
   [data-radix-dialog-content],
-  [role="dialog"] {
-    display: none !important;
-  }
-
-  /* Hide sidebar, theme toggle, search, bookmark & compare buttons */
-  aside,
-  .fixed,
+  [role="dialog"],
   button[aria-label="Bookmark"],
   button:has(> svg.lucide-bookmark),
   button:has(> svg.lucide-sun),
@@ -132,7 +169,6 @@
     display: none !important;
   }
 
-  /* Reset layout: remove sidebar padding and flex columns */
   main {
     padding-left: 0 !important;
     margin-left: 0 !important;
@@ -151,7 +187,6 @@
     margin: 0 !important;
   }
 
-  /* Code blocks */
   pre,
   code {
     font-family: "Courier New", Courier, monospace !important;
@@ -175,7 +210,6 @@
     padding: 0.1em 0.3em !important;
   }
 
-  /* Cards */
   [class*="card"],
   [class*="Card"] {
     border: 1px solid #ccc !important;
@@ -184,7 +218,6 @@
     padding: 0.75em !important;
   }
 
-  /* Page breaks */
   h2 {
     page-break-before: always;
     page-break-after: avoid;
@@ -202,7 +235,6 @@
     page-break-inside: avoid;
   }
 
-  /* Show URLs for external links */
   a[href^="http"]::after {
     content: " (" attr(href) ")";
     font-size: 9pt;
@@ -210,7 +242,6 @@
     word-break: break-all;
   }
 
-  /* Don't show URL for internal Next.js links */
   a[href^="/"]::after {
     content: none;
   }

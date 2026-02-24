@@ -140,15 +140,15 @@ export function SearchDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="overflow-hidden p-0 sm:max-w-xl">
         <DialogTitle className="sr-only">Search</DialogTitle>
-        <div className="flex items-center border-b border-[hsl(var(--border))] px-3">
-          <Search className="mr-2 h-4 w-4 shrink-0 text-[hsl(var(--muted-foreground))]" />
+        <div className="flex items-center border-b border-[var(--border)] px-3">
+          <Search className="mr-2 h-4 w-4 shrink-0 text-[var(--muted-foreground)]" />
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search commands, tools, modules..."
-            className="flex h-12 w-full bg-transparent text-sm outline-none placeholder:text-[hsl(var(--muted-foreground))]"
+            className="flex h-12 w-full bg-transparent text-sm outline-none placeholder:text-[var(--muted-foreground)]"
             autoFocus
             aria-label="Search commands, tools, modules"
             aria-autocomplete="list"
@@ -157,7 +157,7 @@ export function SearchDialog() {
             role="combobox"
             aria-expanded={results.length > 0}
           />
-          {loading && <Loader2 className="h-4 w-4 animate-spin text-[hsl(var(--muted-foreground))]" aria-label="Loading search results" />}
+          {loading && <Loader2 className="h-4 w-4 animate-spin text-[var(--muted-foreground)]" aria-label="Loading search results" />}
         </div>
 
         {/* Screen reader announcement for result count */}
@@ -168,7 +168,7 @@ export function SearchDialog() {
 
         <div className="max-h-[300px] overflow-y-auto px-2 py-2">
           {query.length > 1 && results.length === 0 && !loading && (
-            <p className="py-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
+            <p className="py-6 text-center text-sm text-[var(--muted-foreground)]">
               No results found for &quot;{query}&quot;
             </p>
           )}
@@ -190,20 +190,20 @@ export function SearchDialog() {
                       className={cn(
                         "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors",
                         index === selectedIndex
-                          ? "bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))]"
-                          : "text-[hsl(var(--foreground))]"
+                          ? "bg-[var(--background-elevated)] text-[var(--foreground-accent)]"
+                          : "text-[var(--foreground)]"
                       )}
                     >
-                      <Icon className="h-4 w-4 shrink-0 text-[hsl(var(--muted-foreground))]" />
+                      <Icon className="h-4 w-4 shrink-0 text-[var(--muted-foreground)]" />
                       <div className="flex-1 overflow-hidden">
                         <p className="truncate font-medium">{result.title}</p>
                         {result.category && (
-                          <p className="truncate text-xs text-[hsl(var(--muted-foreground))]">
+                          <p className="truncate text-xs text-[var(--muted-foreground)]">
                             {result.category}
                           </p>
                         )}
                       </div>
-                      <span className="shrink-0 rounded-md bg-[hsl(var(--muted))] px-1.5 py-0.5 text-xs text-[hsl(var(--muted-foreground))]">
+                      <span className="shrink-0 rounded-md bg-[var(--muted)] px-1.5 py-0.5 text-xs text-[var(--muted-foreground)]">
                         {typeLabels[result.type]}
                       </span>
                     </button>
@@ -214,7 +214,7 @@ export function SearchDialog() {
           )}
 
           {query.length <= 1 && !loading && entries.length > 0 && (
-            <p className="py-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
+            <p className="py-6 text-center text-sm text-[var(--muted-foreground)]">
               Type to search across {entries.length} items...
             </p>
           )}

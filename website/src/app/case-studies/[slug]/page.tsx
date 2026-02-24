@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { Building, Calendar, Users, CheckCircle, Lightbulb } from "lucide-react";
+import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 
 export async function generateStaticParams() {
   const caseStudies = await getAllCaseStudies();
@@ -24,13 +25,14 @@ export default async function CaseStudyDetailPage({
 
   return (
     <div className="max-w-4xl space-y-8">
+      <Breadcrumbs title={cs.title} />
       <div>
         <Badge variant="outline" className="mb-3">
           Case Study {cs.id}
         </Badge>
         <h1 className="text-3xl font-bold">{cs.title}</h1>
 
-        <div className="mt-4 flex flex-wrap gap-4 text-sm text-[hsl(var(--muted-foreground))]">
+        <div className="mt-4 flex flex-wrap gap-4 text-sm text-[var(--muted-foreground)]">
           {cs.industry && (
             <span className="flex items-center gap-1">
               <Building className="h-4 w-4" />
@@ -52,7 +54,7 @@ export default async function CaseStudyDetailPage({
         </div>
 
         {cs.challenge && (
-          <p className="mt-3 text-[hsl(var(--muted-foreground))]">
+          <p className="mt-3 text-[var(--muted-foreground)]">
             <strong>Challenge:</strong> {cs.challenge}
           </p>
         )}
@@ -68,7 +70,7 @@ export default async function CaseStudyDetailPage({
             {cs.phases.map((phase, i) => (
               <div key={i}>
                 <h3 className="text-lg font-medium mb-2">{phase.title}</h3>
-                <div className="text-[hsl(var(--muted-foreground))] text-sm whitespace-pre-wrap">
+                <div className="text-[var(--muted-foreground)] text-sm whitespace-pre-wrap">
                   {phase.content.slice(0, 500)}
                 </div>
               </div>

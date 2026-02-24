@@ -29,12 +29,12 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = React.useState<Theme>("system");
+  const [theme, setThemeState] = React.useState<Theme>("dark");
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
     const stored = localStorage.getItem("theme") as Theme | null;
-    const initial = stored || "system";
+    const initial = stored || "dark";
     setThemeState(initial);
     applyTheme(initial);
     setMounted(true);

@@ -4,6 +4,7 @@ import { CodeBlock } from "@/components/content/code-block";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ExternalLink } from "lucide-react";
+import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 
 export async function generateStaticParams() {
   const tools = await getAllTools();
@@ -23,6 +24,7 @@ export default async function ToolDetailPage({
 
   return (
     <div className="max-w-4xl space-y-8">
+      <Breadcrumbs title={tool.name} />
       <div>
         <div className="flex items-center gap-3 mb-3">
           <h1 className="text-3xl font-bold">{tool.name}</h1>
@@ -30,7 +32,7 @@ export default async function ToolDetailPage({
             <Badge variant="outline">{tool.difficulty}</Badge>
           )}
         </div>
-        <p className="text-lg text-[hsl(var(--muted-foreground))]">
+        <p className="text-lg text-[var(--muted-foreground)]">
           {tool.purpose}
         </p>
         {tool.link && (
@@ -38,7 +40,7 @@ export default async function ToolDetailPage({
             href={tool.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 inline-flex items-center gap-1 text-sm text-[hsl(var(--primary))] hover:underline"
+            className="mt-2 inline-flex items-center gap-1 text-sm text-[var(--primary)] hover:underline"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             {tool.link}

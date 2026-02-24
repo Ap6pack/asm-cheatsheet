@@ -21,7 +21,7 @@ export function ProgressOverview({ totalModules, totalWorkflows, totalScenarios 
         {[1, 2, 3].map((i) => (
           <Card key={i}>
             <CardContent className="pt-6">
-              <div className="h-16 animate-pulse rounded bg-[hsl(var(--muted))]" />
+              <div className="h-16 animate-pulse rounded bg-[var(--muted)]" />
             </CardContent>
           </Card>
         ))}
@@ -84,12 +84,12 @@ export function ProgressOverview({ totalModules, totalWorkflows, totalScenarios 
             <CardContent>
               <div className="text-2xl font-bold">
                 {stat.started}
-                <span className="text-sm font-normal text-[hsl(var(--muted-foreground))]">
+                <span className="text-sm font-normal text-[var(--muted-foreground)]">
                   /{stat.total}
                 </span>
               </div>
               <Progress value={progress} className="mt-2 h-1.5" />
-              <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+              <p className="mt-1 text-xs text-[var(--muted-foreground)]">
                 {stat.started === 0
                   ? "Not started"
                   : `${stat.started} started, ${stat.completed} completed`}

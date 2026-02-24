@@ -3,8 +3,9 @@ import { getAllScenarios } from "@/lib/content/loader";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AlertTriangle } from "lucide-react";
-import { ScenarioRunner } from "@/components/scenarios/scenario-runner";
+import { SteppedRunner } from "@/components/content/stepped-runner";
 import { AuthorizationGate } from "@/components/content/authorization-gate";
+import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 
 export async function generateStaticParams() {
   const scenarios = await getAllScenarios();
@@ -25,13 +26,14 @@ export default async function ScenarioDetailPage({
   return (
     <AuthorizationGate>
       <div className="max-w-4xl space-y-8">
+        <Breadcrumbs title={sc.title} />
         <div>
           <Badge variant="outline" className="mb-3">
             Scenario {sc.id}
           </Badge>
           <h1 className="text-3xl font-bold">{sc.title}</h1>
           {sc.subtitle && (
-            <p className="mt-2 text-lg text-[hsl(var(--muted-foreground))]">
+            <p className="mt-2 text-lg text-[var(--muted-foreground)]">
               {sc.subtitle}
             </p>
           )}
@@ -48,12 +50,13 @@ export default async function ScenarioDetailPage({
 
         <Separator />
 
-        {/* Interactive Scenario Runner */}
-        <ScenarioRunner
-          scenarioId={`scenario-${sc.id}`}
-          scenarioTitle={sc.title}
-          phases={sc.phases.map((phase) => ({
-            phaseNumber: phase.phaseNumber,
+        {/* Interactive Scenario */}
+        <SteppedRunner
+          id={`scenario-${sc.id}`}
+          title={sc.title}
+          mode="scenario"
+          steps={sc.phases.map((phase) => ({
+            number: phase.phaseNumber,
             title: phase.title,
             timeEstimate: phase.timeEstimate,
             codeBlocks: phase.codeBlocks,

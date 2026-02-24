@@ -29,7 +29,7 @@ export function SuccessCriteriaList({ moduleId, criteria }: SuccessCriteriaListP
         {/* Progress bar */}
         <div className="mb-4 space-y-1">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-[hsl(var(--muted-foreground))]">Progress</span>
+            <span className="text-[var(--muted-foreground)]">Progress</span>
             <span className="font-medium">{progress}%</span>
           </div>
           <Progress value={progress} />
@@ -50,7 +50,7 @@ export function SuccessCriteriaList({ moduleId, criteria }: SuccessCriteriaListP
                   htmlFor={sc.id}
                   className={cn(
                     "text-sm cursor-pointer",
-                    isChecked && "line-through text-[hsl(var(--muted-foreground))]"
+                    isChecked && "line-through text-[var(--muted-foreground)]"
                   )}
                 >
                   {sc.text}

@@ -16,10 +16,10 @@ export async function CodeBlock({ code, language = "bash" }: CodeBlockProps) {
   });
 
   return (
-    <div className="group relative my-4 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))]" role="region" aria-label={`Code block: ${language}`}>
+    <div className="group relative my-4 rounded-lg border border-[var(--border)] bg-[var(--muted)]" role="region" aria-label={`Code block: ${language}`}>
       {/* Header bar */}
-      <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-4 py-2">
-        <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]" aria-hidden="true">
+      <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-2">
+        <span className="text-xs font-medium text-[var(--muted-foreground)]" aria-hidden="true">
           {language}
         </span>
         <CopyButton code={code} />

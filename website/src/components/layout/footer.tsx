@@ -1,27 +1,34 @@
-import Link from "next/link";
 import { Shield } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="border-t border-[hsl(var(--border))] bg-[hsl(var(--background))]">
-      <div className="flex flex-col items-center justify-between gap-4 px-6 py-6 md:flex-row">
-        <div className="flex items-center space-x-2">
-          <Shield className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
-          <span className="text-sm text-[hsl(var(--muted-foreground))]">
-            ASM Cheatsheet
-          </span>
+    <footer className="border-t border-[var(--border)] mt-12">
+      <div className="px-6 py-6 space-y-3">
+        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-[var(--primary)]" />
+            <span className="text-sm font-medium">ASM Cheatsheet</span>
+          </div>
+          <div className="flex items-center gap-4 text-xs text-[var(--muted-foreground)]">
+            <span>
+              Press{" "}
+              <kbd className="rounded border border-[var(--border-bright)] bg-[var(--background-elevated)] px-1.5 py-0.5 font-mono text-[10px]">
+                ?
+              </kbd>{" "}
+              for keyboard shortcuts
+            </span>
+            <span className="hidden sm:inline">
+              <kbd className="rounded border border-[var(--border-bright)] bg-[var(--background-elevated)] px-1.5 py-0.5 font-mono text-[10px]">
+                Ctrl K
+              </kbd>{" "}
+              to search
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-4 text-sm text-[hsl(var(--muted-foreground))]">
-          <span>Built with Next.js, Tailwind CSS &amp; shadcn/ui</span>
-          <Link
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-4 hover:text-[hsl(var(--foreground))]"
-          >
-            GitHub
-          </Link>
-        </div>
+        <p className="text-center text-[10px] text-[var(--muted-foreground)] md:text-left">
+          Only scan domains and IP addresses you own or have explicit written
+          permission to test.
+        </p>
       </div>
     </footer>
   );

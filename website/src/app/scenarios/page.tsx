@@ -22,7 +22,7 @@ export default async function ScenariosPage() {
     <div className="space-y-10">
       <div>
         <h1 className="text-3xl font-bold">Scenarios</h1>
-        <p className="mt-2 text-[hsl(var(--muted-foreground))]">
+        <p className="mt-2 text-[var(--muted-foreground)]">
           {scenarios.length} professional-grade scenario cards for real-world
           situations. Each scenario includes phased command sequences.
         </p>
@@ -31,7 +31,7 @@ export default async function ScenariosPage() {
       <div className="grid gap-6 sm:grid-cols-2">
         {scenarios.map((sc) => (
           <Link key={sc.id} href={`/scenarios/${sc.slug}`}>
-            <Card className="h-full transition-colors hover:border-[hsl(var(--primary))]">
+            <Card className="h-full transition-colors hover:border-[var(--primary)]">
               <CardHeader>
                 <Badge variant="outline" className="w-fit">
                   Scenario {sc.id}
@@ -43,11 +43,11 @@ export default async function ScenariosPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1 text-sm text-[hsl(var(--muted-foreground))]">
+                  <span className="flex items-center gap-1 text-sm text-[var(--muted-foreground)]">
                     <Layers className="h-3.5 w-3.5" />
                     {sc.phases.length} phases
                   </span>
-                  <span className="inline-flex items-center text-sm text-[hsl(var(--primary))]">
+                  <span className="inline-flex items-center text-sm text-[var(--primary)]">
                     View Scenario <ArrowRight className="ml-1 h-3.5 w-3.5" />
                   </span>
                 </div>

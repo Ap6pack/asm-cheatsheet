@@ -62,7 +62,7 @@ export default function GuidesPage() {
     <div className="space-y-10">
       <div>
         <h1 className="text-3xl font-bold">Guides</h1>
-        <p className="mt-2 text-[hsl(var(--muted-foreground))]">
+        <p className="mt-2 text-[var(--muted-foreground)]">
           In-depth guides for building and integrating ASM capabilities.
         </p>
       </div>
@@ -70,10 +70,10 @@ export default function GuidesPage() {
       <div className="grid gap-6 sm:grid-cols-2">
         {guides.map((guide) => (
           <Link key={guide.slug} href={`/guides/${guide.slug}`}>
-            <Card className="h-full transition-colors hover:border-[hsl(var(--primary))]">
+            <Card className="h-full transition-colors hover:border-[var(--primary)]">
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-[hsl(var(--primary))]" />
+                  <BookOpen className="h-5 w-5 text-[var(--primary)]" />
                   <CardTitle className="text-lg">{guide.title}</CardTitle>
                 </div>
                 {guide.description && (
@@ -83,7 +83,7 @@ export default function GuidesPage() {
                 )}
               </CardHeader>
               <CardContent>
-                <span className="inline-flex items-center text-sm text-[hsl(var(--primary))]">
+                <span className="inline-flex items-center text-sm text-[var(--primary)]">
                   Read Guide <ArrowRight className="ml-1 h-3.5 w-3.5" />
                 </span>
               </CardContent>

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Clock, BookOpen, Target, CheckCircle, ExternalLink } from "lucide-react";
 import { SuccessCriteriaList } from "@/components/learning/success-criteria-list";
+import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 
 const GITHUB_CONTENT_BASE =
   "https://github.com/Ap6pack/asm-cheatsheet/blob/main/content";
@@ -67,19 +68,20 @@ export default async function ModulePage({
 
   return (
     <div className="max-w-4xl space-y-8">
+      <Breadcrumbs title={mod.title} />
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-3">
           <Badge variant="outline">Module {mod.id}</Badge>
           <DifficultyBadge difficulty={mod.difficulty} />
-          <span className="flex items-center gap-1 text-sm text-[hsl(var(--muted-foreground))]">
+          <span className="flex items-center gap-1 text-sm text-[var(--muted-foreground)]">
             <Clock className="h-3.5 w-3.5" />
             {mod.timeEstimate.display}
           </span>
         </div>
         <h1 className="text-3xl font-bold">{mod.title}</h1>
         {mod.prerequisites.length > 0 && (
-          <p className="mt-2 text-[hsl(var(--muted-foreground))]">
+          <p className="mt-2 text-[var(--muted-foreground)]">
             <strong>Prerequisites:</strong> {mod.prerequisites.join(", ")}
           </p>
         )}
@@ -97,7 +99,7 @@ export default async function ModulePage({
           <ul className="space-y-2">
             {mod.objectives.map((obj, i) => (
               <li key={i} className="flex items-start gap-2">
-                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[hsl(var(--primary))] shrink-0" />
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[var(--primary)] shrink-0" />
                 {obj}
               </li>
             ))}
@@ -122,7 +124,7 @@ export default async function ModulePage({
                     {...(resolved.external
                       ? { target: "_blank", rel: "noopener noreferrer" }
                       : {})}
-                    className="inline-flex items-center gap-1.5 text-[hsl(var(--primary))] hover:underline"
+                    className="inline-flex items-center gap-1.5 text-[var(--primary)] hover:underline"
                   >
                     {res.title}
                     {resolved.external && (

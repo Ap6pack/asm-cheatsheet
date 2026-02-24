@@ -1,5 +1,6 @@
 import { getAllTools } from "@/lib/content/loader";
 import { ToolComparison } from "@/components/tools/tool-comparison";
+import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 
 export const metadata = {
   title: "Tool Comparison",
@@ -23,9 +24,10 @@ export default async function ToolComparisonPage() {
 
   return (
     <div className="space-y-8">
+      <Breadcrumbs title="Tool Comparison" />
       <div>
         <h1 className="text-3xl font-bold">Tool Comparison</h1>
-        <p className="mt-2 text-[hsl(var(--muted-foreground))]">
+        <p className="mt-2 text-[var(--muted-foreground)]">
           Compare {tools.length} ASM tools across categories, difficulty, and capabilities.
         </p>
       </div>

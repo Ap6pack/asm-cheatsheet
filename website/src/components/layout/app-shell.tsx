@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils/cn";
 import { Header } from "./header";
 import { Sidebar } from "./sidebar";
 import { Footer } from "./footer";
+import { KeyboardShortcuts } from "./keyboard-shortcuts";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -34,6 +35,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Footer />
         </main>
       </div>
+      <KeyboardShortcuts />
     </div>
   );
 }

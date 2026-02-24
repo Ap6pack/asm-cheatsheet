@@ -47,7 +47,7 @@ export function AuthorizationGate({ children }: AuthorizationGateProps) {
               <DialogTitle>Authorization Required</DialogTitle>
             </div>
             <DialogDescription asChild>
-              <div className="text-left pt-2 space-y-3 text-sm text-[hsl(var(--muted-foreground))]">
+              <div className="text-left pt-2 space-y-3 text-sm text-[var(--muted-foreground)]">
                 <p>
                   The tools and techniques described in this resource are intended for
                   <strong> authorized security testing only</strong>.

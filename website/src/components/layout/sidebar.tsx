@@ -9,7 +9,7 @@ import {
   Wrench,
   GitBranch,
   Shield,
-  Layout,
+  Home,
   FileText,
   GraduationCap,
   X,
@@ -19,14 +19,38 @@ import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const navItems = [
-  { href: "/learn", label: "Learn", icon: BookOpen },
-  { href: "/commands", label: "Commands", icon: Terminal },
-  { href: "/tools", label: "Tools", icon: Wrench },
-  { href: "/workflows", label: "Workflows", icon: GitBranch },
-  { href: "/scenarios", label: "Scenarios", icon: Shield },
-  { href: "/case-studies", label: "Case Studies", icon: FileText },
-  { href: "/guides", label: "Guides", icon: GraduationCap },
+interface NavGroup {
+  label: string;
+  items: { href: string; label: string; icon: React.ElementType }[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    label: "",
+    items: [{ href: "/", label: "Home", icon: Home }],
+  },
+  {
+    label: "Learn",
+    items: [
+      { href: "/learn", label: "Learning Path", icon: BookOpen },
+      { href: "/guides", label: "Guides", icon: GraduationCap },
+    ],
+  },
+  {
+    label: "Reference",
+    items: [
+      { href: "/commands", label: "Commands", icon: Terminal },
+      { href: "/tools", label: "Tools", icon: Wrench },
+    ],
+  },
+  {
+    label: "Practice",
+    items: [
+      { href: "/workflows", label: "Workflows", icon: GitBranch },
+      { href: "/scenarios", label: "Scenarios", icon: Shield },
+      { href: "/case-studies", label: "Case Studies", icon: FileText },
+    ],
+  },
 ];
 
 interface SidebarProps {
@@ -57,10 +81,8 @@ export function Sidebar({
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-[hsl(var(--border))] bg-[hsl(var(--background))] transition-all duration-300 lg:top-14 lg:z-30",
-          // Mobile: slide in/out
+          "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-[var(--border)] bg-[var(--background)] transition-all duration-300 lg:top-14 lg:z-30",
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-          // Desktop: collapsed or expanded
           collapsed ? "lg:w-16" : "lg:w-56",
           "w-64"
         )}
@@ -68,7 +90,7 @@ export function Sidebar({
         {/* Mobile header */}
         <div className="flex h-14 items-center justify-between px-4 lg:hidden">
           <div className="flex items-center space-x-2">
-            <Layout className="h-5 w-5 text-[hsl(var(--primary))]" />
+            <Shield className="h-5 w-5 text-[var(--primary)]" />
             <span className="font-bold">ASM Cheatsheet</span>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close menu">
@@ -77,42 +99,54 @@ export function Sidebar({
         </div>
 
         {/* Navigation */}
-        <ScrollArea className="flex-1 py-4">
-          <nav className="flex flex-col gap-1 px-2">
-            {navItems.map((item) => {
-              const isActive =
-                pathname === item.href || pathname?.startsWith(item.href + "/");
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]"
-                      : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]",
-                    collapsed && "lg:justify-center lg:px-2"
-                  )}
-                  title={collapsed ? item.label : undefined}
-                >
-                  <item.icon className="h-4 w-4 shrink-0" />
+        <ScrollArea className="flex-1 py-2">
+          <nav className="flex flex-col gap-0.5 px-2">
+            {navGroups.map((group) => (
+              <div key={group.label || "home"} className={group.label ? "mt-4 first:mt-0" : ""}>
+                {group.label && (
                   <span
                     className={cn(
+                      "px-3 mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]",
                       collapsed && "lg:hidden"
                     )}
                   >
-                    {item.label}
+                    {group.label}
                   </span>
-                </Link>
-              );
-            })}
+                )}
+                {group.items.map((item) => {
+                  const isActive =
+                    item.href === "/"
+                      ? pathname === "/"
+                      : pathname === item.href || pathname?.startsWith(item.href + "/");
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onClose}
+                      className={cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                          : "text-[var(--muted-foreground)] hover:bg-[var(--background-elevated)] hover:text-[var(--foreground-accent)]",
+                        collapsed && "lg:justify-center lg:px-2"
+                      )}
+                      title={collapsed ? item.label : undefined}
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      <span className={cn(collapsed && "lg:hidden")}>
+                        {item.label}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
           </nav>
         </ScrollArea>
 
         {/* Desktop collapse toggle */}
         {onToggleCollapse && (
-          <div className="hidden border-t border-[hsl(var(--border))] p-2 lg:block">
+          <div className="hidden border-t border-[var(--border)] p-2 lg:block">
             <Button
               variant="ghost"
               size="sm"

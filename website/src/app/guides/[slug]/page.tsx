@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import * as fs from "fs";
 import * as path from "path";
 import { MDXRenderer } from "@/components/content/mdx-renderer";
+import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 
 function getGuideFiles(): string[] {
   const guidesDir = path.resolve(process.cwd(), "../content/guides");
@@ -27,7 +28,8 @@ export default async function GuideDetailPage({
   const content = fs.readFileSync(filePath, "utf-8");
 
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-4xl space-y-8">
+      <Breadcrumbs />
       <MDXRenderer content={content} />
     </div>
   );

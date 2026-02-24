@@ -41,7 +41,7 @@ export function BookmarkButton({ id, type, title, category }: BookmarkButtonProp
             aria-label={bookmarked ? "Remove bookmark" : "Add bookmark"}
           >
             {bookmarked ? (
-              <BookmarkCheck className="h-4 w-4 text-[hsl(var(--primary))]" />
+              <BookmarkCheck className="h-4 w-4 text-[var(--primary)]" />
             ) : (
               <Bookmark className="h-4 w-4" />
             )}

@@ -31,7 +31,7 @@ export default async function ToolsPage() {
     <div className="space-y-10">
       <div>
         <h1 className="text-3xl font-bold">Tools</h1>
-        <p className="mt-2 text-[hsl(var(--muted-foreground))]">
+        <p className="mt-2 text-[var(--muted-foreground)]">
           {tools.length} ASM tools with installation guides and usage examples.
         </p>
         <Link href="/tools/compare" className="mt-3 inline-block">
@@ -48,7 +48,7 @@ export default async function ToolsPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {catTools.map((tool) => (
               <Link key={tool.id} href={`/tools/${tool.slug}`}>
-                <Card className="h-full transition-colors hover:border-[hsl(var(--primary))]">
+                <Card className="h-full transition-colors hover:border-[var(--primary)]">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base">{tool.name}</CardTitle>
@@ -64,11 +64,11 @@ export default async function ToolsPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between">
-                      <span className="inline-flex items-center text-sm text-[hsl(var(--primary))]">
+                      <span className="inline-flex items-center text-sm text-[var(--primary)]">
                         View Details <ArrowRight className="ml-1 h-3.5 w-3.5" />
                       </span>
                       {tool.link && (
-                        <ExternalLink className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
+                        <ExternalLink className="h-3.5 w-3.5 text-[var(--muted-foreground)]" />
                       )}
                     </div>
                   </CardContent>
