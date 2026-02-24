@@ -10,7 +10,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Building, Calendar, Users } from "lucide-react";
+import { Building, Calendar, Users } from "lucide-react";
 
 interface CaseStudyData {
   id: number;
@@ -114,13 +114,10 @@ export function CaseStudyExplorer({ caseStudies }: CaseStudyExplorerProps) {
                   )}
                 </div>
                 {cs.outcome && (
-                  <p className="text-sm font-medium text-[var(--primary)] mb-2">
+                  <p className="text-sm font-medium text-[var(--primary)]">
                     {cs.outcome}
                   </p>
                 )}
-                <span className="inline-flex items-center text-sm text-[var(--primary)]">
-                  Read More <ArrowRight className="ml-1 h-3.5 w-3.5" />
-                </span>
               </CardContent>
             </Card>
           </Link>
