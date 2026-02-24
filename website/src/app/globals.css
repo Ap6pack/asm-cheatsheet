@@ -4,61 +4,7 @@
 
 /* ===== Dark-First Theme — Security Tool Identity ===== */
 
-/* Dark mode (default) */
-.dark {
-  --background: #0b1121;
-  --background-card: #111827;
-  --background-elevated: #1e293b;
-  --background-muted: #1e293b;
-
-  --foreground: #e2e8f0;
-  --foreground-muted: #94a3b8;
-  --foreground-accent: #f8fafc;
-
-  --primary: #22d3ee;
-  --primary-hover: #06b6d4;
-  --primary-foreground: #0b1121;
-
-  --accent: #10b981;
-  --accent-foreground: #0b1121;
-
-  --secondary: #1e293b;
-  --secondary-foreground: #e2e8f0;
-
-  --border: #1e293b;
-  --border-bright: #334155;
-  --input: #1e293b;
-  --ring: #22d3ee;
-
-  --destructive: #ef4444;
-  --destructive-foreground: #fef2f2;
-
-  --popover: #111827;
-  --popover-foreground: #e2e8f0;
-
-  --card: #111827;
-  --card-foreground: #e2e8f0;
-
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-
-  --success: #22c55e;
-  --warning: #eab308;
-
-  --severity-critical: #ef4444;
-  --severity-high: #f97316;
-  --severity-medium: #eab308;
-  --severity-low: #22c55e;
-  --severity-info: #3b82f6;
-
-  --beginner: #22c55e;
-  --intermediate: #eab308;
-  --advanced: #ef4444;
-
-  --radius: 0.5rem;
-}
-
-/* Light mode */
+/* Light mode (base) */
 :root {
   --background: #f8fafc;
   --background-card: #ffffff;
@@ -108,6 +54,60 @@
   --beginner: #16a34a;
   --intermediate: #ca8a04;
   --advanced: #dc2626;
+
+  --radius: 0.5rem;
+}
+
+/* Dark mode (overrides :root when .dark is on <html>) */
+.dark {
+  --background: #0b1121;
+  --background-card: #111827;
+  --background-elevated: #1e293b;
+  --background-muted: #1e293b;
+
+  --foreground: #e2e8f0;
+  --foreground-muted: #94a3b8;
+  --foreground-accent: #f8fafc;
+
+  --primary: #22d3ee;
+  --primary-hover: #06b6d4;
+  --primary-foreground: #0b1121;
+
+  --accent: #10b981;
+  --accent-foreground: #0b1121;
+
+  --secondary: #1e293b;
+  --secondary-foreground: #e2e8f0;
+
+  --border: #1e293b;
+  --border-bright: #334155;
+  --input: #1e293b;
+  --ring: #22d3ee;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #fef2f2;
+
+  --popover: #111827;
+  --popover-foreground: #e2e8f0;
+
+  --card: #111827;
+  --card-foreground: #e2e8f0;
+
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+
+  --success: #22c55e;
+  --warning: #eab308;
+
+  --severity-critical: #ef4444;
+  --severity-high: #f97316;
+  --severity-medium: #eab308;
+  --severity-low: #22c55e;
+  --severity-info: #3b82f6;
+
+  --beginner: #22c55e;
+  --intermediate: #eab308;
+  --advanced: #ef4444;
 
   --radius: 0.5rem;
 }
