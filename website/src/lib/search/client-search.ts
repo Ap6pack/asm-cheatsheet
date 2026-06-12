@@ -1,5 +1,9 @@
-import { Document } from "flexsearch";
+// flexsearch 0.7 only exposes its classes on the default export at runtime;
+// a named `import { Document }` type-checks but is undefined in the bundle.
+import FlexSearch from "flexsearch";
 import type { SearchEntry } from "@/lib/content/types";
+
+const { Document } = FlexSearch;
 
 // Relative weight of a match in each indexed field when merging results
 const FIELD_WEIGHTS: Record<string, number> = {
