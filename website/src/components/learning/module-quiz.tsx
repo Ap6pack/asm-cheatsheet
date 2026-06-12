@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, Award, RefreshCw } from "lucide-react";
@@ -52,7 +52,8 @@ export function ModuleQuiz({ moduleId, quiz }: ModuleQuizProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex flex-wrap items-center gap-3 text-xl">
+        {/* Real h2 instead of CardTitle's div so the quiz is a navigable section heading */}
+        <h2 className="flex flex-wrap items-center gap-3 text-xl font-semibold leading-none tracking-tight">
           <Award className="h-5 w-5" />
           Knowledge Check
           {result?.passedAt && (
@@ -60,7 +61,7 @@ export function ModuleQuiz({ moduleId, quiz }: ModuleQuizProps) {
               Passed
             </Badge>
           )}
-        </CardTitle>
+        </h2>
         <p className="text-sm text-[var(--muted-foreground)]">
           {total} questions · {passingScore}% to pass
           {result &&
