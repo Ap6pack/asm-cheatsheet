@@ -1,0 +1,66 @@
+{
+  "moduleId": 5,
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "m5-q1",
+      "question": "What is the cardinal rule of ASM scanning?",
+      "options": [
+        "Always scan at night to reduce impact",
+        "Only scan assets you own or have explicit permission to test",
+        "Never use more than one tool at a time",
+        "Always anonymize your traffic through a VPN"
+      ],
+      "correctIndex": 1,
+      "explanation": "Authorization is the foundation of legal and ethical security work. Scanning systems without permission can violate computer misuse laws regardless of intent."
+    },
+    {
+      "id": "m5-q2",
+      "question": "What does responsible disclosure mean?",
+      "options": [
+        "Publishing vulnerabilities immediately so users can protect themselves",
+        "Reporting vulnerabilities through proper channels and giving the owner time to fix them before public disclosure",
+        "Selling vulnerability details to the highest bidder",
+        "Keeping all findings permanently confidential"
+      ],
+      "correctIndex": 1,
+      "explanation": "Responsible disclosure means reporting findings privately through the owner's designated channel (security.txt, bug bounty program, security contact) and allowing reasonable remediation time before any public discussion."
+    },
+    {
+      "id": "m5-q3",
+      "question": "Why should scans be rate-limited?",
+      "options": [
+        "To avoid overwhelming target systems and degrading service for legitimate users",
+        "To save money on bandwidth",
+        "Because tools crash at high speeds",
+        "To make scans harder to detect"
+      ],
+      "correctIndex": 0,
+      "explanation": "Respectful scanning uses reasonable delays between requests so that reconnaissance never harms availability. Aggressive scanning can amount to a denial of service — even against authorized targets."
+    },
+    {
+      "id": "m5-q4",
+      "question": "What should you have in place before starting an authorized assessment?",
+      "options": [
+        "A press release announcing the test",
+        "Written authorization documenting the agreed scope, targets, and time window",
+        "An anonymous email account",
+        "A list of vulnerabilities you expect to find"
+      ],
+      "correctIndex": 1,
+      "explanation": "Written scope and authorization protects both you and the asset owner: it defines exactly what may be tested, when, and how, and is your evidence of permission."
+    },
+    {
+      "id": "m5-q5",
+      "question": "Which of the following is a safe practice target for learning ASM techniques?",
+      "options": [
+        "Any government website, since they are public",
+        "Your university's network without asking",
+        "Intentionally vulnerable apps like DVWA or in-scope bug bounty targets",
+        "A former employer's infrastructure"
+      ],
+      "correctIndex": 2,
+      "explanation": "Safe targets include infrastructure you own, intentionally vulnerable applications (DVWA, WebGoat), designated test domains, and assets explicitly in scope of a bug bounty program."
+    }
+  ]
+}

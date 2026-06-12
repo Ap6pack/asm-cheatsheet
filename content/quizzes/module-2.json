@@ -1,0 +1,66 @@
+{
+  "moduleId": 2,
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "m2-q1",
+      "question": "Why is a virtual machine or isolated environment recommended for ASM work?",
+      "options": [
+        "It makes scans run faster",
+        "It contains tooling and risk, keeping security tools and their data separate from your personal system",
+        "It is required by most ASM tool licenses",
+        "It hides your identity from scan targets"
+      ],
+      "correctIndex": 1,
+      "explanation": "An isolated environment keeps your tooling, dependencies, and collected data contained — and limits the blast radius if a tool misbehaves or you make a mistake."
+    },
+    {
+      "id": "m2-q2",
+      "question": "Which language toolchain do you need installed to run `go install github.com/owasp-amass/amass/v4/...@master`?",
+      "options": [
+        "Python 3",
+        "Node.js",
+        "Go",
+        "Rust"
+      ],
+      "correctIndex": 2,
+      "explanation": "Amass, httpx, and gowitness are all Go programs installed with `go install`, which compiles them from source using the Go toolchain."
+    },
+    {
+      "id": "m2-q3",
+      "question": "What do API keys for services like Shodan and GitHub add to an ASM setup?",
+      "options": [
+        "They are required before any tool will run",
+        "They give access to additional passive data sources and internet-wide scan data",
+        "They make active scanning legal against any target",
+        "They encrypt your scan results"
+      ],
+      "correctIndex": 1,
+      "explanation": "API keys unlock richer passive reconnaissance: Shodan provides internet-wide scan data, and the GitHub API enables searching for exposed code and secrets — no active scanning of the target required."
+    },
+    {
+      "id": "m2-q4",
+      "question": "What is the best practice for handling API keys in your ASM scripts?",
+      "options": [
+        "Hardcode them in the script so they are never lost",
+        "Store them in environment variables or config files excluded from version control",
+        "Share them in your team chat for convenience",
+        "Commit them to a private GitHub repository"
+      ],
+      "correctIndex": 1,
+      "explanation": "Keys belong in environment variables or untracked config files. Hardcoding keys in scripts or committing them to repositories is a common source of credential leaks — the very thing ASM hunts for."
+    },
+    {
+      "id": "m2-q5",
+      "question": "Which tool from the starter toolkit is installed with pip rather than go install?",
+      "options": [
+        "Amass",
+        "httpx",
+        "gowitness",
+        "Shodan CLI"
+      ],
+      "correctIndex": 3,
+      "explanation": "The Shodan CLI is a Python package installed with `pip install shodan`. Amass, httpx, and gowitness are Go tools."
+    }
+  ]
+}

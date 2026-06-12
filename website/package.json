@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "validate:content": "npx tsx scripts/validate-content.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test"

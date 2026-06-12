@@ -1,0 +1,34 @@
+name: Bug Report
+description: Something on the site or in the content is broken
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Website (asm-cheatsheet.vercel.app)
+        - Content (markdown guides, modules, commands)
+        - Scripts / automation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead? Include the page URL if it's a website issue.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to /learn/module-3
+        2. Click ...
+  - type: input
+    id: environment
+    attributes:
+      label: Browser / environment
+      placeholder: e.g. Firefox 139 on macOS

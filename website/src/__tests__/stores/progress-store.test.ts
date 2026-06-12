@@ -110,6 +110,35 @@ describe("useProgressStore", () => {
       ).toEqual([1]);
     });
 
+    it("sets completedAt once all steps are completed", () => {
+      const store = useProgressStore.getState();
+      store.startWorkflow("wf-1");
+
+      store.completeWorkflowStep("wf-1", 0, 2);
+      expect(
+        useProgressStore.getState().workflowProgress["wf-1"].completedAt
+      ).toBeUndefined();
+
+      store.completeWorkflowStep("wf-1", 1, 2);
+      expect(
+        useProgressStore.getState().workflowProgress["wf-1"].completedAt
+      ).toBeTruthy();
+      expect(useProgressStore.getState().getTotalWorkflowsCompleted()).toBe(1);
+    });
+
+    it("does not overwrite an existing completedAt timestamp", () => {
+      const store = useProgressStore.getState();
+      store.startWorkflow("wf-1");
+      store.completeWorkflowStep("wf-1", 0, 1);
+      const firstCompletedAt =
+        useProgressStore.getState().workflowProgress["wf-1"].completedAt;
+
+      store.completeWorkflowStep("wf-1", 0, 1);
+      expect(
+        useProgressStore.getState().workflowProgress["wf-1"].completedAt
+      ).toBe(firstCompletedAt);
+    });
+
     it("isWorkflowComplete returns correct result", () => {
       const store = useProgressStore.getState();
       store.startWorkflow("wf-1");
@@ -168,6 +197,70 @@ describe("useProgressStore", () => {
         useProgressStore.getState().scenarioProgress["sc-1"].completedPhases
       ).toEqual([1]);
     });
+
+    it("sets completedAt once all phases are completed", () => {
+      const store = useProgressStore.getState();
+      store.startScenario("sc-1");
+
+      store.completeScenarioPhase("sc-1", 0, 2);
+      expect(
+        useProgressStore.getState().scenarioProgress["sc-1"].completedAt
+      ).toBeUndefined();
+
+      store.completeScenarioPhase("sc-1", 1, 2);
+      expect(
+        useProgressStore.getState().scenarioProgress["sc-1"].completedAt
+      ).toBeTruthy();
+      expect(useProgressStore.getState().getTotalScenariosCompleted()).toBe(1);
+    });
+  });
+
+  describe("quiz results", () => {
+    it("records attempts and tracks the best score", () => {
+      const store = useProgressStore.getState();
+      store.recordQuizAttempt("module-1", 2, 5);
+
+      let result = useProgressStore.getState().quizResults["module-1"];
+      expect(result.bestScore).toBe(2);
+      expect(result.totalQuestions).toBe(5);
+      expect(result.attempts).toBe(1);
+      expect(result.passedAt).toBeUndefined();
+
+      store.recordQuizAttempt("module-1", 4, 5);
+      result = useProgressStore.getState().quizResults["module-1"];
+      expect(result.bestScore).toBe(4);
+      expect(result.attempts).toBe(2);
+      expect(result.passedAt).toBeTruthy();
+
+      // A later worse attempt does not lower the best score or unset the pass
+      store.recordQuizAttempt("module-1", 1, 5);
+      result = useProgressStore.getState().quizResults["module-1"];
+      expect(result.bestScore).toBe(4);
+      expect(result.attempts).toBe(3);
+      expect(result.passedAt).toBeTruthy();
+    });
+
+    it("marks the quiz as passed at exactly the threshold", () => {
+      const store = useProgressStore.getState();
+      // 7/10 = 70%, the pass threshold
+      store.recordQuizAttempt("module-2", 7, 10);
+      expect(useProgressStore.getState().isQuizPassed("module-2")).toBe(true);
+    });
+
+    it("counts passed quizzes", () => {
+      const store = useProgressStore.getState();
+      expect(store.getTotalQuizzesPassed()).toBe(0);
+
+      store.recordQuizAttempt("module-1", 5, 5);
+      store.recordQuizAttempt("module-2", 1, 5);
+      expect(useProgressStore.getState().getTotalQuizzesPassed()).toBe(1);
+    });
+
+    it("isQuizPassed returns false for unattempted quizzes", () => {
+      expect(useProgressStore.getState().isQuizPassed("module-99")).toBe(
+        false
+      );
+    });
   });
 
   describe("stats", () => {
@@ -193,6 +286,7 @@ describe("useProgressStore", () => {
       store.toggleCriterion("mod-1", "c-1");
       store.startWorkflow("wf-1");
       store.startScenario("sc-1");
+      store.recordQuizAttempt("mod-1", 5, 5);
 
       store.resetAll();
       const reset = useProgressStore.getState();
@@ -201,6 +295,7 @@ describe("useProgressStore", () => {
       expect(reset.moduleStarted).toEqual({});
       expect(reset.workflowProgress).toEqual({});
       expect(reset.scenarioProgress).toEqual({});
+      expect(reset.quizResults).toEqual({});
     });
   });
 });

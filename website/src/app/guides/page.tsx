@@ -1,6 +1,4 @@
 import Link from "next/link";
-import * as fs from "fs";
-import * as path from "path";
 import {
   Card,
   CardHeader,
@@ -9,54 +7,15 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { ArrowRight, BookOpen } from "lucide-react";
+import { getAllGuides } from "@/lib/content/loader";
 
 export const metadata = {
   title: "Guides - ASM Cheatsheet",
   description: "In-depth guides for building and integrating ASM capabilities.",
 };
 
-interface Guide {
-  slug: string;
-  title: string;
-  description: string;
-  file: string;
-}
-
-function getGuides(): Guide[] {
-  const guidesDir = path.resolve(process.cwd(), "../content/guides");
-  const files = fs.readdirSync(guidesDir).filter((f) => f.endsWith(".md"));
-
-  return files.map((file) => {
-    const content = fs.readFileSync(path.join(guidesDir, file), "utf-8");
-    const firstLine = content.split("\n").find((l) => l.startsWith("# "));
-    const title = firstLine ? firstLine.replace(/^#\s+/, "") : file.replace(".md", "");
-
-    // Get first paragraph as description
-    const lines = content.split("\n");
-    let desc = "";
-    let foundHeading = false;
-    for (const line of lines) {
-      if (line.startsWith("# ")) {
-        foundHeading = true;
-        continue;
-      }
-      if (foundHeading && line.trim() && !line.startsWith("#")) {
-        desc = line.trim();
-        break;
-      }
-    }
-
-    return {
-      slug: file.replace(".md", ""),
-      title,
-      description: desc,
-      file,
-    };
-  });
-}
-
-export default function GuidesPage() {
-  const guides = getGuides();
+export default async function GuidesPage() {
+  const guides = await getAllGuides();
 
   return (
     <div className="space-y-10">

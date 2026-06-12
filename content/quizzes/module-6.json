@@ -1,0 +1,66 @@
+{
+  "moduleId": 6,
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "m6-q1",
+      "question": "What are CloudEnum and Scout Suite used for?",
+      "options": [
+        "Cracking cloud account passwords",
+        "Enumerating cloud assets and scanning for cloud misconfigurations across AWS, Azure, and GCP",
+        "Hosting your ASM scan results",
+        "Encrypting traffic between cloud regions"
+      ],
+      "correctIndex": 1,
+      "explanation": "CloudEnum discovers cloud assets (storage buckets, apps) across providers, while Scout Suite audits cloud configurations for security issues — both are multi-cloud."
+    },
+    {
+      "id": "m6-q2",
+      "question": "Why are publicly accessible S3 buckets a classic ASM finding?",
+      "options": [
+        "They slow down the website that uses them",
+        "They can expose sensitive data to anyone on the internet, often without the owner realizing",
+        "They cost more than private buckets",
+        "They cannot be deleted once created"
+      ],
+      "correctIndex": 1,
+      "explanation": "Misconfigured storage buckets are a recurring source of breaches: data meant to be internal is silently world-readable. Discovering them before attackers do is core ASM value."
+    },
+    {
+      "id": "m6-q3",
+      "question": "What does 'chaining tools with pipes' look like in an ASM workflow?",
+      "options": [
+        "Running each tool on a separate machine",
+        "Feeding the output of one tool directly into the next, e.g. subdomain discovery into httpx",
+        "Running the same tool twice for verification",
+        "Using a GUI to schedule tools"
+      ],
+      "correctIndex": 1,
+      "explanation": "Unix pipes and intermediate files let you compose tools: discovery output feeds probing, probing output feeds screenshots — turning individual tools into a pipeline."
+    },
+    {
+      "id": "m6-q4",
+      "question": "What is the benefit of Amass's database operations for ongoing assessments?",
+      "options": [
+        "They make a single scan run faster",
+        "They track enumeration results over time, enabling comparisons and visualizations across runs",
+        "They automatically patch discovered vulnerabilities",
+        "They are required for passive mode to work"
+      ],
+      "correctIndex": 1,
+      "explanation": "Amass can persist findings to a database, letting you compare enumerations over time, visualize relationships, and detect newly appeared assets — key for continuous monitoring."
+    },
+    {
+      "id": "m6-q5",
+      "question": "When integrating multiple tools, why is data format conversion often necessary?",
+      "options": [
+        "Because tools output results in different formats (text lists, JSON, XML) that downstream tools must be able to consume",
+        "Because raw output is always encrypted",
+        "To reduce the file size of results",
+        "Because lawyers require standardized formats"
+      ],
+      "correctIndex": 0,
+      "explanation": "Each tool speaks its own format. Converting and normalizing outputs (e.g., extracting hostnames from JSON into plain lists) is what makes correlation and chaining possible."
+    }
+  ]
+}

@@ -10,6 +10,7 @@ Welcome to the ASM community! We're excited to have you contribute to making thi
 - **Workflow improvements** - Suggest better processes and procedures
 - **Security considerations** - Add legal, ethical, or technical guidance
 - **Learning materials** - Create tutorials, examples, or explanations
+- **Quiz questions** - Add knowledge-check questions to learning modules (see [content/quizzes/README.md](content/quizzes/README.md))
 
 ### 🔧 Technical Contributions
 - **Automation scripts** - Share useful ASM automation
@@ -76,6 +77,24 @@ git push origin feature/your-contribution-name
 # Create a pull request
 # Go to GitHub and create a PR from your branch
 ```
+
+### 3. Working on the Website
+
+The interactive site at [asm-cheatsheet.vercel.app](https://asm-cheatsheet.vercel.app) lives in `website/` (Next.js 15 + TypeScript). All learning content is parsed from the markdown and JSON files in `content/`, so most contributions never touch the website code.
+
+```bash
+cd website
+pnpm install
+
+pnpm dev               # local dev server at http://localhost:3000
+pnpm validate:content  # check that content/ parses correctly (run after editing content)
+pnpm typecheck         # TypeScript
+pnpm lint              # ESLint
+pnpm test              # unit tests (Vitest)
+pnpm test:e2e          # end-to-end tests (Playwright)
+```
+
+CI runs all of these on every pull request. If you only changed files under `content/`, `pnpm validate:content` is the one check to run locally — it verifies your markdown structure and quiz JSON will render correctly.
 
 ## 📋 Contribution Guidelines
 

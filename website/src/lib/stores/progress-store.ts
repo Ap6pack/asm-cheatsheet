@@ -15,6 +15,17 @@ interface ScenarioProgress {
   completedAt?: string;
 }
 
+export interface QuizResult {
+  bestScore: number;
+  totalQuestions: number;
+  attempts: number;
+  passedAt?: string;
+  lastAttemptAt: string;
+}
+
+/** Minimum percentage score required to pass a module quiz. */
+export const QUIZ_PASS_THRESHOLD = 70;
+
 interface ProgressState {
   // Learning module progress
   completedCriteria: Record<string, string[]>;
@@ -26,6 +37,9 @@ interface ProgressState {
   // Scenario progress
   scenarioProgress: Record<string, ScenarioProgress>;
 
+  // Quiz results keyed by module id
+  quizResults: Record<string, QuizResult>;
+
   // Actions
   toggleCriterion: (moduleId: string, criterionId: string) => void;
   startModule: (moduleId: string) => void;
@@ -33,15 +47,32 @@ interface ProgressState {
   getModuleProgress: (moduleId: string, totalCriteria: number) => number;
 
   startWorkflow: (workflowId: string) => void;
-  completeWorkflowStep: (workflowId: string, step: number) => void;
+  completeWorkflowStep: (
+    workflowId: string,
+    step: number,
+    totalSteps?: number
+  ) => void;
   isWorkflowComplete: (workflowId: string, totalSteps: number) => boolean;
 
   startScenario: (scenarioId: string) => void;
-  completeScenarioPhase: (scenarioId: string, phase: number) => void;
+  completeScenarioPhase: (
+    scenarioId: string,
+    phase: number,
+    totalPhases?: number
+  ) => void;
+
+  recordQuizAttempt: (
+    moduleId: string,
+    score: number,
+    totalQuestions: number
+  ) => void;
+  isQuizPassed: (moduleId: string) => boolean;
 
   // Stats
   getTotalModulesStarted: () => number;
   getTotalWorkflowsCompleted: () => number;
+  getTotalScenariosCompleted: () => number;
+  getTotalQuizzesPassed: () => number;
 
   // Reset
   resetAll: () => void;
@@ -52,6 +83,7 @@ const initialState = {
   moduleStarted: {} as Record<string, boolean>,
   workflowProgress: {} as Record<string, WorkflowProgress>,
   scenarioProgress: {} as Record<string, ScenarioProgress>,
+  quizResults: {} as Record<string, QuizResult>,
 };
 
 export const useProgressStore = create<ProgressState>()(
@@ -113,7 +145,11 @@ export const useProgressStore = create<ProgressState>()(
         });
       },
 
-      completeWorkflowStep: (workflowId: string, step: number) => {
+      completeWorkflowStep: (
+        workflowId: string,
+        step: number,
+        totalSteps?: number
+      ) => {
         set((state) => {
           const existing = state.workflowProgress[workflowId];
           if (!existing) return state;
@@ -122,6 +158,11 @@ export const useProgressStore = create<ProgressState>()(
             ? existing.completedSteps
             : [...existing.completedSteps, step];
 
+          const isNowComplete =
+            totalSteps !== undefined &&
+            totalSteps > 0 &&
+            completedSteps.length >= totalSteps;
+
           return {
             workflowProgress: {
               ...state.workflowProgress,
@@ -129,6 +170,7 @@ export const useProgressStore = create<ProgressState>()(
                 ...existing,
                 currentStep: step,
                 completedSteps,
+                completedAt: existing.completedAt ?? (isNowComplete ? new Date().toISOString() : undefined),
               },
             },
           };
@@ -158,7 +200,11 @@ export const useProgressStore = create<ProgressState>()(
         });
       },
 
-      completeScenarioPhase: (scenarioId: string, phase: number) => {
+      completeScenarioPhase: (
+        scenarioId: string,
+        phase: number,
+        totalPhases?: number
+      ) => {
         set((state) => {
           const existing = state.scenarioProgress[scenarioId];
           if (!existing) return state;
@@ -167,6 +213,11 @@ export const useProgressStore = create<ProgressState>()(
             ? existing.completedPhases
             : [...existing.completedPhases, phase];
 
+          const isNowComplete =
+            totalPhases !== undefined &&
+            totalPhases > 0 &&
+            completedPhases.length >= totalPhases;
+
           return {
             scenarioProgress: {
               ...state.scenarioProgress,
@@ -174,10 +225,43 @@ export const useProgressStore = create<ProgressState>()(
                 ...existing,
                 currentPhase: phase,
                 completedPhases,
+                completedAt: existing.completedAt ?? (isNowComplete ? new Date().toISOString() : undefined),
               },
             },
           };
         });
+      },
+
+      recordQuizAttempt: (
+        moduleId: string,
+        score: number,
+        totalQuestions: number
+      ) => {
+        set((state) => {
+          const existing = state.quizResults[moduleId];
+          const now = new Date().toISOString();
+          const percentage =
+            totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
+          const passed = percentage >= QUIZ_PASS_THRESHOLD;
+
+          return {
+            quizResults: {
+              ...state.quizResults,
+              [moduleId]: {
+                bestScore: Math.max(score, existing?.bestScore ?? 0),
+                totalQuestions,
+                attempts: (existing?.attempts ?? 0) + 1,
+                passedAt: existing?.passedAt ?? (passed ? now : undefined),
+                lastAttemptAt: now,
+              },
+            },
+          };
+        });
+      },
+
+      isQuizPassed: (moduleId: string) => {
+        const { quizResults } = get();
+        return quizResults[moduleId]?.passedAt !== undefined;
       },
 
       getTotalModulesStarted: () => {
@@ -186,10 +270,23 @@ export const useProgressStore = create<ProgressState>()(
       },
 
       getTotalWorkflowsCompleted: () => {
-        // Count workflows where completedAt is set
         const { workflowProgress } = get();
         return Object.values(workflowProgress).filter(
           (wp) => wp.completedAt !== undefined
+        ).length;
+      },
+
+      getTotalScenariosCompleted: () => {
+        const { scenarioProgress } = get();
+        return Object.values(scenarioProgress).filter(
+          (sp) => sp.completedAt !== undefined
+        ).length;
+      },
+
+      getTotalQuizzesPassed: () => {
+        const { quizResults } = get();
+        return Object.values(quizResults).filter(
+          (qr) => qr.passedAt !== undefined
         ).length;
       },
 

@@ -12,6 +12,9 @@ import type {
   Difficulty,
   TimeEstimate,
   SuccessCriterion,
+  Quiz,
+  QuizQuestion,
+  Guide,
 } from './types';
 
 // Base content directory - try multiple locations to support local dev and Vercel
@@ -939,3 +942,134 @@ export function extractTools(): Tool[] {
 
   return tools;
 }
+
+// ---- Quizzes (content/quizzes/module-N.json) ----
+
+/**
+ * Validate a parsed quiz file. Throws with a descriptive message so a
+ * malformed contribution fails the build instead of breaking pages silently.
+ */
+export function validateQuiz(data: unknown, sourceFile: string): Quiz {
+  const fail = (msg: string): never => {
+    throw new Error(`Invalid quiz in ${sourceFile}: ${msg}`);
+  };
+
+  if (typeof data !== 'object' || data === null) fail('not a JSON object');
+  const quiz = data as Record<string, unknown>;
+
+  if (typeof quiz.moduleId !== 'number') fail('"moduleId" must be a number');
+  if (
+    typeof quiz.passingScore !== 'number' ||
+    quiz.passingScore <= 0 ||
+    quiz.passingScore > 100
+  ) {
+    fail('"passingScore" must be a percentage between 1 and 100');
+  }
+  if (!Array.isArray(quiz.questions) || quiz.questions.length === 0) {
+    fail('"questions" must be a non-empty array');
+  }
+
+  const seenIds = new Set<string>();
+  for (const [i, raw] of (quiz.questions as unknown[]).entries()) {
+    if (typeof raw !== 'object' || raw === null) {
+      fail(`question ${i + 1} is not an object`);
+    }
+    const q = raw as Record<string, unknown>;
+    if (typeof q.id !== 'string' || q.id.length === 0) {
+      fail(`question ${i + 1} is missing an "id"`);
+    }
+    if (seenIds.has(q.id as string)) {
+      fail(`duplicate question id "${q.id}"`);
+    }
+    seenIds.add(q.id as string);
+    if (typeof q.question !== 'string' || q.question.length === 0) {
+      fail(`question "${q.id}" is missing "question" text`);
+    }
+    if (
+      !Array.isArray(q.options) ||
+      q.options.length < 2 ||
+      !q.options.every((o) => typeof o === 'string' && o.length > 0)
+    ) {
+      fail(`question "${q.id}" must have at least 2 non-empty string options`);
+    }
+    if (
+      typeof q.correctIndex !== 'number' ||
+      !Number.isInteger(q.correctIndex) ||
+      q.correctIndex < 0 ||
+      q.correctIndex >= (q.options as string[]).length
+    ) {
+      fail(`question "${q.id}" has an out-of-range "correctIndex"`);
+    }
+    if (typeof q.explanation !== 'string' || q.explanation.length === 0) {
+      fail(`question "${q.id}" is missing an "explanation"`);
+    }
+  }
+
+  return quiz as unknown as Quiz;
+}
+
+export function extractQuizzes(): Quiz[] {
+  const quizzesDir = path.join(getContentDir(), 'quizzes');
+  if (!fs.existsSync(quizzesDir)) return [];
+
+  const files = fs
+    .readdirSync(quizzesDir)
+    .filter((f) => f.endsWith('.json'))
+    .sort();
+
+  return files.map((file) => {
+    const raw = fs.readFileSync(path.join(quizzesDir, file), 'utf-8');
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
+      throw new Error(
+        `Invalid quiz in quizzes/${file}: not valid JSON (${(err as Error).message})`
+      );
+    }
+    return validateQuiz(parsed, `quizzes/${file}`);
+  });
+}
+
+// ---- Guides (content/guides/*.md) ----
+
+export function extractGuides(): Guide[] {
+  const guidesDir = path.join(getContentDir(), 'guides');
+  if (!fs.existsSync(guidesDir)) return [];
+
+  const files = fs.readdirSync(guidesDir).filter((f) => f.endsWith('.md'));
+
+  return files.map((file) => {
+    const content = fs.readFileSync(path.join(guidesDir, file), 'utf-8');
+    const lines = content.split('\n');
+    const firstHeading = lines.find((l) => l.startsWith('# '));
+    const title = firstHeading
+      ? firstHeading.replace(/^#\s+/, '').trim()
+      : file.replace('.md', '');
+
+    // First paragraph after the title heading becomes the description
+    let description = '';
+    let foundHeading = false;
+    for (const line of lines) {
+      if (line.startsWith('# ')) {
+        foundHeading = true;
+        continue;
+      }
+      if (foundHeading && line.trim() && !line.startsWith('#')) {
+        description = line.trim();
+        break;
+      }
+    }
+
+    return {
+      slug: file.replace('.md', ''),
+      title,
+      description,
+      file,
+      content,
+    };
+  });
+}
+
+// Used by tests and validation scripts that need to mirror quiz question typing
+export type { QuizQuestion };

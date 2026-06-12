@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Learning Platform Modernization**
+  - **Module knowledge-check quizzes** - All 12 learning modules now end with an interactive quiz (60 questions total, defined in [content/quizzes/](content/quizzes/)) with explanations, pass tracking, and retakes
+  - **[content/quizzes/README.md](content/quizzes/README.md)** - Contributor guide for the quiz JSON format, schema-validated in CI
+  - **Content validation script** (`pnpm validate:content`) - CI now fails loudly when content edits break module, quiz, workflow, scenario, or search-index parsing
+  - **FlexSearch-powered site search** - Cmd+K search now uses an indexed engine with prefix matching and weighted field ranking instead of naive substring matching
+  - **"Edit this page on GitHub" links** on learning modules and guides to lower the barrier to contribution
+  - **GitHub issue templates and a pull request template** for bug reports and content suggestions
+  - **E2E tests in CI** - Playwright suite (including new quiz coverage) now runs on every push and pull request
+
 - **CI/CD Pipeline Templates**
   - **[automation/ci-cd-templates/github-actions/asm-workflow.yml](automation/ci-cd-templates/github-actions/asm-workflow.yml)** - GitHub Actions workflow for automated ASM scanning
   - **[automation/ci-cd-templates/gitlab/.gitlab-ci.yml](automation/ci-cd-templates/gitlab/.gitlab-ci.yml)** - GitLab CI pipeline for enterprise-grade ASM scanning with parallel processing
@@ -38,6 +47,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **[README.md](README.md)** - Updated with references to new quick reference materials, implementation guide, and reading list
 - **[CONTRIBUTORS.md](CONTRIBUTORS.md)**, **[GETTING_STARTED.md](GETTING_STARTED.md)** - Minor documentation and formatting improvements
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Added website development workflow and quiz contribution guidance
+
+### Fixed
+- **Workflow and scenario completion tracking** - Completing the final step/phase now records completion; the dashboard previously always showed 0 completed
+- **Dashboard "modules completed" metric** - Now counts modules whose quiz was passed instead of modules with any checkbox ticked
+- **Guides missing from search and sitemap** - Guides are now indexed for search and included in sitemap.xml
+- **Guide pages broke on Vercel builds** - Guide routes now use the shared content loader, which resolves the content directory in all deploy environments
+- **Hardcoded site URL** - Sitemap generation respects `NEXT_PUBLIC_SITE_URL`
 
 ### Planned
 - Docker setup files for containerized ASM tools deployment

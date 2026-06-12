@@ -77,9 +77,9 @@ export function SteppedRunner({ id, title, steps, mode }: SteppedRunnerProps) {
 
   const goNext = () => {
     if (isScenario) {
-      store.completeScenarioPhase(id, currentStep);
+      store.completeScenarioPhase(id, currentStep, steps.length);
     } else {
-      store.completeWorkflowStep(id, currentStep);
+      store.completeWorkflowStep(id, currentStep, steps.length);
     }
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);

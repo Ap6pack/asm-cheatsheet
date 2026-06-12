@@ -5,6 +5,8 @@ import type {
   Scenario,
   CaseStudy,
   Tool,
+  Quiz,
+  Guide,
   SearchEntry,
 } from './types';
 import {
@@ -14,6 +16,8 @@ import {
   extractScenarios,
   extractCaseStudies,
   extractTools,
+  extractQuizzes,
+  extractGuides,
 } from './extractors';
 
 // Simple in-memory cache
@@ -23,6 +27,8 @@ let workflowsCache: Workflow[] | null = null;
 let scenariosCache: Scenario[] | null = null;
 let caseStudiesCache: CaseStudy[] | null = null;
 let toolsCache: Tool[] | null = null;
+let quizzesCache: Quiz[] | null = null;
+let guidesCache: Guide[] | null = null;
 let searchEntriesCache: SearchEntry[] | null = null;
 
 export async function getAllModules(): Promise<LearningModule[]> {
@@ -65,6 +71,27 @@ export async function getAllTools(): Promise<Tool[]> {
     toolsCache = extractTools();
   }
   return toolsCache;
+}
+
+export async function getAllQuizzes(): Promise<Quiz[]> {
+  if (!quizzesCache) {
+    quizzesCache = extractQuizzes();
+  }
+  return quizzesCache;
+}
+
+export async function getQuizForModule(
+  moduleId: number
+): Promise<Quiz | null> {
+  const quizzes = await getAllQuizzes();
+  return quizzes.find((q) => q.moduleId === moduleId) ?? null;
+}
+
+export async function getAllGuides(): Promise<Guide[]> {
+  if (!guidesCache) {
+    guidesCache = extractGuides();
+  }
+  return guidesCache;
 }
 
 export async function getSearchEntries(): Promise<SearchEntry[]> {
@@ -167,6 +194,22 @@ async function buildSearchEntries(): Promise<SearchEntry[]> {
     });
   }
 
+  const guides = await getAllGuides();
+  for (const guide of guides) {
+    entries.push({
+      id: `guide-${guide.slug}`,
+      title: guide.title,
+      type: 'guide',
+      // Strip markdown syntax noise and cap length to keep the index lean
+      content: [guide.title, guide.description, guide.content]
+        .join(' ')
+        .replace(/[#*`\[\]()>|-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .slice(0, 5000),
+      url: `/guides/${guide.slug}`,
+    });
+  }
+
   return entries;
 }
 
@@ -180,5 +223,7 @@ export function clearCache(): void {
   scenariosCache = null;
   caseStudiesCache = null;
   toolsCache = null;
+  quizzesCache = null;
+  guidesCache = null;
   searchEntriesCache = null;
 }

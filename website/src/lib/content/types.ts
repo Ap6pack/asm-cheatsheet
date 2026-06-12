@@ -110,6 +110,30 @@ export interface Tool {
   content: string; // full markdown
 }
 
+// Quiz question (from content/quizzes/module-N.json)
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
+export interface Quiz {
+  moduleId: number;
+  passingScore: number; // percentage required to pass
+  questions: QuizQuestion[];
+}
+
+// Guide from content/guides/*.md
+export interface Guide {
+  slug: string;
+  title: string;
+  description: string;
+  file: string;
+  content: string;
+}
+
 // Search index entry
 export interface SearchEntry {
   id: string;

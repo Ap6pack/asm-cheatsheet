@@ -19,16 +19,11 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-
-interface SearchEntry {
-  id: string;
-  title: string;
-  type: "module" | "command" | "workflow" | "scenario" | "case-study" | "tool" | "guide";
-  content: string;
-  url: string;
-  category?: string;
-  difficulty?: string;
-}
+import {
+  createSearchIndex,
+  type ClientSearchIndex,
+} from "@/lib/search/client-search";
+import type { SearchEntry } from "@/lib/content/types";
 
 const typeIcons: Record<SearchEntry["type"], React.ElementType> = {
   module: GraduationCap,
@@ -50,28 +45,6 @@ const typeLabels: Record<SearchEntry["type"], string> = {
   guide: "Guide",
 };
 
-function searchEntries(entries: SearchEntry[], query: string): SearchEntry[] {
-  if (!query || query.trim().length < 2) return [];
-
-  const terms = query.toLowerCase().split(/\s+/).filter(t => t.length > 1);
-  if (terms.length === 0) return [];
-
-  return entries
-    .map((entry) => {
-      let score = 0;
-      for (const term of terms) {
-        if (entry.title.toLowerCase().includes(term)) score += 10;
-        if (entry.category?.toLowerCase().includes(term)) score += 5;
-        if (entry.content.toLowerCase().includes(term)) score += 1;
-      }
-      return { entry, score };
-    })
-    .filter((item) => item.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 20)
-    .map((item) => item.entry);
-}
-
 export function SearchDialog() {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
@@ -80,14 +53,17 @@ export function SearchDialog() {
   const [loading, setLoading] = React.useState(false);
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const [searchIndex, setSearchIndex] =
+    React.useState<ClientSearchIndex | null>(null);
 
-  // Fetch search data on first open
+  // Fetch search data and build the FlexSearch index on first open
   React.useEffect(() => {
     if (open && entries.length === 0 && !loading) {
       setLoading(true);
       fetch("/search-data.json")
         .then((res) => res.json())
-        .then((data) => {
+        .then((data: SearchEntry[]) => {
+          setSearchIndex(createSearchIndex(data));
           setEntries(data);
           setLoading(false);
         })
@@ -108,8 +84,8 @@ export function SearchDialog() {
   }, []);
 
   const results = React.useMemo(
-    () => searchEntries(entries, query),
-    [entries, query]
+    () => (searchIndex ? searchIndex.search(query) : []),
+    [searchIndex, query]
   );
 
   // Reset selection when results change

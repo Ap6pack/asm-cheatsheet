@@ -1,0 +1,66 @@
+{
+  "moduleId": 12,
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "m12-q1",
+      "question": "What does an ASM program charter define?",
+      "options": [
+        "The brand colors for security reports",
+        "The program's mission, scope, roles, and success metrics",
+        "The list of tools that are forbidden",
+        "Individual performance reviews"
+      ],
+      "correctIndex": 1,
+      "explanation": "A charter is the program's foundation document: why the program exists, what's in scope, who is responsible, and how success will be measured."
+    },
+    {
+      "id": "m12-q2",
+      "question": "Which is a meaningful success metric for an ASM program?",
+      "options": [
+        "Total gigabytes of scan data collected",
+        "Reduction in unknown assets and time-to-detect for new exposures",
+        "Number of tools licensed",
+        "Hours the team spent scanning"
+      ],
+      "correctIndex": 1,
+      "explanation": "Outcome metrics — fewer unknown assets, faster detection and remediation of new exposures — measure actual risk reduction. Activity metrics like data volume do not."
+    },
+    {
+      "id": "m12-q3",
+      "question": "How should ASM results be communicated to executives?",
+      "options": [
+        "Raw tool output with full port lists",
+        "In business terms: risk, exposure trends, and the impact of investment",
+        "Only when a breach occurs",
+        "Through detailed packet captures"
+      ],
+      "correctIndex": 1,
+      "explanation": "Executive reporting frameworks translate findings into business risk and trends — what exposure means for the organization and what the program's investment is achieving."
+    },
+    {
+      "id": "m12-q4",
+      "question": "Why does an enterprise ASM program require cross-functional coordination?",
+      "options": [
+        "Because remediation, ownership, and authorization span IT, development, legal, and business teams beyond security",
+        "To increase the number of meetings",
+        "Because security teams cannot use scanning tools alone",
+        "It doesn't — ASM is purely a security team activity"
+      ],
+      "correctIndex": 0,
+      "explanation": "Security finds the exposure, but IT owns the server, a product team owns the app, and legal owns the disclosure question. Without cross-functional buy-in, findings don't get fixed."
+    },
+    {
+      "id": "m12-q5",
+      "question": "What is the strongest way to justify ASM program budget?",
+      "options": [
+        "Pointing to what competitor companies spend",
+        "Tying program costs to measured risk reduction and incidents prevented or caught early",
+        "Requesting the same budget every year by default",
+        "Listing the features of commercial ASM platforms"
+      ],
+      "correctIndex": 1,
+      "explanation": "Budget cases built on evidence — unknown assets eliminated, exposures caught before exploitation, faster remediation — connect spend directly to risk reduction the business cares about."
+    }
+  ]
+}

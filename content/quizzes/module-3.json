@@ -1,0 +1,66 @@
+{
+  "moduleId": 3,
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "m3-q1",
+      "question": "Which command performs passive subdomain enumeration with Amass?",
+      "options": [
+        "amass enum -passive -d example.com",
+        "amass brute -d example.com",
+        "amass scan --all example.com",
+        "amass enum -active -ip example.com"
+      ],
+      "correctIndex": 0,
+      "explanation": "`amass enum -passive -d example.com` queries third-party data sources without sending traffic to the target — the safest way to start discovery."
+    },
+    {
+      "id": "m3-q2",
+      "question": "After discovering subdomains, what does httpx do in the workflow?",
+      "options": [
+        "Brute-forces login pages",
+        "Probes which discovered hosts are serving live web services",
+        "Downloads the full website content for offline analysis",
+        "Registers the subdomains to your account"
+      ],
+      "correctIndex": 1,
+      "explanation": "httpx takes a list of hosts and probes them to identify which ones respond with live web services, narrowing your list to assets that are actually reachable."
+    },
+    {
+      "id": "m3-q3",
+      "question": "What is the purpose of taking screenshots with a tool like gowitness?",
+      "options": [
+        "To exploit vulnerabilities in the web server",
+        "To create visual evidence for reconnaissance, triage, and change detection",
+        "To bypass authentication on login pages",
+        "To measure page load performance"
+      ],
+      "correctIndex": 1,
+      "explanation": "Screenshots let you visually triage many services quickly (login portals, default pages, dashboards) and support diffing over time to detect unauthorized changes."
+    },
+    {
+      "id": "m3-q4",
+      "question": "Which target is appropriate for your first ASM scan?",
+      "options": [
+        "Your favorite news website",
+        "A competitor's infrastructure",
+        "A domain you own or are explicitly authorized to test",
+        "A randomly selected IP range"
+      ],
+      "correctIndex": 2,
+      "explanation": "Only scan assets you own or have explicit permission to test. Even passive techniques should be practiced against your own or designated practice targets."
+    },
+    {
+      "id": "m3-q5",
+      "question": "What is the correct order of the first-scan workflow?",
+      "options": [
+        "Screenshot services, then enumerate subdomains, then probe for live hosts",
+        "Probe for live hosts, then screenshot, then enumerate subdomains",
+        "Enumerate subdomains, then probe for live web services, then screenshot and analyze",
+        "Analyze results, then enumerate subdomains, then probe hosts"
+      ],
+      "correctIndex": 2,
+      "explanation": "The pipeline flows from broad to specific: discover subdomains (amass), find which are live web services (httpx), capture screenshots (gowitness), then analyze and document results."
+    }
+  ]
+}
