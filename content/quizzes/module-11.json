@@ -1,0 +1,66 @@
+{
+  "moduleId": 11,
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "m11-q1",
+      "question": "What should you do before writing any code for a custom ASM tool?",
+      "options": [
+        "Buy a domain name for the project",
+        "Identify the gap in existing tools and design the solution and implementation approach",
+        "Write the press release",
+        "Choose a logo"
+      ],
+      "correctIndex": 1,
+      "explanation": "Tool development starts with gap analysis: what do Amass, httpx, nuclei, and friends not do that you need? Design against a real gap before implementing."
+    },
+    {
+      "id": "m11-q2",
+      "question": "Which is a security best practice when developing reconnaissance tooling?",
+      "options": [
+        "Hardcoding API credentials for convenience",
+        "Validating inputs, handling secrets safely, and building in rate limiting and safe defaults",
+        "Disabling TLS verification to avoid certificate errors",
+        "Running everything as root"
+      ],
+      "correctIndex": 1,
+      "explanation": "Security tools must themselves be secure and respectful: validate untrusted input, keep credentials out of code, default to conservative scanning behavior."
+    },
+    {
+      "id": "m11-q3",
+      "question": "Why is documentation critical for a custom tool you plan to open source?",
+      "options": [
+        "GitHub requires a README before you can push",
+        "Without clear docs on installation, usage, and scope of use, others cannot adopt or contribute to the tool",
+        "Documentation improves runtime performance",
+        "It is only needed for commercial products"
+      ],
+      "correctIndex": 1,
+      "explanation": "Adoption and contribution are what make open source work. Clear installation steps, usage examples, and ethical-use guidance are what turn working code into a usable community tool."
+    },
+    {
+      "id": "m11-q4",
+      "question": "What belongs in the testing phase before releasing a custom ASM tool?",
+      "options": [
+        "Performance testing, security review, and gathering community feedback",
+        "Only checking that it compiles",
+        "Testing exclusively against production targets you don't own",
+        "Skipping tests since recon tools are read-only"
+      ],
+      "correctIndex": 0,
+      "explanation": "Before release: verify performance under realistic load, review the tool's own security posture, and get feedback — bugs in recon tools can harm targets or produce misleading results."
+    },
+    {
+      "id": "m11-q5",
+      "question": "When you improve an existing open-source ASM tool, what is generally the best path?",
+      "options": [
+        "Keep the improvement private to maintain an advantage",
+        "Contribute the change upstream so the whole community benefits and you don't maintain a permanent fork",
+        "Republish the whole tool under your own name",
+        "Sell the patch to the maintainers"
+      ],
+      "correctIndex": 1,
+      "explanation": "Contributing upstream shares the benefit, gets your code reviewed by maintainers, and avoids the long-term cost of maintaining a divergent fork."
+    }
+  ]
+}

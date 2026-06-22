@@ -1,0 +1,66 @@
+{
+  "moduleId": 9,
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "m9-q1",
+      "question": "What does IOC stand for in threat intelligence?",
+      "options": [
+        "Internal Operations Center",
+        "Indicator of Compromise",
+        "Index of Criticality",
+        "Inventory of Components"
+      ],
+      "correctIndex": 1,
+      "explanation": "An Indicator of Compromise is an artifact (IP, domain, file hash, etc.) associated with malicious activity, used to detect or correlate threats against your assets."
+    },
+    {
+      "id": "m9-q2",
+      "question": "Why correlate ASM findings with threat intelligence feeds?",
+      "options": [
+        "To make the dataset larger",
+        "To prioritize exposures based on real threat context, such as actively exploited CVEs affecting your discovered services",
+        "Because ASM data is useless on its own",
+        "To replace vulnerability scanning entirely"
+      ],
+      "correctIndex": 1,
+      "explanation": "An exposed service running software with an actively exploited CVE matters far more than one with no known threat activity. Threat context turns an asset inventory into a prioritized risk picture."
+    },
+    {
+      "id": "m9-q3",
+      "question": "Which inputs typically feed a risk prioritization score for an ASM finding?",
+      "options": [
+        "Only the CVSS score of any associated CVE",
+        "Asset exposure, threat context, and business criticality combined",
+        "The alphabetical position of the hostname",
+        "The age of the domain registration"
+      ],
+      "correctIndex": 1,
+      "explanation": "Good prioritization blends how exposed the asset is, whether threats actively target it, and how much the business depends on it — not just a raw severity number."
+    },
+    {
+      "id": "m9-q4",
+      "question": "Why must threat data be parsed and normalized before correlation?",
+      "options": [
+        "Threat feeds arrive in different formats and schemas, and correlation requires a common structure",
+        "Normalization makes the data legally usable",
+        "Raw threat data is always encrypted",
+        "To reduce storage costs"
+      ],
+      "correctIndex": 0,
+      "explanation": "Feeds vary wildly — JSON APIs, CSV lists, STIX bundles. Normalizing them into a consistent internal format is what makes automated matching against your asset data possible."
+    },
+    {
+      "id": "m9-q5",
+      "question": "Which are typical examples of threat intelligence sources for ASM?",
+      "options": [
+        "CVE databases, IOC feeds, and breach/credential-leak data",
+        "Marketing analytics platforms",
+        "Server uptime dashboards",
+        "Code style linters"
+      ],
+      "correctIndex": 0,
+      "explanation": "ASM programs commonly integrate CVE/vulnerability feeds, IOC lists, and leaked-credential or breach data to enrich and prioritize what discovery has found."
+    }
+  ]
+}

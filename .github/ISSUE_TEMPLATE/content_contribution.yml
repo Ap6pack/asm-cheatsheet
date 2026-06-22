@@ -1,0 +1,36 @@
+name: Content Suggestion
+description: Suggest a new tool, technique, quiz question, module, or improvement to existing content
+labels: ["content", "enhancement"]
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: What kind of content?
+      options:
+        - New tool or tool update
+        - New or improved learning module
+        - Quiz questions
+        - Workflow or scenario
+        - Case study
+        - Guide or documentation improvement
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Describe your suggestion
+      description: What should be added or changed, and why is it valuable for people learning ASM?
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links to tools, write-ups, or documentation that support this suggestion.
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I'm willing to open a pull request for this myself

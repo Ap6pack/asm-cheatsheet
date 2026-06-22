@@ -13,9 +13,11 @@ import {
   getAllScenarios,
   getAllCaseStudies,
   getAllTools,
+  getAllGuides,
 } from '../src/lib/content/loader';
 
-const baseUrl = 'https://asm-cheatsheet.vercel.app';
+const baseUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://asm-cheatsheet.vercel.app';
 
 function sitemapEntry(url: string, priority: number): string {
   return `  <url>
@@ -53,6 +55,9 @@ async function main() {
 
   const tools = await getAllTools();
   for (const t of tools) urls.push(sitemapEntry(`${baseUrl}/tools/${t.slug}`, 0.6));
+
+  const guides = await getAllGuides();
+  for (const g of guides) urls.push(sitemapEntry(`${baseUrl}/guides/${g.slug}`, 0.6));
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

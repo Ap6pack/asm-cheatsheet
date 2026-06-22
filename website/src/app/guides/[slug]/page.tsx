@@ -1,17 +1,13 @@
 import { notFound } from "next/navigation";
-import * as fs from "fs";
-import * as path from "path";
+import { getAllGuides } from "@/lib/content/loader";
 import { MDXRenderer } from "@/components/content/mdx-renderer";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
-
-function getGuideFiles(): string[] {
-  const guidesDir = path.resolve(process.cwd(), "../content/guides");
-  return fs.readdirSync(guidesDir).filter((f) => f.endsWith(".md"));
-}
+import { EditOnGitHub } from "@/components/content/edit-on-github";
+import { Separator } from "@/components/ui/separator";
 
 export async function generateStaticParams() {
-  const files = getGuideFiles();
-  return files.map((f) => ({ slug: f.replace(".md", "") }));
+  const guides = await getAllGuides();
+  return guides.map((g) => ({ slug: g.slug }));
 }
 
 export default async function GuideDetailPage({
@@ -20,17 +16,19 @@ export default async function GuideDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const guidesDir = path.resolve(process.cwd(), "../content/guides");
-  const filePath = path.join(guidesDir, `${slug}.md`);
+  const guides = await getAllGuides();
+  const guide = guides.find((g) => g.slug === slug);
 
-  if (!fs.existsSync(filePath)) notFound();
-
-  const content = fs.readFileSync(filePath, "utf-8");
+  if (!guide) notFound();
 
   return (
     <div className="max-w-4xl space-y-8">
       <Breadcrumbs />
-      <MDXRenderer content={content} />
+      <MDXRenderer content={guide.content} />
+      <Separator />
+      <footer className="flex justify-end">
+        <EditOnGitHub contentPath={`guides/${guide.file}`} />
+      </footer>
     </div>
   );
 }

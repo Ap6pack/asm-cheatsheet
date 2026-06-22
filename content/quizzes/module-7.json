@@ -1,0 +1,66 @@
+{
+  "moduleId": 7,
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "m7-q1",
+      "question": "Why must automation scripts implement rate limiting?",
+      "options": [
+        "To keep cloud bills low",
+        "Unattended scripts can hammer targets relentlessly, so respectful pacing must be built in rather than relying on a human to slow down",
+        "Because cron jobs cannot run fast commands",
+        "Rate limiting is only needed for active exploits"
+      ],
+      "correctIndex": 1,
+      "explanation": "When a human runs a tool they can stop it; automation runs unattended and repeatedly. Built-in delays and limits keep continuous monitoring from harming targets or getting blocked."
+    },
+    {
+      "id": "m7-q2",
+      "question": "In change monitoring, what is a 'baseline'?",
+      "options": [
+        "The minimum number of assets you must monitor",
+        "A known-good snapshot of the current state that future scans are compared against to detect changes",
+        "The first vulnerability ever found",
+        "A list of approved scanning tools"
+      ],
+      "correctIndex": 1,
+      "explanation": "Change detection works by diffing: you establish a baseline of the current attack surface, then alert on deviations — new subdomains, changed pages, newly opened ports."
+    },
+    {
+      "id": "m7-q3",
+      "question": "Why are error handling and logging especially important in ASM automation?",
+      "options": [
+        "They make scripts run faster",
+        "Scripts run unattended, so silent failures mean monitoring gaps you won't notice until something is missed",
+        "Logs are required to publish scripts on GitHub",
+        "Error handling prevents all bugs"
+      ],
+      "correctIndex": 1,
+      "explanation": "A monitoring script that fails silently gives false confidence — you think you're watching your attack surface but you're not. Logging and error handling make failures visible."
+    },
+    {
+      "id": "m7-q4",
+      "question": "What is the typical mechanism for running continuous ASM monitoring?",
+      "options": [
+        "Manually running scans whenever you remember",
+        "Scheduled execution via cron jobs or CI/CD pipelines",
+        "Asking the hosting provider to notify you of changes",
+        "Running one extremely long scan that never finishes"
+      ],
+      "correctIndex": 1,
+      "explanation": "Continuous monitoring means scheduled, repeatable runs — cron, CI/CD schedules, or workflow templates — producing comparable results over time."
+    },
+    {
+      "id": "m7-q5",
+      "question": "What makes an alerting mechanism useful rather than noisy?",
+      "options": [
+        "It sends a notification after every scan regardless of results",
+        "It alerts only on meaningful changes, such as new assets or modified services",
+        "It only sends alerts during business hours",
+        "It emails the entire company for every finding"
+      ],
+      "correctIndex": 1,
+      "explanation": "Alert fatigue kills monitoring programs. Good alerting is diff-based: notify when something changed or appeared, not on every routine run."
+    }
+  ]
+}

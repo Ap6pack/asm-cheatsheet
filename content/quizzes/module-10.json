@@ -1,0 +1,66 @@
+{
+  "moduleId": 10,
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "m10-q1",
+      "question": "Why do enterprise ASM programs use distributed scanning architectures?",
+      "options": [
+        "A single machine cannot cover large asset inventories within useful timeframes, and distribution helps with scale, rate limits, and geographic coverage",
+        "Distributed scanning is always cheaper",
+        "It is a legal requirement for companies over 1000 employees",
+        "Single-node scanning produces inaccurate results"
+      ],
+      "correctIndex": 0,
+      "explanation": "At enterprise scale you're monitoring thousands of assets continuously. Distributing workers handles volume, respects per-source rate limits, and can scan from multiple network vantage points."
+    },
+    {
+      "id": "m10-q2",
+      "question": "What is a key data consideration when designing enterprise-scale ASM?",
+      "options": [
+        "Storing everything in a single spreadsheet",
+        "Planning data flow, aggregation, and storage (e.g., ElasticSearch) before building, since scan volume grows quickly",
+        "Deleting all results after each scan",
+        "Avoiding databases to keep things simple"
+      ],
+      "correctIndex": 1,
+      "explanation": "Continuous scanning of a large estate produces large, growing datasets. Architecture work — data flow, aggregation, indexed storage like ElasticSearch/Kibana — must be planned up front."
+    },
+    {
+      "id": "m10-q3",
+      "question": "Why should an enterprise ASM platform expose API interfaces?",
+      "options": [
+        "APIs are required to use Go-based tools",
+        "So other security systems (SIEM, ticketing, CMDB) can integrate with and act on ASM data",
+        "To allow the public to query your asset inventory",
+        "APIs make the platform run faster"
+      ],
+      "correctIndex": 1,
+      "explanation": "ASM data is most valuable when it flows into the rest of the security stack: SIEM correlation, automatic ticket creation, asset-inventory reconciliation. APIs enable that integration."
+    },
+    {
+      "id": "m10-q4",
+      "question": "Beyond monitoring targets, what does a production ASM platform itself need?",
+      "options": [
+        "Monitoring and alerting for the platform's own health, so scanning failures don't create silent coverage gaps",
+        "A public status page",
+        "Daily manual restarts",
+        "A dedicated physical data center"
+      ],
+      "correctIndex": 0,
+      "explanation": "The watchers need watching: if scanners die or queues back up silently, you lose attack surface visibility without knowing it. Operational monitoring of the platform is essential."
+    },
+    {
+      "id": "m10-q5",
+      "question": "How do you demonstrate that an ASM architecture performs at scale?",
+      "options": [
+        "By assuming it will work because the tools are popular",
+        "By load-testing the pipeline against realistic asset volumes and measuring throughput and completeness",
+        "By running it once against a single domain",
+        "By reading the tool documentation"
+      ],
+      "correctIndex": 1,
+      "explanation": "Scale claims need evidence: process realistic volumes, measure scan throughput, data pipeline latency, and result completeness, and find the bottlenecks before production does."
+    }
+  ]
+}

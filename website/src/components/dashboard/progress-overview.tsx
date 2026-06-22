@@ -13,7 +13,7 @@ interface ProgressOverviewProps {
 
 export function ProgressOverview({ totalModules, totalWorkflows, totalScenarios }: ProgressOverviewProps) {
   const hydrated = useHydration();
-  const { moduleStarted, workflowProgress, scenarioProgress, completedCriteria } = useProgressStore();
+  const { moduleStarted, workflowProgress, scenarioProgress, quizResults } = useProgressStore();
 
   if (!hydrated) {
     return (
@@ -30,10 +30,10 @@ export function ProgressOverview({ totalModules, totalWorkflows, totalScenarios 
   }
 
   const modulesStarted = Object.values(moduleStarted).filter(Boolean).length;
-  const modulesCompleted = Object.keys(completedCriteria).filter(key => {
-    const criteria = completedCriteria[key];
-    return criteria && criteria.length > 0;
-  }).length;
+  // A module counts as completed once its knowledge check has been passed
+  const modulesCompleted = Object.values(quizResults).filter(
+    (qr) => qr.passedAt
+  ).length;
 
   const workflowsStarted = Object.keys(workflowProgress).length;
   const workflowsCompleted = Object.values(workflowProgress).filter(wp => wp.completedAt).length;

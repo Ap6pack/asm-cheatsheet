@@ -1,0 +1,66 @@
+{
+  "moduleId": 4,
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "m4-q1",
+      "question": "What is the key difference between passive and active enumeration?",
+      "options": [
+        "Passive enumeration is slower but finds more assets",
+        "Passive enumeration queries third-party data sources without sending traffic to the target; active enumeration directly interacts with target systems",
+        "Active enumeration is always illegal",
+        "Passive enumeration only works on cloud assets"
+      ],
+      "correctIndex": 1,
+      "explanation": "Passive techniques (certificate transparency, passive DNS, search engines) never touch the target. Active techniques (DNS brute-forcing, port scans) send traffic to target systems and require authorization."
+    },
+    {
+      "id": "m4-q2",
+      "question": "What does the nmap flag `-sV` do?",
+      "options": [
+        "Runs a vulnerability scan",
+        "Enables verbose output",
+        "Probes open ports to detect service and version information",
+        "Scans using SYN packets only"
+      ],
+      "correctIndex": 2,
+      "explanation": "`-sV` is service version detection: nmap probes open ports to identify what software and version is running, which is essential for fingerprinting your attack surface."
+    },
+    {
+      "id": "m4-q3",
+      "question": "Beyond checking if a host is alive, what can httpx detect about a web service?",
+      "options": [
+        "The physical location of the server administrator",
+        "Technologies in use, response codes, titles, and other response attributes",
+        "User passwords",
+        "The cost of the hosting plan"
+      ],
+      "correctIndex": 1,
+      "explanation": "httpx supports technology detection and response analysis — status codes, page titles, content length, and tech fingerprints — with filtering and output options for pipeline use."
+    },
+    {
+      "id": "m4-q4",
+      "question": "GoWitness and EyeWitness are both examples of what category of ASM tool?",
+      "options": [
+        "Subdomain enumeration tools",
+        "Port scanners",
+        "Web screenshot and visual reconnaissance tools",
+        "Password crackers"
+      ],
+      "correctIndex": 2,
+      "explanation": "Both capture screenshots of web interfaces in bulk and generate reports, supporting visual triage and change detection across many discovered services."
+    },
+    {
+      "id": "m4-q5",
+      "question": "Why does it matter that tools like nmap support multiple output formats (normal, XML, grepable)?",
+      "options": [
+        "Different formats produce different scan results",
+        "Structured outputs let you feed results into other tools and automation pipelines",
+        "XML output scans faster than normal output",
+        "Only XML output is admissible as legal evidence"
+      ],
+      "correctIndex": 1,
+      "explanation": "ASM is a pipeline discipline: structured output formats (XML, JSON, grepable) make it possible to parse, correlate, and chain results between tools rather than reading them by hand."
+    }
+  ]
+}

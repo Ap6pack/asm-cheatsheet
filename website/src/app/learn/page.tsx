@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowRight, CheckCircle } from "lucide-react";
 import { ModuleProgressCard } from "@/components/learning/module-progress-card";
 import { TrackProgressSummary } from "@/components/learning/track-progress-summary";
+import { ContinueLearning } from "@/components/learning/continue-learning";
 
 export const metadata = {
   title: "Learning Path - ASM Cheatsheet",
@@ -58,6 +59,13 @@ export default async function LearnPage() {
           Surface Management.
         </p>
       </div>
+
+      {/* Continue learning CTA (only shows if user has progress) */}
+      <ContinueLearning
+        modules={[...modules]
+          .sort((a, b) => a.id - b.id)
+          .map((m) => ({ id: `module-${m.id}`, title: m.title }))}
+      />
 
       {/* Track progress summary (only shows if user has started) */}
       <TrackProgressSummary tracks={trackProgressData} />

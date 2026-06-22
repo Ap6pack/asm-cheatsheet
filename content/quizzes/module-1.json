@@ -1,0 +1,66 @@
+{
+  "moduleId": 1,
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "m1-q1",
+      "question": "Which statement best describes Attack Surface Management (ASM)?",
+      "options": [
+        "A one-time penetration test of known infrastructure",
+        "The continuous discovery, monitoring, prioritization, and tracking of digital assets that could be attacked",
+        "A firewall configuration methodology",
+        "A compliance audit framework for cloud providers"
+      ],
+      "correctIndex": 1,
+      "explanation": "ASM is a continuous process covering discovery, monitoring, prioritization, and tracking of internal and external digital assets — including unknown, unmanaged, third-party, and ephemeral systems."
+    },
+    {
+      "id": "m1-q2",
+      "question": "What is a key capability of ASM that traditional vulnerability scanning lacks?",
+      "options": [
+        "Scanning for known CVEs",
+        "Generating severity scores",
+        "Discovering unknown assets outside a predefined scope",
+        "Producing PDF reports"
+      ],
+      "correctIndex": 2,
+      "explanation": "Vulnerability scanners require a defined scope. ASM finds unknown and shadow assets, detects changes over time, and monitors for credential leaks — things scope-bound scanners cannot do."
+    },
+    {
+      "id": "m1-q3",
+      "question": "Which of these is one of the six core ASM components, responsible for fingerprinting ports, services, tech stacks, and endpoints?",
+      "options": [
+        "Enumeration",
+        "Patching",
+        "Containment",
+        "Forensics"
+      ],
+      "correctIndex": 0,
+      "explanation": "The six core ASM phases are Discovery, Enumeration, Historical Data, Threat Intelligence, Phishing Risks, and Reporting. Enumeration covers fingerprinting ports, services, tech stacks, and endpoints."
+    },
+    {
+      "id": "m1-q4",
+      "question": "What is the primary goal of an ASM program?",
+      "options": [
+        "Replace the need for firewalls",
+        "Identify unknown assets, reduce blind spots, and detect risky changes quickly",
+        "Automate patch deployment across all servers",
+        "Eliminate the need for penetration testing"
+      ],
+      "correctIndex": 1,
+      "explanation": "ASM exists to surface what you don't know about your attack surface: unknown assets, blind spots, and risky changes — so they can be prioritized and addressed."
+    },
+    {
+      "id": "m1-q5",
+      "question": "Which technique is a classic ASM 'quick win' for finding shadow IT?",
+      "options": [
+        "Running antivirus scans on workstations",
+        "Reviewing badge access logs",
+        "Querying certificate transparency logs and passive DNS",
+        "Auditing employee password strength"
+      ],
+      "correctIndex": 2,
+      "explanation": "Certificate transparency logs and passive DNS reveal domains and subdomains your organization stood up outside official channels — a fast way to find shadow IT without touching any target."
+    }
+  ]
+}

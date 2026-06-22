@@ -1,0 +1,66 @@
+{
+  "moduleId": 8,
+  "passingScore": 70,
+  "questions": [
+    {
+      "id": "m8-q1",
+      "question": "Why correlate findings across multiple tools instead of reporting each tool's output separately?",
+      "options": [
+        "It makes reports longer and more impressive",
+        "Correlation deduplicates findings and builds a higher-confidence picture than any single tool provides",
+        "Most tools refuse to run alone",
+        "Correlation is required by compliance frameworks"
+      ],
+      "correctIndex": 1,
+      "explanation": "Each tool sees part of the picture. Correlating subdomains, services, screenshots, and metadata across tools removes duplicates, confirms findings, and reveals patterns and anomalies."
+    },
+    {
+      "id": "m8-q2",
+      "question": "Who is the audience for an executive summary in an ASM report?",
+      "options": [
+        "Other security engineers who want command output",
+        "Non-technical stakeholders who need risk and business impact, not tool details",
+        "The tools' developers",
+        "External auditors only"
+      ],
+      "correctIndex": 1,
+      "explanation": "Executive summaries translate technical findings into business risk: what's exposed, what it could cost, and what to do about it — without raw scan output."
+    },
+    {
+      "id": "m8-q3",
+      "question": "What makes an ASM finding 'actionable'?",
+      "options": [
+        "It includes a screenshot",
+        "It pairs the finding with context and a concrete recommended remediation",
+        "It was found by more than one tool",
+        "It is rated critical severity"
+      ],
+      "correctIndex": 1,
+      "explanation": "A list of exposed services isn't actionable by itself. Actionable insights say what was found, why it matters in your environment, and specifically what to do next."
+    },
+    {
+      "id": "m8-q4",
+      "question": "What role does data visualization play in ASM analysis?",
+      "options": [
+        "It is purely decorative for reports",
+        "It helps spot patterns, trends, and anomalies in large datasets that are hard to see in raw text",
+        "It replaces the need for data analysis",
+        "It is only useful for executive audiences"
+      ],
+      "correctIndex": 1,
+      "explanation": "Charts of asset growth, port distributions, or change frequency expose patterns and outliers — like a sudden spike in new subdomains — that scrolling through text output would miss."
+    },
+    {
+      "id": "m8-q5",
+      "question": "How should findings be ordered in a professional ASM report?",
+      "options": [
+        "Alphabetically by hostname",
+        "In the order the tools produced them",
+        "Prioritized by risk and business impact",
+        "Grouped by which tool found them"
+      ],
+      "correctIndex": 2,
+      "explanation": "Reports should lead with what matters most: highest-risk, highest-impact exposures first, so limited remediation time goes where it counts."
+    }
+  ]
+}

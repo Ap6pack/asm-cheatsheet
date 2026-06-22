@@ -13,8 +13,9 @@ test.describe("Navigation", () => {
     await expect(
       page.getByRole("heading", { name: /Learning Path/i })
     ).toBeVisible();
-    // Verify at least one module card is rendered
-    await expect(page.locator("text=Module 1")).toBeVisible();
+    // Verify at least one module card is rendered ("Module 1" also
+    // substring-matches Module 10-12, so pin to the first match)
+    await expect(page.locator("text=Module 1").first()).toBeVisible();
   });
 
   test("/commands page loads with command categories", async ({ page }) => {

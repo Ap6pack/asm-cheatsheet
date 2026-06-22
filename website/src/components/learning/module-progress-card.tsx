@@ -2,7 +2,7 @@
 
 import { Progress } from "@/components/ui/progress";
 import { useProgressStore, useHydration } from "@/lib/stores";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Award } from "lucide-react";
 
 interface ModuleProgressCardProps {
   moduleId: string;
@@ -11,31 +11,33 @@ interface ModuleProgressCardProps {
 
 export function ModuleProgressCard({ moduleId, totalCriteria }: ModuleProgressCardProps) {
   const hydrated = useHydration();
-  const { getModuleProgress, isModuleComplete } = useProgressStore();
+  const { getModuleProgress, isQuizPassed } = useProgressStore();
 
-  if (!hydrated || totalCriteria === 0) return null;
+  if (!hydrated) return null;
 
-  const progress = getModuleProgress(moduleId, totalCriteria);
-  const complete = isModuleComplete(moduleId, totalCriteria);
+  const progress = totalCriteria > 0 ? getModuleProgress(moduleId, totalCriteria) : 0;
+  const quizPassed = isQuizPassed(moduleId);
 
-  if (progress === 0) return null;
+  if (progress === 0 && !quizPassed) return null;
+
+  // A module counts as completed once its knowledge check has been passed
+  if (quizPassed) {
+    return (
+      <div className="mt-3 flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400">
+        <Award className="h-4 w-4" />
+        <span>Completed{progress === 100 ? "" : " · Quiz passed"}</span>
+        {progress === 100 && <CheckCircle className="h-4 w-4" />}
+      </div>
+    );
+  }
 
   return (
-    <div className="mt-3">
-      {complete ? (
-        <div className="flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400">
-          <CheckCircle className="h-4 w-4" />
-          <span>Completed</span>
-        </div>
-      ) : (
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
-            <span>Progress</span>
-            <span>{progress}%</span>
-          </div>
-          <Progress value={progress} className="h-1.5" />
-        </div>
-      )}
+    <div className="mt-3 space-y-1">
+      <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+        <span>Progress</span>
+        <span>{progress}%</span>
+      </div>
+      <Progress value={progress} className="h-1.5" />
     </div>
   );
 }

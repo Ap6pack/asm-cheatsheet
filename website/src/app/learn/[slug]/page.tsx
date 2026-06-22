@@ -1,10 +1,14 @@
 import { notFound } from "next/navigation";
-import { getAllModules } from "@/lib/content/loader";
+import { getAllModules, getQuizForModule } from "@/lib/content/loader";
 import { DifficultyBadge } from "@/components/content/difficulty-badge";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Clock, BookOpen, Target, CheckCircle, ExternalLink } from "lucide-react";
 import { SuccessCriteriaList } from "@/components/learning/success-criteria-list";
+import { ModuleQuiz } from "@/components/learning/module-quiz";
+import { ModuleNav } from "@/components/learning/module-nav";
+import { ModuleStartTracker } from "@/components/learning/module-start-tracker";
+import { EditOnGitHub } from "@/components/content/edit-on-github";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 
 const GITHUB_CONTENT_BASE =
@@ -66,8 +70,18 @@ export default async function ModulePage({
 
   if (!mod) notFound();
 
+  const quiz = await getQuizForModule(mod.id);
+
+  // Modules form a sequential curriculum; link to neighbors by id
+  const ordered = [...modules].sort((a, b) => a.id - b.id);
+  const position = ordered.findIndex((m) => m.id === mod.id);
+  const prevModule = position > 0 ? ordered[position - 1] : undefined;
+  const nextModule =
+    position < ordered.length - 1 ? ordered[position + 1] : undefined;
+
   return (
     <div className="max-w-4xl space-y-8">
+      <ModuleStartTracker moduleId={`module-${mod.id}`} />
       <Breadcrumbs title={mod.title} />
       {/* Header */}
       <div>
@@ -163,6 +177,32 @@ export default async function ModulePage({
           />
         </section>
       )}
+
+      {/* Knowledge Check Quiz */}
+      {quiz && (
+        <section>
+          <ModuleQuiz moduleId={`module-${mod.id}`} quiz={quiz} />
+        </section>
+      )}
+
+      <Separator />
+
+      <ModuleNav
+        prev={
+          prevModule
+            ? { id: prevModule.id, title: prevModule.title }
+            : undefined
+        }
+        next={
+          nextModule
+            ? { id: nextModule.id, title: nextModule.title }
+            : undefined
+        }
+      />
+
+      <footer className="flex justify-end">
+        <EditOnGitHub contentPath="resources/learning_guide.md" />
+      </footer>
     </div>
   );
 }

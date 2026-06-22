@@ -16,7 +16,7 @@ beforeEach(() => {
     moduleStarted: {},
     workflowProgress: {},
     scenarioProgress: {},
-    completedCriteria: {},
+    quizResults: {},
   });
 });
 
@@ -54,7 +54,15 @@ describe("ProgressOverview", () => {
       moduleStarted: { "mod-1": true, "mod-2": true },
       workflowProgress: {},
       scenarioProgress: {},
-      completedCriteria: { "mod-1": ["c1", "c2"] },
+      quizResults: {
+        "mod-1": {
+          bestScore: 4,
+          totalQuestions: 5,
+          attempts: 1,
+          passedAt: "2026-01-01T00:00:00.000Z",
+          lastAttemptAt: "2026-01-01T00:00:00.000Z",
+        },
+      },
     });
     render(<ProgressOverview totalModules={12} totalWorkflows={6} totalScenarios={4} />);
     expect(screen.getByText("2 started, 1 completed")).toBeDefined();
