@@ -13,6 +13,7 @@ import {
   FileText,
   GraduationCap,
   FlaskConical,
+  Library,
   X,
   ChevronLeft,
 } from "lucide-react";
@@ -42,6 +43,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: "/commands", label: "Commands", icon: Terminal },
       { href: "/tools", label: "Tools", icon: Wrench },
+      { href: "/reference", label: "Reference", icon: Library },
     ],
   },
   {

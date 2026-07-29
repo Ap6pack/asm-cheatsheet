@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **[Modern ASM Toolchain](content/tools/modern_tools.md)** — 15 newly documented tools covering the stack most external ASM work actually runs on today: **nuclei**, **httpx**, **katana**, **naabu**, **dnsx**, **tlsx**, **asnmap**, **ffuf**, **gau**, **TruffleHog**, **Gitleaks**, **BBOT**, **uncover**, **notify**, and **cloudlist** — each with purpose, install, usage, and pipeline examples, plus an end-to-end assessment script. Tool coverage went from 11 to 26.
+- **Maintenance status on every tool.** A `**Status:**` field distinguishes actively-maintained tools from legacy ones, surfaced as a badge on tool cards and detail pages, with an explanatory callout on legacy tools (Recon-ng and Fierce) pointing at modern replacements.
+- **Rewrote [Integrating Threat Intelligence](content/guides/integrating_threat_intel.md)** from a 24-line outline into a full guide — CISA KEV/EPSS-first prioritization, a normalize → correlate → score → act pipeline, a working KEV cross-reference script, a transparent risk-scoring formula, and operational cautions. It is Module 9's primary resource.
+- **Reference section (`/reference`)** — 11 long-form pages that previously existed in the repo but were invisible on the website (~4,600 lines), including Getting Started, Security/Legal & Ethical Considerations, Advanced Techniques, Docker Quickstart, Change Tracking, Screenshot Tools, Modern Tooling, Automation Scripts, and the Reading List. Published via an authored manifest ([content/reference-pages.json](content/reference-pages.json)) rather than inferred from prose, and validated in CI.
+
 - **Interactive Labs — Incident Replays**
   - **"Break the Chain" defender challenge** — the flagship lab's headline mode. Instead of watching the intrusion win, you deploy a budgeted set of defensive controls (each mapped to the step it neutralizes); running the intrusion severs the attack chain at your earliest control, contains the blast radius, and grades how early you stopped it (A+ → F). Teaches which control kills which step and where the high-leverage chokepoints are. Watch mode remains available via a mode toggle.
   - **A new `/labs` section** where an intrusion plays back at machine speed: a scrubber and speed controls drive a playhead across the timeline, the attack-chain graph ignites one trust boundary at a time, phase-activity bars fill, and stat tiles (actions replayed, active phase, blast radius) update live. Respects `prefers-reduced-motion`.
@@ -55,9 +60,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **[README.md](README.md)** - Updated with references to new quick reference materials, implementation guide, and reading list
 - **[CONTRIBUTORS.md](CONTRIBUTORS.md)**, **[GETTING_STARTED.md](GETTING_STARTED.md)** - Minor documentation and formatting improvements
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Added website development workflow and quiz contribution guidance
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Added website development workflow, quiz, lab, and reference-page contribution guidance
 
 ### Fixed
+- **Tool docs silently lost their usage examples.** The extractor matched usage headings against a hardcoded allowlist of names, so any doc using a different heading extracted zero examples (Fierce shipped with none). It now matches on heading shape.
+- **`/commands` showed mis-parsed sections as tools.** Policy and checklist sections ("Before You Scan — MANDATORY CHECKLIST", "Safe Practice Targets", "Incident Response") were extracted as if they were tools. Commands are now classified as `tool` or `technique`, and non-command policy sections are excluded (they live on the security-considerations reference page instead).
+- **Every command lacked a description.** All 28 entries now carry an authored description, and the commands explorer renders it — previously the field was searched but never displayed.
+- **Cloud tools were mis-categorised.** Tools documented as H2 headings took their own name as their category (`CloudEnum → CloudEnum`), breaking grouping and filtering on `/tools`. They now use a per-file default category.
+- **Learning-module resources ejected learners to raw GitHub.** 12 of 27 resource links left the site mid-lesson — including two guides that already had site pages. All 27 now resolve to on-site routes.
+- **Six broken internal content links** in the Quick Reference hub and a stale `GETTING_STARTED.md` path.
 - **Workflow and scenario completion tracking** - Completing the final step/phase now records completion; the dashboard previously always showed 0 completed
 - **Dashboard "modules completed" metric** - Now counts modules whose quiz was passed instead of modules with any checkbox ticked
 - **Guides missing from search and sitemap** - Guides are now indexed for search and included in sitemap.xml

@@ -31,14 +31,24 @@ export interface LearningModule {
 }
 
 // Command from command_cheatsheet.md
+/**
+ * Not every section of the cheatsheet is a *tool*. Some document a technique
+ * (jq processing, cron scheduling, troubleshooting) that has no tool page.
+ * Conflating the two is what previously surfaced section headings as tools.
+ */
+export type CommandKind = 'tool' | 'technique';
+
 export interface Command {
   id: string;
-  tool: string; // e.g., "Amass", "Subfinder"
+  name: string; // the section heading, e.g. "Amass" or "JSON Processing with jq"
+  kind: CommandKind;
+  /** Set only when kind === 'tool' — links the entry to a tool page. */
+  tool?: string;
   category: string; // e.g., "Subdomain Discovery", "Web Service Discovery"
   categoryEmoji: string;
   code: string; // the code block content
   language: string; // typically "bash"
-  description: string; // any text before/after the code block
+  description: string; // prose describing what the commands do
 }
 
 // Workflow from practical_workflows.md
@@ -96,6 +106,12 @@ export interface CaseStudy {
 }
 
 // Tool from recon_tools.md and cloud_enum_tools.md
+/**
+ * Maintenance signal for a documented tool. Practitioners need to know whether
+ * something is still actively developed before adopting it.
+ */
+export type ToolStatus = 'active' | 'legacy' | 'unknown';
+
 export interface Tool {
   id: string;
   name: string;
@@ -103,6 +119,9 @@ export interface Tool {
   purpose: string;
   difficulty: string;
   link: string;
+  status: ToolStatus;
+  /** Free-text note explaining the status, e.g. a suggested replacement. */
+  statusNote?: string;
   category: string; // parent H2 heading
   sourceFile: string; // which file it came from
   installation: { language: string; code: string }[];
@@ -123,6 +142,21 @@ export interface Quiz {
   moduleId: number;
   passingScore: number; // percentage required to pass
   questions: QuizQuestion[];
+}
+
+/**
+ * A long-form reference page published from content/ via the
+ * content/reference-pages.json manifest. Unlike the regex-scraped types,
+ * its metadata is authored rather than inferred from prose structure.
+ */
+export interface ReferencePage {
+  slug: string;
+  file: string;
+  title: string;
+  description: string;
+  category: string;
+  order: number;
+  content: string;
 }
 
 // Guide from content/guides/*.md
@@ -251,7 +285,8 @@ export interface SearchEntry {
     | 'case-study'
     | 'tool'
     | 'guide'
-    | 'lab';
+    | 'lab'
+    | 'reference';
   content: string; // searchable text
   url: string;
   category?: string;

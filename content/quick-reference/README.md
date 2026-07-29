@@ -16,11 +16,11 @@
 - 🔌 **[Scan Ports](#scan-ports-quick)** - Service discovery
 
 ### By Resource Type
-- 📄 **[Command Cards](command-cards.md)** - Printable quick reference
-- 🎯 **[One-Liners](one-liners.md)** - Copy-paste solutions
-- 📊 **[Tool Matrix](tool-matrix.md)** - Compare ASM tools at a glance
-- 🔢 **[Port Reference](port-services.md)** - Common ports lookup
-- 🔤 **[Regex Patterns](regex-patterns.md)** - Useful patterns for filtering
+- 📄 **[Command Cheat Sheet](../resources/command_cheatsheet.md)** - Copy-paste commands for every ASM tool
+- 🎯 **[Scenario Cards](scenario-cards.md)** - Phased command sequences for real situations
+- 📊 **[Recon Tools](../tools/recon_tools.md)** / **[Cloud Tools](../tools/cloud_enum_tools.md)** - Compare ASM tools at a glance
+- ⚡ **[Advanced Techniques](advanced-techniques.md)** - WAF bypass, anomaly detection, multi-cloud discovery
+- 🐳 **[Docker Quickstart](docker-quickstart.md)** - Zero-install toolkit
 
 ---
 
@@ -127,6 +127,6 @@ aws s3 ls s3://target-bucket --no-sign-request
 
 ## 🆘 Need Help?
 
-- **Quick Start Issues?** Check [Troubleshooting](../GETTING_STARTED.md#troubleshooting)
+- **Quick Start Issues?** Check [Troubleshooting](../getting-started.md#troubleshooting)
 - **Legal Questions?** Read [Security Considerations](../resources/security_considerations.md)
 - **Community Support:** [GitHub Discussions](https://github.com/Ap6pack/asm-cheatsheet/discussions)

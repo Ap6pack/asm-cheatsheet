@@ -26,6 +26,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://asm-cheatsheet.vercel.app/reference</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://asm-cheatsheet.vercel.app/workflows</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -236,6 +241,81 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://asm-cheatsheet.vercel.app/tools/httpx</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/tools/tlsx</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/tools/dnsx</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/tools/naabu</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/tools/asnmap</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/tools/katana</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/tools/gau-getallurls</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/tools/ffuf</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/tools/nuclei</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/tools/trufflehog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/tools/gitleaks</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/tools/bbot</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/tools/uncover</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/tools/notify</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/tools/cloudlist</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://asm-cheatsheet.vercel.app/guides/building_your_own_asm_stack</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -254,5 +334,60 @@
     <loc>https://asm-cheatsheet.vercel.app/labs/northwind-shadow-it-breach</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/reference/automation-scripts</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/reference/reading-list</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/reference/advanced-techniques</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/reference/modern-tools</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/reference/screenshot-tools</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/reference/change-tracking</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/reference/github-leak-queries</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/reference/security-considerations</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/reference/getting-started</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/reference/quick-reference</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/reference/docker-quickstart</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>

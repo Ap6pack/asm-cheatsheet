@@ -1,0 +1,93 @@
+{
+  "$comment": "Manifest of long-form reference pages rendered at /reference/<slug>. Add an entry here to publish a markdown file from content/ to the website. Validated in CI by `pnpm validate:content` — every file must exist and every slug must be unique.",
+  "pages": [
+    {
+      "slug": "getting-started",
+      "file": "getting-started.md",
+      "title": "Getting Started",
+      "description": "A 30-minute walkthrough from zero to your first authorized ASM scan — prerequisites, install, first run, and reading the results.",
+      "category": "Start Here",
+      "order": 1
+    },
+    {
+      "slug": "quick-reference",
+      "file": "quick-reference/README.md",
+      "title": "Quick Reference Hub",
+      "description": "Get what you need in 30 seconds or less — the fastest path to the right command, tool, or scenario card.",
+      "category": "Start Here",
+      "order": 2
+    },
+    {
+      "slug": "docker-quickstart",
+      "file": "quick-reference/docker-quickstart.md",
+      "title": "Docker Quickstart",
+      "description": "Run a complete ASM toolkit with zero local installation using containerized tools.",
+      "category": "Start Here",
+      "order": 3
+    },
+    {
+      "slug": "security-considerations",
+      "file": "resources/security_considerations.md",
+      "title": "Security, Legal & Ethical Considerations",
+      "description": "The legal and ethical framework for ASM: authorization, responsible disclosure, rate limiting, and safe practice targets. Read this before you scan anything.",
+      "category": "Practice Safely",
+      "order": 1
+    },
+    {
+      "slug": "advanced-techniques",
+      "file": "quick-reference/advanced-techniques.md",
+      "title": "Advanced Techniques",
+      "description": "Enterprise-grade strategies: WAF and CDN handling, anomaly detection, multi-cloud discovery, and large-scale correlation.",
+      "category": "Go Deeper",
+      "order": 1
+    },
+    {
+      "slug": "modern-tools",
+      "file": "resources/modern_tools_update.md",
+      "title": "Modern Tooling Update",
+      "description": "Where the ASM tooling landscape has moved, and how to integrate newer tools into an existing workflow.",
+      "category": "Go Deeper",
+      "order": 2
+    },
+    {
+      "slug": "screenshot-tools",
+      "file": "tools/screenshots.md",
+      "title": "Screenshot & Visual Recon Tools",
+      "description": "GoWitness, EyeWitness, and Aquatone — bulk screenshotting for visual triage, reporting, and change detection.",
+      "category": "Go Deeper",
+      "order": 3
+    },
+    {
+      "slug": "change-tracking",
+      "file": "examples/change_tracking.md",
+      "title": "Change Tracking & Continuous Monitoring",
+      "description": "Turn one-off discovery into continuous monitoring: baselines, diffing, and alerting on what actually changed.",
+      "category": "Go Deeper",
+      "order": 4
+    },
+    {
+      "slug": "github-leak-queries",
+      "file": "examples/github_leak_queries.md",
+      "title": "GitHub Leak Queries",
+      "description": "Search patterns for finding credentials and configuration your organization accidentally published to public repositories.",
+      "category": "Go Deeper",
+      "order": 5
+    },
+    {
+      "slug": "automation-scripts",
+      "file": "scripts/README.md",
+      "title": "Automation Scripts",
+      "description": "The repository's ready-to-run scan and monitoring scripts — what they do, how to configure them, and how to schedule them.",
+      "category": "Automate",
+      "order": 1
+    },
+    {
+      "slug": "reading-list",
+      "file": "resources/reading_list.md",
+      "title": "Reading List",
+      "description": "Curated books on reconnaissance, OSINT, automation, threat intelligence, and vulnerability management.",
+      "category": "Automate",
+      "order": 2
+    }
+  ]
+}

@@ -20,7 +20,8 @@ export default async function CommandsPage() {
       });
       return {
         id: cmd.id,
-        tool: cmd.tool,
+        name: cmd.name,
+        kind: cmd.kind,
         category: cmd.category,
         categoryEmoji: cmd.categoryEmoji,
         code: cmd.code,

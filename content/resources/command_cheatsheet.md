@@ -17,6 +17,8 @@ Quick reference for common Attack Surface Management commands and techniques.
 ## 🔍 Subdomain Discovery
 
 ### Amass
+
+OWASP's in-depth subdomain enumeration engine. Passive mode queries third-party sources without touching the target; active mode resolves and brute-forces and requires authorization.
 ```bash
 # ⚠️ ALWAYS verify you have permission to scan the target domain
 
@@ -41,6 +43,8 @@ amass enum -active -d example.com -max-dns-queries 200
 ```
 
 ### Subfinder
+
+Fast passive subdomain discovery from ProjectDiscovery. Built for pipelines — pipe its output straight into httpx or nmap.
 ```bash
 # Basic subdomain discovery
 subfinder -d example.com
@@ -59,6 +63,8 @@ subfinder -dL domains.txt
 ```
 
 ### Certificate Transparency
+
+Public CT logs record every TLS certificate issued for your domains, making them the fastest way to find forgotten or shadow-IT hosts without sending a single packet to the target.
 ```bash
 # Using curl with crt.sh
 curl -s "https://crt.sh/?q=%.example.com&output=json" | jq -r '.[].name_value' | sort -u
@@ -73,6 +79,8 @@ python3 ctfr.py -d example.com
 ## 🌐 Web Service Discovery
 
 ### httpx
+
+Probes a list of hosts to find which are serving live HTTP services, and fingerprints status codes, titles, and technologies as it goes.
 ```bash
 # Probe for live hosts
 httpx -l subdomains.txt
@@ -97,6 +105,8 @@ httpx -l subdomains.txt -json -o results.json
 ```
 
 ### httprobe
+
+A minimal alternative to httpx that answers one question quickly: which of these hosts respond over HTTP/HTTPS?
 ```bash
 # Basic probing
 cat subdomains.txt | httprobe
@@ -114,6 +124,8 @@ cat subdomains.txt | httprobe -c 50
 ## 🔌 Port Scanning
 
 ### Nmap
+
+The standard port and service scanner. Version detection (-sV) turns an open port into an identified, fingerprinted service you can act on.
 ```bash
 # ⚠️ WARNING: Port scanning can be detected and may be illegal without permission
 # ⚠️ ALWAYS ensure you have written authorization before scanning
@@ -160,6 +172,8 @@ nmap --scan-delay 1s target.com
 ```
 
 ### Masscan
+
+Internet-scale port scanning at very high packet rates. Powerful and easy to misuse — always rate-limit and only scan what you are authorized to touch.
 ```bash
 # Fast port scan
 masscan -p1-65535 192.168.1.0/24 --rate=1000
@@ -177,6 +191,8 @@ masscan -p80,443 192.168.1.0/24 --banners --rate=1000
 ## 📸 Screenshots
 
 ### GoWitness
+
+Captures screenshots of discovered web services in bulk so you can visually triage hundreds of hosts and spot login portals, default pages, and exposed dashboards.
 ```bash
 # Screenshot from file
 gowitness file -f urls.txt
@@ -198,6 +214,8 @@ gowitness report generate
 ```
 
 ### Aquatone
+
+Screenshots and clusters similar-looking web services together, which makes patterns across a large attack surface obvious at a glance.
 ```bash
 # Basic screenshots
 cat hosts.txt | aquatone
@@ -213,6 +231,8 @@ cat hosts.txt | aquatone -timeout 300
 ```
 
 ### EyeWitness
+
+Screenshots web services and generates a categorized report, with the ability to flag default credentials and interesting pages.
 ```bash
 # Screenshot from file
 python3 EyeWitness.py -f urls.txt
@@ -230,6 +250,8 @@ python3 EyeWitness.py -f urls.txt --user-agent "Custom-Bot"
 ## 🔎 Search Engine Reconnaissance
 
 ### Shodan
+
+A search engine over internet-wide scan data. Finds your exposed services from the outside, using data already collected — no scanning of your own required.
 ```bash
 # Install Shodan CLI
 pip install shodan
@@ -260,6 +282,8 @@ shodan parse results.json.gz
 ```
 
 ### Google Dorking
+
+Targeted search-engine operators that surface indexed files, directory listings, and login pages an organization never meant to publish.
 ```bash
 # Site-specific search
 site:example.com
@@ -286,6 +310,8 @@ site:example.com filetype:sql | filetype:dbf | filetype:mdb
 ## 🕵️ OSINT and Information Gathering
 
 ### theHarvester
+
+Collects emails, subdomains, and hostnames from public sources — a fast way to sketch an organization's footprint before any active work.
 ```bash
 # Email harvesting
 theHarvester -d example.com -b google
@@ -301,6 +327,8 @@ theHarvester -d example.com -b google -f results.html
 ```
 
 ### Recon-ng
+
+A modular reconnaissance framework with a workspace and database model, useful for organizing findings across a longer engagement.
 ```bash
 # Start recon-ng
 recon-ng
@@ -322,6 +350,8 @@ show hosts
 ```
 
 ### Whois
+
+Registration and ownership data for domains and IP ranges — establishes what an organization actually owns before you scope anything.
 ```bash
 # Basic whois lookup
 whois example.com
@@ -336,6 +366,8 @@ whois "Example Corp"
 ## ☁️ Cloud Asset Discovery
 
 ### CloudEnum
+
+Enumerates public cloud assets across AWS, Azure, and GCP — storage buckets, apps, and containers that are reachable without credentials.
 ```bash
 # AWS enumeration
 python3 cloud_enum.py -k example
@@ -351,6 +383,8 @@ python3 cloud_enum.py -k example --disable-ssl
 ```
 
 ### S3 Bucket Discovery
+
+Finds object-storage buckets and checks whether they are publicly readable. Misconfigured buckets remain one of the most common sources of data exposure.
 ```bash
 # Using aws cli
 aws s3 ls s3://example-bucket --no-sign-request
@@ -365,6 +399,8 @@ gobuster s3 -w bucket_names.txt
 ## 🔧 Data Processing and Analysis
 
 ### Text Processing
+
+The unix glue that turns raw tool output into a clean, deduplicated asset list ready for the next stage of the pipeline.
 ```bash
 # Sort and remove duplicates
 sort -u subdomains.txt > unique_subdomains.txt
@@ -386,6 +422,8 @@ grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" nmap_output.txt
 ```
 
 ### JSON Processing with jq
+
+Most modern security tools emit JSON. jq filters and reshapes it so results can be correlated and chained between tools.
 ```bash
 # Extract specific fields
 cat results.json | jq '.[] | .url'
@@ -403,6 +441,8 @@ cat results.json | jq -r '.[].domain' | sort -u
 ## 🔄 Automation and Monitoring
 
 ### Cron Jobs
+
+Schedules recurring scans so discovery becomes continuous monitoring rather than a one-time snapshot.
 ```bash
 # Edit crontab
 crontab -e
@@ -418,6 +458,8 @@ crontab -e
 ```
 
 ### Watch Command
+
+Re-runs a command on an interval for live observation — useful while validating a change or watching a scan progress.
 ```bash
 # Monitor file changes
 watch -n 60 'wc -l subdomains.txt'
@@ -432,6 +474,8 @@ watch -n 2 'netstat -tuln'
 ## 🛡️ Security and Rate Limiting
 
 ### ⚠️ MANDATORY: Rate Limiting and Respectful Scanning
+
+Pacing controls that keep reconnaissance from degrading the systems you are testing. Aggressive scanning can amount to a denial of service even against authorized targets.
 
 ```bash
 # ALWAYS add delays between requests to avoid overwhelming targets
@@ -463,6 +507,8 @@ masscan -p80,443 192.168.1.0/24 --rate=100  # Very conservative rate
 ```
 
 ### Authorization Verification
+
+Checks that confirm you are scanning assets you actually own or have written permission to test, before any traffic is sent.
 ```bash
 # ALWAYS verify authorization before scanning
 echo "⚠️  AUTHORIZATION CHECK ⚠️"
@@ -476,6 +522,8 @@ echo "✅ Proceeding with authorized scan..."
 ```
 
 ### Proxy Usage
+
+Routes traffic through a proxy for inspection, logging, or to respect an engagement's required egress path.
 ```bash
 # Using proxychains
 proxychains nmap -sS target.com
@@ -490,6 +538,8 @@ wget --proxy=on --proxy-user=user --proxy-password=pass https://example.com
 ## 📊 Reporting and Visualization
 
 ### Generate HTML Reports
+
+Turns raw findings into a shareable report — the step that converts a scan into something a stakeholder can act on.
 ```bash
 # Convert nmap XML to HTML
 xsltproc nmap_scan.xml -o report.html
@@ -501,6 +551,8 @@ echo "</pre></body></html>" >> report.html
 ```
 
 ### CSV Export
+
+Flattens findings into CSV for spreadsheets, ticketing imports, and diffing results between runs.
 ```bash
 # Convert to CSV
 echo "URL,Status,Title" > results.csv
@@ -545,6 +597,8 @@ localhost               # Local testing
 ## 🚨 Common Troubleshooting
 
 ### Permission Issues
+
+Fixes for the most common permission failures when running security tooling — executable bits and privileged operations like SYN scans.
 ```bash
 # Make scripts executable
 chmod +x script.sh
@@ -554,6 +608,8 @@ sudo nmap -sS target.com
 ```
 
 ### Network Issues
+
+First-line connectivity and DNS checks for when a scan returns nothing and you need to tell 'no results' from 'no route'.
 ```bash
 # Test connectivity
 ping -c 4 target.com
@@ -567,6 +623,8 @@ nc -zv target.com 80
 ```
 
 ### Tool Installation
+
+Common installation fixes across Go, Python, and package-manager based security tooling.
 ```bash
 # Update package lists
 sudo apt update

@@ -15,6 +15,7 @@ import {
   getAllTools,
   getAllGuides,
   getAllLabs,
+  getAllReferencePages,
 } from '../src/lib/content/loader';
 
 const baseUrl =
@@ -37,7 +38,7 @@ async function main() {
 
   // Generate sitemap
   const urls: string[] = [];
-  const staticPages = ['', '/learn', '/commands', '/tools', '/labs', '/workflows', '/scenarios', '/case-studies', '/guides'];
+  const staticPages = ['', '/learn', '/commands', '/tools', '/labs', '/reference', '/workflows', '/scenarios', '/case-studies', '/guides'];
   for (const page of staticPages) {
     urls.push(sitemapEntry(`${baseUrl}${page}`, page === '' ? 1 : 0.8));
   }
@@ -62,6 +63,10 @@ async function main() {
 
   const labs = await getAllLabs();
   for (const l of labs) urls.push(sitemapEntry(`${baseUrl}/labs/${l.slug}`, 0.7));
+
+  const referencePages = await getAllReferencePages();
+  for (const r of referencePages)
+    urls.push(sitemapEntry(`${baseUrl}/reference/${r.slug}`, 0.6));
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

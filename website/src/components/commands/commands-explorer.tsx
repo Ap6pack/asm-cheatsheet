@@ -7,7 +7,8 @@ import { Search, X } from "lucide-react";
 
 interface CommandData {
   id: string;
-  tool: string;
+  name: string;
+  kind: "tool" | "technique";
   category: string;
   categoryEmoji: string;
   code: string;
@@ -37,9 +38,9 @@ export function CommandsExplorer({ commands }: CommandsExplorerProps) {
     return Array.from(map.entries());
   }, [commands]);
 
-  const tools = React.useMemo(() => {
+  const sections = React.useMemo(() => {
     const set = new Set<string>();
-    for (const cmd of commands) set.add(cmd.tool);
+    for (const cmd of commands) set.add(cmd.name);
     return Array.from(set).sort();
   }, [commands]);
 
@@ -49,10 +50,10 @@ export function CommandsExplorer({ commands }: CommandsExplorerProps) {
     return commands.filter((cmd) => {
       if (activeCategory !== "all" && cmd.category !== activeCategory)
         return false;
-      if (activeTool !== "all" && cmd.tool !== activeTool) return false;
+      if (activeTool !== "all" && cmd.name !== activeTool) return false;
       if (q) {
         return (
-          cmd.tool.toLowerCase().includes(q) ||
+          cmd.name.toLowerCase().includes(q) ||
           cmd.code.toLowerCase().includes(q) ||
           cmd.description.toLowerCase().includes(q) ||
           cmd.category.toLowerCase().includes(q)
@@ -76,10 +77,10 @@ export function CommandsExplorer({ commands }: CommandsExplorerProps) {
         });
       }
       const cat = map.get(cmd.category)!;
-      if (!cat.tools.has(cmd.tool)) {
-        cat.tools.set(cmd.tool, []);
+      if (!cat.tools.has(cmd.name)) {
+        cat.tools.set(cmd.name, []);
       }
-      cat.tools.get(cmd.tool)!.push(cmd);
+      cat.tools.get(cmd.name)!.push(cmd);
     }
     return map;
   }, [filtered]);
@@ -144,10 +145,10 @@ export function CommandsExplorer({ commands }: CommandsExplorerProps) {
             onChange={(e) => setActiveTool(e.target.value)}
             className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-1.5 text-sm outline-none focus:border-[var(--primary)]"
           >
-            <option value="all">All Tools</option>
-            {tools.map((tool) => (
-              <option key={tool} value={tool}>
-                {tool}
+            <option value="all">All Sections</option>
+            {sections.map((section) => (
+              <option key={section} value={section}>
+                {section}
               </option>
             ))}
           </select>
@@ -183,17 +184,29 @@ export function CommandsExplorer({ commands }: CommandsExplorerProps) {
             <h2 className="text-2xl font-semibold mb-4">
               {data.emoji} {category}
             </h2>
-            {Array.from(data.tools.entries()).map(([tool, cmds]) => (
-              <div key={tool} className="mb-8" id={tool.toLowerCase()}>
-                <div className="flex items-center gap-2 mb-3">
-                  <h3 className="text-xl font-medium">{tool}</h3>
+            {Array.from(data.tools.entries()).map(([name, cmds]) => (
+              <div
+                key={name}
+                className="mb-8"
+                id={name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-xl font-medium">{name}</h3>
+                  {cmds[0]?.kind === "technique" && (
+                    <Badge variant="outline">Technique</Badge>
+                  )}
                   <BookmarkButton
-                    id={`cmd-${tool.toLowerCase()}`}
+                    id={`cmd-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
                     type="command"
-                    title={tool}
+                    title={name}
                     category={category}
                   />
                 </div>
+                {cmds[0]?.description && (
+                  <p className="mt-1.5 mb-3 max-w-3xl text-sm text-[var(--muted-foreground)]">
+                    {cmds[0].description}
+                  </p>
+                )}
                 {cmds.map((cmd) => (
                   <div
                     key={cmd.id}

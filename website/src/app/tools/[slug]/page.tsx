@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getAllTools } from "@/lib/content/loader";
 import { CodeBlock } from "@/components/content/code-block";
 import { Badge } from "@/components/ui/badge";
+import { ToolStatusBadge } from "@/components/tools/tool-status-badge";
 import { Separator } from "@/components/ui/separator";
 import { ExternalLink } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
@@ -26,12 +27,18 @@ export default async function ToolDetailPage({
     <div className="max-w-4xl space-y-8">
       <Breadcrumbs title={tool.name} />
       <div>
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex flex-wrap items-center gap-3 mb-3">
           <h1 className="text-3xl font-bold">{tool.name}</h1>
           {tool.difficulty && (
             <Badge variant="outline">{tool.difficulty}</Badge>
           )}
+          <ToolStatusBadge status={tool.status} note={tool.statusNote} />
         </div>
+        {tool.status === "legacy" && tool.statusNote && (
+          <p className="mb-3 rounded-md border border-amber-500/40 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+            <strong>Legacy tool.</strong> {tool.statusNote}
+          </p>
+        )}
         <p className="text-lg text-[var(--muted-foreground)]">
           {tool.purpose}
         </p>

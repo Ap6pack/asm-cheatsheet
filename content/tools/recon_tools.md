@@ -7,7 +7,8 @@ These tools help identify external assets, perform passive enumeration, and unco
 ### Amass
 **Purpose:** Comprehensive DNS enumeration and network mapping  
 **Difficulty:** Beginner to Advanced  
-**Link:** https://github.com/owasp-amass/amass
+**Link:** https://github.com/owasp-amass/amass  
+**Status:** Active — OWASP project  
 
 **Installation:**
 ```bash
@@ -76,7 +77,8 @@ apikey = your_shodan_api_key
 ### Subfinder
 **Purpose:** Fast passive subdomain discovery  
 **Difficulty:** Beginner  
-**Link:** https://github.com/projectdiscovery/subfinder
+**Link:** https://github.com/projectdiscovery/subfinder  
+**Status:** Active — maintained by ProjectDiscovery  
 
 **Installation:**
 ```bash
@@ -124,7 +126,8 @@ virustotal:
 ### Shodan
 **Purpose:** Internet-connected device search engine  
 **Difficulty:** Intermediate  
-**Link:** https://www.shodan.io
+**Link:** https://www.shodan.io  
+**Status:** Active — commercial service with a free tier  
 
 **Installation:**
 ```bash
@@ -193,7 +196,8 @@ print(f"Operating System: {host.get('os', 'Unknown')}")
 ### Censys
 **Purpose:** Internet-wide scanning and certificate transparency  
 **Difficulty:** Intermediate  
-**Link:** https://censys.io
+**Link:** https://censys.io  
+**Status:** Active — commercial service with a free tier  
 
 **Installation:**
 ```bash
@@ -229,7 +233,8 @@ for page in h.search("services.service_name: HTTP", per_page=100, pages=5):
 ### theHarvester
 **Purpose:** Email, subdomain, and host OSINT gathering  
 **Difficulty:** Beginner  
-**Link:** https://github.com/laramies/theHarvester
+**Link:** https://github.com/laramies/theHarvester  
+**Status:** Active  
 
 **Installation:**
 ```bash
@@ -275,7 +280,8 @@ python3 theHarvester.py -d example.com -b google -v
 ### Recon-ng
 **Purpose:** Full-featured reconnaissance framework  
 **Difficulty:** Intermediate to Advanced  
-**Link:** https://github.com/lanmaster53/recon-ng
+**Link:** https://github.com/lanmaster53/recon-ng  
+**Status:** Legacy — still functional, but many modules depend on APIs that have changed; prefer BBOT or the ProjectDiscovery chain for new work  
 
 **Installation:**
 ```bash
@@ -338,7 +344,8 @@ run
 ### DNSRecon
 **Purpose:** DNS enumeration and zone transfer testing  
 **Difficulty:** Intermediate  
-**Link:** https://github.com/darkoperator/dnsrecon
+**Link:** https://github.com/darkoperator/dnsrecon  
+**Status:** Active — stable, low-frequency releases  
 
 **Installation:**
 ```bash
@@ -368,7 +375,8 @@ python3 dnsrecon.py -d example.com -t snoop
 ### Fierce
 **Purpose:** Domain scanner and subdomain brute forcer  
 **Difficulty:** Beginner  
-**Link:** https://github.com/mschwager/fierce
+**Link:** https://github.com/mschwager/fierce  
+**Status:** Legacy — superseded by dnsx and subfinder for most DNS enumeration workflows  
 
 **Installation:**
 ```bash

@@ -14,7 +14,8 @@ Cloud enumeration is critical for ASM because:
 ## 🔍 CloudEnum
 **Purpose:** Multi-cloud asset enumeration for AWS, Azure, and GCP  
 **Difficulty:** Beginner to Intermediate  
-**Link:** https://github.com/initstring/cloud_enum
+**Link:** https://github.com/initstring/cloud_enum  
+**Status:** Active  
 
 **Installation:**
 ```bash
@@ -145,7 +146,8 @@ python3 cloud_enum.py -k company --gcp-only
 ## 🛡️ Scout Suite
 **Purpose:** Multi-cloud security auditing and misconfiguration detection  
 **Difficulty:** Intermediate to Advanced  
-**Link:** https://github.com/nccgroup/ScoutSuite
+**Link:** https://github.com/nccgroup/ScoutSuite  
+**Status:** Active — maintained by NCC Group  
 
 **Installation:**
 ```bash
@@ -217,7 +219,8 @@ scout aws --list-services
 ## ⚔️ Pacu
 **Purpose:** AWS exploitation framework for penetration testing  
 **Difficulty:** Advanced  
-**Link:** https://github.com/RhinoSecurityLabs/pacu
+**Link:** https://github.com/RhinoSecurityLabs/pacu  
+**Status:** Active — maintained by Rhino Security Labs  
 
 **Installation:**
 ```bash

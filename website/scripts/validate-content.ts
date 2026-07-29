@@ -14,6 +14,7 @@ import {
   getAllQuizzes,
   getAllGuides,
   getAllLabs,
+  getAllReferencePages,
   getSearchEntries,
 } from '../src/lib/content/loader';
 
@@ -117,6 +118,15 @@ async function main() {
     }
   }
   ok(`${labs.length} labs validated`);
+
+  // Reference pages are manifest-driven; extractReferencePages() throws on a
+  // missing file or duplicate slug, so reaching here means the manifest is sound.
+  const referencePages = await getAllReferencePages();
+  check(referencePages.length > 0, 'No reference pages published from content/reference-pages.json');
+  for (const page of referencePages) {
+    check(page.content.trim().length > 0, `Reference page "${page.slug}" resolves to an empty file`);
+  }
+  ok(`${referencePages.length} reference pages published`);
 
   const searchEntries = await getSearchEntries();
   check(searchEntries.length > 0, 'Search index is empty');

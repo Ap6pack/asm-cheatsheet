@@ -4,7 +4,7 @@ This directory contains practical automation scripts for Attack Surface Manageme
 
 ## 🔗 Related Resources
 
-- **[Getting Started Guide](../GETTING_STARTED.md)** - Learn the basics before using these scripts
+- **[Getting Started Guide](../getting-started.md)** - Learn the basics before using these scripts
 - **[Practical Workflows](../examples/practical_workflows.md)** - See these scripts in action
 - **[Security Considerations](../resources/security_considerations.md)** - Important legal and ethical guidelines
 - **[Learning Guide](../resources/learning_guide.md)** - Structured learning path for ASM automation
