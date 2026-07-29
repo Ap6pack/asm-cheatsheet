@@ -11,6 +11,21 @@ export async function generateStaticParams() {
   return caseStudies.map((cs) => ({ slug: cs.slug }));
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const items = await getAllCaseStudies();
+  const item = items.find((c) => c.slug === slug);
+  if (!item) return {};
+  return {
+    title: `${item.title} - Case Study`,
+    description: (item.challenge || `ASM case study: ${item.title}.`).slice(0, 160),
+  };
+}
+
 export default async function CaseStudyDetailPage({
   params,
 }: {

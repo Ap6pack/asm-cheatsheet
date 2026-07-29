@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Open Graph image and per-page metadata.** A statically-generated 1200×630 OG image plus `generateMetadata` on every route — previously 7 of 17 pages (including the homepage and *every* detail route, ~40 generated pages) shared one generic title, and social shares rendered a blank card with a `localhost` image URL.
+- **Optional privacy-respecting analytics.** Cookieless Plausible or Umami, entirely env-gated and **off by default** — self-hosted builds and local development send nothing. Documented in [website/.env.example](website/.env.example).
+- **[SECURITY.md](SECURITY.md)** — a disclosure policy with scope, response targets, and safe-testing guidance. A project that teaches responsible disclosure previously had no channel to receive it.
+- **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** — Contributor Covenant 2.1 with security-specific expectations around authorization boundaries.
+- **[Dependabot](.github/dependabot.yml)** — grouped weekly npm updates and monthly GitHub Actions updates, so advisory backlogs don't accumulate again.
+- **Bookmarks across all content types.** The store already supported tools, workflows, and scenarios but only commands had a button; bookmarking now works on tools, workflows, scenarios, and labs.
 - **[Modern ASM Toolchain](content/tools/modern_tools.md)** — 15 newly documented tools covering the stack most external ASM work actually runs on today: **nuclei**, **httpx**, **katana**, **naabu**, **dnsx**, **tlsx**, **asnmap**, **ffuf**, **gau**, **TruffleHog**, **Gitleaks**, **BBOT**, **uncover**, **notify**, and **cloudlist** — each with purpose, install, usage, and pipeline examples, plus an end-to-end assessment script. Tool coverage went from 11 to 26.
 - **Maintenance status on every tool.** A `**Status:**` field distinguishes actively-maintained tools from legacy ones, surfaced as a badge on tool cards and detail pages, with an explanatory callout on legacy tools (Recon-ng and Fierce) pointing at modern replacements.
 - **Rewrote [Integrating Threat Intelligence](content/guides/integrating_threat_intel.md)** from a 24-line outline into a full guide — CISA KEV/EPSS-first prioritization, a normalize → correlate → score → act pipeline, a working KEV cross-reference script, a transparent risk-scoring formula, and operational cautions. It is Module 9's primary resource.
@@ -61,6 +67,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **[README.md](README.md)** - Updated with references to new quick reference materials, implementation guide, and reading list
 - **[CONTRIBUTORS.md](CONTRIBUTORS.md)**, **[GETTING_STARTED.md](GETTING_STARTED.md)** - Minor documentation and formatting improvements
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Added website development workflow, quiz, lab, and reference-page contribution guidance
+
+### Security
+- **Reduced dependency advisories from 63 to 15** (eliminating the 1 critical and 27 of 35 highs) by updating Next.js and Vitest to patched releases and pinning patched versions of transitive build-toolchain packages. The deployed site is a static export, so the Next.js *server* advisories never affected it at runtime — this is build-pipeline supply-chain hygiene, now maintained automatically by Dependabot.
 
 ### Fixed
 - **Tool docs silently lost their usage examples.** The extractor matched usage headings against a hardcoded allowlist of names, so any doc using a different heading extracted zero examples (Fierce shipped with none). It now matches on heading shape.

@@ -24,6 +24,14 @@ import {
 } from "@/lib/content/loader";
 import { ConditionalProgress } from "@/components/dashboard/conditional-progress";
 
+export const metadata = {
+  // Root layout supplies the default title; setting it here would double-apply
+  // the "%s | ASM Cheatsheet" template on the homepage.
+  description:
+    "Interactive Attack Surface Management reference: 26 documented tools, a 12-module learning path with knowledge checks, real-world workflows, and interactive incident-replay labs.",
+  alternates: { canonical: "/" },
+};
+
 export default async function Home() {
   const [modules, workflows, scenarios, caseStudies, tools, commands, labs] =
     await Promise.all([

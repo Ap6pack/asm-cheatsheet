@@ -1,0 +1,48 @@
+version: 2
+
+updates:
+  # Website dependencies. Grouped so routine patch/minor churn arrives as a few
+  # reviewable PRs rather than dozens — the reason the previous backlog of
+  # advisories went unaddressed.
+  - package-ecosystem: npm
+    directory: /website
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    groups:
+      next:
+        patterns:
+          - "next"
+          - "@next/*"
+          - "eslint-config-next"
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+      radix:
+        patterns:
+          - "@radix-ui/*"
+      dev-tooling:
+        dependency-type: development
+        patterns:
+          - "*"
+      production-minor-patch:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+
+  # Keep the CI workflow's actions current — stale action versions are their own
+  # supply-chain risk.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    labels:
+      - dependencies
+      - ci

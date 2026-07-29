@@ -88,6 +88,8 @@ The interactive site at [asm-cheatsheet.vercel.app](https://asm-cheatsheet.verce
 cd website
 pnpm install
 
+cp .env.example .env.local   # optional — all values have safe defaults
+
 pnpm dev               # local dev server at http://localhost:3000
 pnpm validate:content  # check that content/ parses correctly (run after editing content)
 pnpm typecheck         # TypeScript

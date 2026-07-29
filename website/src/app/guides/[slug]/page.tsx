@@ -10,6 +10,21 @@ export async function generateStaticParams() {
   return guides.map((g) => ({ slug: g.slug }));
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const items = await getAllGuides();
+  const item = items.find((g) => g.slug === slug);
+  if (!item) return {};
+  return {
+    title: `${item.title} - Guide`,
+    description: (item.description || `In-depth ASM guide: ${item.title}.`).slice(0, 160),
+  };
+}
+
 export default async function GuideDetailPage({
   params,
 }: {

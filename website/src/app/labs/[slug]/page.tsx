@@ -7,6 +7,7 @@ import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { MDXRenderer } from "@/components/content/mdx-renderer";
 import { LabExperience } from "@/components/labs/lab-experience";
 import { EditOnGitHub } from "@/components/content/edit-on-github";
+import { BookmarkButton } from "@/components/content/bookmark-button";
 import { Clock, ExternalLink, Lightbulb, Info } from "lucide-react";
 
 export async function generateStaticParams() {
@@ -53,6 +54,12 @@ export default async function LabPage({
             <Clock className="h-3.5 w-3.5" />
             {lab.estimatedMinutes} min
           </span>
+          <BookmarkButton
+            id={lab.slug}
+            type="lab"
+            title={lab.title}
+            category={lab.category}
+          />
         </div>
         <h1 className="text-3xl font-bold">{lab.title}</h1>
         <p className="mt-1 text-lg text-[var(--muted-foreground)]">

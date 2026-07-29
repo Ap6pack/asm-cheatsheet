@@ -74,6 +74,23 @@ export async function generateStaticParams() {
   return modules.map((m) => ({ slug: `module-${m.id}` }));
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const modules = await getAllModules();
+  const mod = modules.find((m) => `module-${m.id}` === slug);
+  if (!mod) return {};
+  const objective = mod.objectives[0] ?? `Learn ${mod.title}.`;
+  return {
+    title: `Module ${mod.id}: ${mod.title}`,
+    description:
+      `${objective} ${mod.timeEstimate.display} · ${mod.track}.`.slice(0, 160),
+  };
+}
+
 export default async function ModulePage({
   params,
 }: {

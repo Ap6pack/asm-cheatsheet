@@ -5,13 +5,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useBookmarksStore, useHydration } from "@/lib/stores";
-import { Bookmark, X, Terminal, Wrench, GitBranch, Shield } from "lucide-react";
+import {
+  Bookmark,
+  X,
+  Terminal,
+  Wrench,
+  GitBranch,
+  Shield,
+  FlaskConical,
+} from "lucide-react";
 
 const typeIcons: Record<string, React.ElementType> = {
   command: Terminal,
   tool: Wrench,
   workflow: GitBranch,
   scenario: Shield,
+  lab: FlaskConical,
 };
 
 const typeUrls: Record<string, (id: string) => string> = {
@@ -19,6 +28,7 @@ const typeUrls: Record<string, (id: string) => string> = {
   tool: (id) => `/tools/${id}`,
   workflow: (id) => `/workflows/${id}`,
   scenario: (id) => `/scenarios/${id}`,
+  lab: (id) => `/labs/${id}`,
 };
 
 export function BookmarksList() {
