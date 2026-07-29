@@ -207,6 +207,12 @@ export interface Lab {
   disclaimer?: string;
   /** Reconstructed action clusters, shown as a header stat when present. */
   clusters?: number;
+  /**
+   * Total recovered actions for display. May exceed the sum of phase totals
+   * when not every recovered action was classified into a phase (as in the
+   * source report). Defaults to the sum of phase totals when omitted.
+   */
+  totalActions?: number;
   summary: string; // markdown overview
   stages: LabStage[];
   phases: LabPhase[];

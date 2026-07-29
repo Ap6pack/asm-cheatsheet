@@ -20,8 +20,13 @@ export interface ReplayState {
   isComplete: boolean;
 }
 
-/** Sum of every phase's final action total — the grand total for the lab. */
+/**
+ * The grand total shown as the denominator. Uses the lab's explicit
+ * totalActions when set (some recovered actions may be unclassified), else
+ * falls back to the sum of phase totals.
+ */
 export function getTotalActions(lab: Lab): number {
+  if (typeof lab.totalActions === "number") return lab.totalActions;
   return lab.phases.reduce((sum, p) => sum + p.total, 0);
 }
 

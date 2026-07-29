@@ -2,7 +2,34 @@ import { describe, it, expect } from "vitest";
 import { extractLabs, validateLab } from "@/lib/content/extractors";
 import { getTotalActions } from "@/lib/labs/replay";
 
-function makeValidLab() {
+interface MutableLab {
+  slug: string;
+  title: string;
+  subtitle: string;
+  category: string;
+  difficulty: string;
+  estimatedMinutes: number;
+  fictional: boolean;
+  summary: string;
+  source?: { label: string; url: string };
+  stages: { id: string; name: string }[];
+  phases: { id: string; label: string; total: number }[];
+  nodes: { id: string; stageId: string; group: string; label: string }[];
+  edges: { from: string; to: string; label?: string }[];
+  events: {
+    id: string;
+    t: string;
+    phaseId: string;
+    stageId: string;
+    actions: number;
+    title: string;
+    blastRadius: string;
+    ignites?: string[];
+  }[];
+  lessons: string[];
+}
+
+function makeValidLab(): MutableLab {
   return {
     slug: "sample",
     title: "Sample",

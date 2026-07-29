@@ -393,9 +393,13 @@ export function LabReplay({ lab }: { lab: Lab }) {
         <div className="flex items-center gap-2 rounded-xl border border-green-500 bg-green-50 p-4 text-sm dark:bg-green-900/20">
           <CheckCircle className="h-5 w-5 shrink-0 text-green-600 dark:text-green-400" />
           <span>
-            Replay complete — you followed all {formatNumber(totalActions)}{" "}
-            reconstructed actions across {lab.stages.length} stages. Review the
-            defensive lessons below.
+            Replay complete — you followed{" "}
+            {formatNumber(state.actionsReplayed)} classified actions across{" "}
+            {lab.stages.length} stages
+            {totalActions > state.actionsReplayed
+              ? ` (of ~${formatNumber(totalActions)} recovered)`
+              : ""}
+            . Review the defensive lessons below.
           </span>
         </div>
       )}

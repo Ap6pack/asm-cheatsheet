@@ -1227,11 +1227,25 @@ export function validateLab(
   }
 
   // The action counters only stay honest if event sums match phase totals
+  let phaseGrandTotal = 0;
   for (const [phaseId, total] of phaseTotals) {
     const sum = phaseSums.get(phaseId) ?? 0;
     if (sum !== total) {
       fail(
         `phase "${phaseId}" total is ${total} but its events sum to ${sum}`
+      );
+    }
+    phaseGrandTotal += total;
+  }
+
+  // A display total, when given, must not undercount the classified actions
+  if (lab.totalActions !== undefined) {
+    const totalActions = lab.totalActions;
+    if (typeof totalActions !== 'number' || totalActions < 0) {
+      fail('"totalActions" must be a non-negative number');
+    } else if (totalActions < phaseGrandTotal) {
+      fail(
+        `"totalActions" (${totalActions}) is less than the sum of phase totals (${phaseGrandTotal})`
       );
     }
   }
