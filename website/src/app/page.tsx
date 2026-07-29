@@ -1,14 +1,15 @@
 import Link from "next/link";
 import {
-  BookOpen,
   Terminal,
   Wrench,
   GitBranch,
   Shield,
   FileText,
   GraduationCap,
+  FlaskConical,
   ArrowRight,
   Target,
+  PlayCircle,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -19,11 +20,12 @@ import {
   getAllCaseStudies,
   getAllTools,
   getAllCommands,
+  getAllLabs,
 } from "@/lib/content/loader";
 import { ConditionalProgress } from "@/components/dashboard/conditional-progress";
 
 export default async function Home() {
-  const [modules, workflows, scenarios, caseStudies, tools, commands] =
+  const [modules, workflows, scenarios, caseStudies, tools, commands, labs] =
     await Promise.all([
       getAllModules(),
       getAllWorkflows(),
@@ -31,6 +33,7 @@ export default async function Home() {
       getAllCaseStudies(),
       getAllTools(),
       getAllCommands(),
+      getAllLabs(),
     ]);
 
   const stats = [
@@ -138,6 +141,41 @@ export default async function Home() {
             </Card>
           </Link>
         </div>
+      </section>
+
+      {/* Featured: Interactive Labs */}
+      <section>
+        <Link href="/labs">
+          <Card className="group overflow-hidden border-[var(--primary)]/40 transition-colors hover:border-[var(--primary)]">
+            <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+                  <FlaskConical className="h-6 w-6 text-[var(--primary)]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-semibold">
+                      Labs — Interactive Incident Replays
+                    </h3>
+                    <span className="rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--primary)]">
+                      New
+                    </span>
+                  </div>
+                  <p className="mt-1 max-w-xl text-sm text-[var(--muted-foreground)]">
+                    Press play and watch an intrusion unfold at machine speed —
+                    the attack chain lights up one trust boundary at a time, with
+                    the commands and the defensive lesson at every step.{" "}
+                    {labs.length} {labs.length === 1 ? "lab" : "labs"} available.
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-md bg-[var(--primary)] px-4 py-2 text-sm font-medium text-[var(--primary-foreground)] transition-opacity group-hover:opacity-90 sm:self-center">
+                <PlayCircle className="h-4 w-4" />
+                Open Labs
+              </span>
+            </CardContent>
+          </Card>
+        </Link>
       </section>
 
       <Separator />

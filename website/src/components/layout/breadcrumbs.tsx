@@ -8,6 +8,7 @@ const routeLabels: Record<string, string> = {
   learn: "Learning Path",
   commands: "Commands",
   tools: "Tools",
+  labs: "Labs",
   workflows: "Workflows",
   scenarios: "Scenarios",
   "case-studies": "Case Studies",

@@ -7,6 +7,7 @@ import type {
   Tool,
   Quiz,
   Guide,
+  Lab,
   SearchEntry,
 } from './types';
 import {
@@ -18,6 +19,7 @@ import {
   extractTools,
   extractQuizzes,
   extractGuides,
+  extractLabs,
 } from './extractors';
 
 // Simple in-memory cache
@@ -29,6 +31,7 @@ let caseStudiesCache: CaseStudy[] | null = null;
 let toolsCache: Tool[] | null = null;
 let quizzesCache: Quiz[] | null = null;
 let guidesCache: Guide[] | null = null;
+let labsCache: Lab[] | null = null;
 let searchEntriesCache: SearchEntry[] | null = null;
 
 export async function getAllModules(): Promise<LearningModule[]> {
@@ -92,6 +95,18 @@ export async function getAllGuides(): Promise<Guide[]> {
     guidesCache = extractGuides();
   }
   return guidesCache;
+}
+
+export async function getAllLabs(): Promise<Lab[]> {
+  if (!labsCache) {
+    labsCache = extractLabs();
+  }
+  return labsCache;
+}
+
+export async function getLabBySlug(slug: string): Promise<Lab | null> {
+  const labs = await getAllLabs();
+  return labs.find((l) => l.slug === slug) ?? null;
 }
 
 export async function getSearchEntries(): Promise<SearchEntry[]> {
@@ -210,6 +225,30 @@ async function buildSearchEntries(): Promise<SearchEntry[]> {
     });
   }
 
+  const labs = await getAllLabs();
+  for (const lab of labs) {
+    entries.push({
+      id: `lab-${lab.slug}`,
+      title: lab.title,
+      type: 'lab',
+      content: [
+        lab.title,
+        lab.subtitle,
+        lab.summary,
+        ...lab.phases.map((p) => `${p.label} ${p.note ?? ''}`),
+        ...lab.nodes.map((n) => `${n.label} ${n.sub ?? ''} ${n.group}`),
+        ...lab.events.map((e) => `${e.title} ${e.detail ?? ''}`),
+      ]
+        .join(' ')
+        .replace(/[#*`\[\]()>|-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .slice(0, 5000),
+      url: `/labs/${lab.slug}`,
+      category: lab.category,
+      difficulty: lab.difficulty,
+    });
+  }
+
   return entries;
 }
 
@@ -225,5 +264,6 @@ export function clearCache(): void {
   toolsCache = null;
   quizzesCache = null;
   guidesCache = null;
+  labsCache = null;
   searchEntriesCache = null;
 }
