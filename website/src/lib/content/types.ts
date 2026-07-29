@@ -134,6 +134,111 @@ export interface Guide {
   content: string;
 }
 
+// ---- Interactive Incident-Replay labs (content/labs/*.json) ----
+
+export type LabDifficulty = 'beginner' | 'intermediate' | 'advanced';
+
+/** A stage groups phases into a high-level arc of the intrusion. */
+export interface LabStage {
+  id: string;
+  name: string;
+  note?: string;
+}
+
+/** A phase is an attacker activity category with a running action count. */
+export interface LabPhase {
+  id: string;
+  label: string;
+  note?: string;
+  /** Final cumulative action count once the whole replay has played. */
+  total: number;
+}
+
+/** A node in the attack-chain graph; ignites when the agent reaches it. */
+export interface LabNode {
+  id: string;
+  stageId: string;
+  group: string; // trust boundary / owner, e.g. "Hugging Face internal network"
+  label: string;
+  sub?: string;
+}
+
+/** A directed edge between attack-chain nodes. */
+export interface LabEdge {
+  from: string;
+  to: string;
+  label?: string;
+}
+
+/**
+ * A single point on the replay timeline. Playing the lab advances a playhead
+ * across the events in order; each one updates the active phase, ignites
+ * nodes, and adds to the action counters.
+ */
+export interface LabEvent {
+  id: string;
+  t: string; // ISO timestamp within [meta.startUtc, meta.endUtc]
+  phaseId: string;
+  stageId: string;
+  /** Actions attributed to this event (added to the phase + grand total). */
+  actions: number;
+  title: string;
+  detail?: string;
+  blastRadius: string; // e.g. "third-party sandbox", "HF internal network"
+  ignites?: string[]; // node ids reached at this event
+  commands?: string[]; // representative commands run during this event
+}
+
+export interface LabSource {
+  label: string;
+  url: string;
+}
+
+/**
+ * A defensive control for the "Break the Chain" mode. A control either severs
+ * the attack chain at a specific node (breaksAtNode) — that node and everything
+ * downstream of it becomes unreachable — or improves detection without cutting.
+ */
+export interface LabControl {
+  id: string;
+  label: string;
+  detail: string;
+  breaksAtNode?: string;
+  detection?: boolean;
+}
+
+export interface Lab {
+  slug: string;
+  title: string;
+  subtitle: string;
+  category: string;
+  difficulty: LabDifficulty;
+  estimatedMinutes: number;
+  /** Real incidents cite a public source; fictional training labs omit it. */
+  fictional: boolean;
+  source?: LabSource;
+  disclaimer?: string;
+  /** Reconstructed action clusters, shown as a header stat when present. */
+  clusters?: number;
+  /**
+   * Total recovered actions for display. May exceed the sum of phase totals
+   * when not every recovered action was classified into a phase (as in the
+   * source report). Defaults to the sum of phase totals when omitted.
+   */
+  totalActions?: number;
+  summary: string; // markdown overview
+  stages: LabStage[];
+  phases: LabPhase[];
+  nodes: LabNode[];
+  edges: LabEdge[];
+  events: LabEvent[];
+  lessons: string[];
+  /** Optional "Break the Chain" defender challenge. */
+  controls?: LabControl[];
+  /** How many controls the defender may deploy (defaults to all). */
+  defenderBudget?: number;
+}
+
 // Search index entry
 export interface SearchEntry {
   id: string;
@@ -145,7 +250,8 @@ export interface SearchEntry {
     | 'scenario'
     | 'case-study'
     | 'tool'
-    | 'guide';
+    | 'guide'
+    | 'lab';
   content: string; // searchable text
   url: string;
   category?: string;

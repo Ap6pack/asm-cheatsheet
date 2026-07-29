@@ -263,6 +263,31 @@ describe("useProgressStore", () => {
     });
   });
 
+  describe("lab progress", () => {
+    it("marks a lab complete and counts it", () => {
+      const store = useProgressStore.getState();
+      expect(store.isLabComplete("lab-1")).toBe(false);
+      expect(store.getTotalLabsCompleted()).toBe(0);
+
+      store.markLabComplete("lab-1");
+      expect(useProgressStore.getState().isLabComplete("lab-1")).toBe(true);
+      expect(useProgressStore.getState().getTotalLabsCompleted()).toBe(1);
+    });
+
+    it("does not double-count or overwrite a completed lab", () => {
+      const store = useProgressStore.getState();
+      store.markLabComplete("lab-1");
+      const first =
+        useProgressStore.getState().labProgress["lab-1"].completedAt;
+
+      store.markLabComplete("lab-1");
+      expect(
+        useProgressStore.getState().labProgress["lab-1"].completedAt
+      ).toBe(first);
+      expect(useProgressStore.getState().getTotalLabsCompleted()).toBe(1);
+    });
+  });
+
   describe("stats", () => {
     it("getTotalModulesStarted returns correct count", () => {
       const store = useProgressStore.getState();
@@ -287,6 +312,7 @@ describe("useProgressStore", () => {
       store.startWorkflow("wf-1");
       store.startScenario("sc-1");
       store.recordQuizAttempt("mod-1", 5, 5);
+      store.markLabComplete("lab-1");
 
       store.resetAll();
       const reset = useProgressStore.getState();
@@ -296,6 +322,7 @@ describe("useProgressStore", () => {
       expect(reset.workflowProgress).toEqual({});
       expect(reset.scenarioProgress).toEqual({});
       expect(reset.quizResults).toEqual({});
+      expect(reset.labProgress).toEqual({});
     });
   });
 });

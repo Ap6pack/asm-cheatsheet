@@ -40,6 +40,9 @@ interface ProgressState {
   // Quiz results keyed by module id
   quizResults: Record<string, QuizResult>;
 
+  // Labs the learner has played through to the end, keyed by slug
+  labProgress: Record<string, { completedAt: string }>;
+
   // Actions
   toggleCriterion: (moduleId: string, criterionId: string) => void;
   startModule: (moduleId: string) => void;
@@ -68,11 +71,15 @@ interface ProgressState {
   ) => void;
   isQuizPassed: (moduleId: string) => boolean;
 
+  markLabComplete: (slug: string) => void;
+  isLabComplete: (slug: string) => boolean;
+
   // Stats
   getTotalModulesStarted: () => number;
   getTotalWorkflowsCompleted: () => number;
   getTotalScenariosCompleted: () => number;
   getTotalQuizzesPassed: () => number;
+  getTotalLabsCompleted: () => number;
 
   // Reset
   resetAll: () => void;
@@ -84,6 +91,7 @@ const initialState = {
   workflowProgress: {} as Record<string, WorkflowProgress>,
   scenarioProgress: {} as Record<string, ScenarioProgress>,
   quizResults: {} as Record<string, QuizResult>,
+  labProgress: {} as Record<string, { completedAt: string }>,
 };
 
 export const useProgressStore = create<ProgressState>()(
@@ -264,6 +272,22 @@ export const useProgressStore = create<ProgressState>()(
         return quizResults[moduleId]?.passedAt !== undefined;
       },
 
+      markLabComplete: (slug: string) => {
+        set((state) => {
+          if (state.labProgress[slug]) return state;
+          return {
+            labProgress: {
+              ...state.labProgress,
+              [slug]: { completedAt: new Date().toISOString() },
+            },
+          };
+        });
+      },
+
+      isLabComplete: (slug: string) => {
+        return get().labProgress[slug] !== undefined;
+      },
+
       getTotalModulesStarted: () => {
         const { moduleStarted } = get();
         return Object.values(moduleStarted).filter(Boolean).length;
@@ -288,6 +312,10 @@ export const useProgressStore = create<ProgressState>()(
         return Object.values(quizResults).filter(
           (qr) => qr.passedAt !== undefined
         ).length;
+      },
+
+      getTotalLabsCompleted: () => {
+        return Object.keys(get().labProgress).length;
       },
 
       resetAll: () => {

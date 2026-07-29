@@ -11,6 +11,7 @@ Welcome to the ASM community! We're excited to have you contribute to making thi
 - **Security considerations** - Add legal, ethical, or technical guidance
 - **Learning materials** - Create tutorials, examples, or explanations
 - **Quiz questions** - Add knowledge-check questions to learning modules (see [content/quizzes/README.md](content/quizzes/README.md))
+- **Incident-replay labs** - Author an interactive attack-chain replay as JSON (see [content/labs/README.md](content/labs/README.md)) — real incidents (with a cited source) or fictional training scenarios
 
 ### 🔧 Technical Contributions
 - **Automation scripts** - Share useful ASM automation

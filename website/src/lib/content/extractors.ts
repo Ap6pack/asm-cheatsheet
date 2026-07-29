@@ -15,6 +15,8 @@ import type {
   Quiz,
   QuizQuestion,
   Guide,
+  Lab,
+  LabDifficulty,
 } from './types';
 
 // Base content directory - try multiple locations to support local dev and Vercel
@@ -1068,6 +1070,255 @@ export function extractGuides(): Guide[] {
       file,
       content,
     };
+  });
+}
+
+// ---- Incident-replay labs (content/labs/*.json) ----
+
+const LAB_DIFFICULTIES: LabDifficulty[] = [
+  'beginner',
+  'intermediate',
+  'advanced',
+];
+
+/**
+ * Validate a parsed lab file. Throws a descriptive error so a malformed
+ * contribution fails the build instead of rendering a broken replay.
+ * `expectedSlug` (the filename without extension) is cross-checked.
+ */
+export function validateLab(
+  data: unknown,
+  sourceFile: string,
+  expectedSlug?: string
+): Lab {
+  const fail = (msg: string): never => {
+    throw new Error(`Invalid lab in ${sourceFile}: ${msg}`);
+  };
+
+  if (typeof data !== 'object' || data === null) fail('not a JSON object');
+  const lab = data as Record<string, unknown>;
+
+  const str = (key: string) => {
+    if (typeof lab[key] !== 'string' || (lab[key] as string).length === 0) {
+      fail(`"${key}" must be a non-empty string`);
+    }
+    return lab[key] as string;
+  };
+
+  const slug = str('slug');
+  if (expectedSlug && slug !== expectedSlug) {
+    fail(`"slug" is "${slug}" but the filename is "${expectedSlug}.json"`);
+  }
+  str('title');
+  str('subtitle');
+  str('category');
+  str('summary');
+
+  if (!LAB_DIFFICULTIES.includes(lab.difficulty as LabDifficulty)) {
+    fail('"difficulty" must be beginner, intermediate, or advanced');
+  }
+  if (typeof lab.estimatedMinutes !== 'number' || lab.estimatedMinutes <= 0) {
+    fail('"estimatedMinutes" must be a positive number');
+  }
+  if (typeof lab.fictional !== 'boolean') {
+    fail('"fictional" must be a boolean');
+  }
+  if (!lab.fictional) {
+    const source = lab.source as Record<string, unknown> | undefined;
+    if (
+      !source ||
+      typeof source.url !== 'string' ||
+      typeof source.label !== 'string'
+    ) {
+      fail('a real (non-fictional) lab must cite a source with a label and url');
+    }
+  }
+
+  const stages = lab.stages;
+  if (!Array.isArray(stages) || stages.length === 0) {
+    fail('"stages" must be a non-empty array');
+  }
+  const stageIds = new Set<string>();
+  for (const s of stages as Record<string, unknown>[]) {
+    if (typeof s.id !== 'string' || typeof s.name !== 'string') {
+      fail('each stage needs a string id and name');
+    }
+    stageIds.add(s.id as string);
+  }
+
+  const phases = lab.phases;
+  if (!Array.isArray(phases) || phases.length === 0) {
+    fail('"phases" must be a non-empty array');
+  }
+  const phaseTotals = new Map<string, number>();
+  for (const p of phases as Record<string, unknown>[]) {
+    if (typeof p.id !== 'string' || typeof p.label !== 'string') {
+      fail('each phase needs a string id and label');
+    }
+    if (typeof p.total !== 'number' || p.total < 0) {
+      fail(`phase "${p.id}" needs a non-negative numeric "total"`);
+    }
+    phaseTotals.set(p.id as string, p.total as number);
+  }
+
+  const nodes = lab.nodes;
+  if (!Array.isArray(nodes) || nodes.length === 0) {
+    fail('"nodes" must be a non-empty array');
+  }
+  const nodeIds = new Set<string>();
+  for (const n of nodes as Record<string, unknown>[]) {
+    if (
+      typeof n.id !== 'string' ||
+      typeof n.label !== 'string' ||
+      typeof n.group !== 'string'
+    ) {
+      fail('each node needs a string id, label, and group');
+    }
+    if (!stageIds.has(n.stageId as string)) {
+      fail(`node "${n.id}" references unknown stageId "${n.stageId}"`);
+    }
+    nodeIds.add(n.id as string);
+  }
+
+  const edges = lab.edges;
+  if (!Array.isArray(edges)) fail('"edges" must be an array');
+  for (const e of edges as Record<string, unknown>[]) {
+    if (!nodeIds.has(e.from as string) || !nodeIds.has(e.to as string)) {
+      fail(`edge ${JSON.stringify(e)} references an unknown node`);
+    }
+  }
+
+  const events = lab.events;
+  if (!Array.isArray(events) || events.length === 0) {
+    fail('"events" must be a non-empty array');
+  }
+  const phaseSums = new Map<string, number>();
+  let prevTime = -Infinity;
+  for (const [i, raw] of (events as Record<string, unknown>[]).entries()) {
+    const label = `event ${i + 1}`;
+    if (typeof raw.id !== 'string') fail(`${label} needs a string id`);
+    if (typeof raw.title !== 'string') fail(`${label} needs a title`);
+    if (typeof raw.blastRadius !== 'string') {
+      fail(`${label} needs a blastRadius`);
+    }
+    if (!phaseTotals.has(raw.phaseId as string)) {
+      fail(`${label} references unknown phaseId "${raw.phaseId}"`);
+    }
+    if (!stageIds.has(raw.stageId as string)) {
+      fail(`${label} references unknown stageId "${raw.stageId}"`);
+    }
+    if (typeof raw.actions !== 'number' || raw.actions < 0) {
+      fail(`${label} needs a non-negative numeric "actions"`);
+    }
+    const t = Date.parse(raw.t as string);
+    if (Number.isNaN(t)) fail(`${label} has an invalid timestamp "${raw.t}"`);
+    if (t < prevTime) fail(`${label} timestamp is out of ascending order`);
+    prevTime = t;
+
+    for (const nodeId of (raw.ignites as string[] | undefined) ?? []) {
+      if (!nodeIds.has(nodeId)) {
+        fail(`${label} ignites unknown node "${nodeId}"`);
+      }
+    }
+    phaseSums.set(
+      raw.phaseId as string,
+      (phaseSums.get(raw.phaseId as string) ?? 0) + (raw.actions as number)
+    );
+  }
+
+  // The action counters only stay honest if event sums match phase totals
+  let phaseGrandTotal = 0;
+  for (const [phaseId, total] of phaseTotals) {
+    const sum = phaseSums.get(phaseId) ?? 0;
+    if (sum !== total) {
+      fail(
+        `phase "${phaseId}" total is ${total} but its events sum to ${sum}`
+      );
+    }
+    phaseGrandTotal += total;
+  }
+
+  // A display total, when given, must not undercount the classified actions
+  if (lab.totalActions !== undefined) {
+    const totalActions = lab.totalActions;
+    if (typeof totalActions !== 'number' || totalActions < 0) {
+      fail('"totalActions" must be a non-negative number');
+    } else if (totalActions < phaseGrandTotal) {
+      fail(
+        `"totalActions" (${totalActions}) is less than the sum of phase totals (${phaseGrandTotal})`
+      );
+    }
+  }
+
+  if (!Array.isArray(lab.lessons) || lab.lessons.length === 0) {
+    fail('"lessons" must be a non-empty array');
+  }
+
+  // Optional "Break the Chain" controls
+  if (lab.controls !== undefined) {
+    if (!Array.isArray(lab.controls) || lab.controls.length === 0) {
+      fail('"controls", when present, must be a non-empty array');
+    }
+    const seenControlIds = new Set<string>();
+    for (const raw of lab.controls as Record<string, unknown>[]) {
+      if (typeof raw.id !== 'string' || raw.id.length === 0) {
+        fail('each control needs a string id');
+      }
+      if (seenControlIds.has(raw.id as string)) {
+        fail(`duplicate control id "${raw.id}"`);
+      }
+      seenControlIds.add(raw.id as string);
+      if (typeof raw.label !== 'string' || typeof raw.detail !== 'string') {
+        fail(`control "${raw.id}" needs a label and detail`);
+      }
+      const hasCut =
+        typeof raw.breaksAtNode === 'string' && raw.breaksAtNode.length > 0;
+      const isDetection = raw.detection === true;
+      if (!hasCut && !isDetection) {
+        fail(
+          `control "${raw.id}" must either set breaksAtNode or detection: true`
+        );
+      }
+      if (hasCut && !nodeIds.has(raw.breaksAtNode as string)) {
+        fail(
+          `control "${raw.id}" breaksAtNode references unknown node "${raw.breaksAtNode}"`
+        );
+      }
+    }
+    if (lab.defenderBudget !== undefined) {
+      if (
+        typeof lab.defenderBudget !== 'number' ||
+        lab.defenderBudget < 1 ||
+        !Number.isInteger(lab.defenderBudget)
+      ) {
+        fail('"defenderBudget" must be a positive integer');
+      }
+    }
+  }
+
+  return lab as unknown as Lab;
+}
+
+export function extractLabs(): Lab[] {
+  const labsDir = path.join(getContentDir(), 'labs');
+  if (!fs.existsSync(labsDir)) return [];
+
+  const files = fs
+    .readdirSync(labsDir)
+    .filter((f) => f.endsWith('.json'))
+    .sort();
+
+  return files.map((file) => {
+    const raw = fs.readFileSync(path.join(labsDir, file), 'utf-8');
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
+      throw new Error(
+        `Invalid lab in labs/${file}: not valid JSON (${(err as Error).message})`
+      );
+    }
+    return validateLab(parsed, `labs/${file}`, file.replace(/\.json$/, ''));
   });
 }
 

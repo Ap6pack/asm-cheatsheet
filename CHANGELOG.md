@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Interactive Labs — Incident Replays**
+  - **"Break the Chain" defender challenge** — the flagship lab's headline mode. Instead of watching the intrusion win, you deploy a budgeted set of defensive controls (each mapped to the step it neutralizes); running the intrusion severs the attack chain at your earliest control, contains the blast radius, and grades how early you stopped it (A+ → F). Teaches which control kills which step and where the high-leverage chokepoints are. Watch mode remains available via a mode toggle.
+  - **A new `/labs` section** where an intrusion plays back at machine speed: a scrubber and speed controls drive a playhead across the timeline, the attack-chain graph ignites one trust boundary at a time, phase-activity bars fill, and stat tiles (actions replayed, active phase, blast radius) update live. Respects `prefers-reduced-motion`.
+  - **Flagship lab: "Anatomy of a Frontier-Lab Agent Intrusion"** — an educational reconstruction of the publicly-reported July 2026 incident ([Hugging Face write-up](https://huggingface.co/blog/agent-intrusion-technical-timeline)), ~17,600 reconstructed actions across two stages and nine phases, with source attribution and a disclaimer.
+  - **Fictional training lab: "Shadow IT to Customer Data at Northwind"** — a non-sensitive template showing how a single forgotten subdomain chains to a breach.
+  - **Labs are contributor-authorable JSON** ([content/labs/](content/labs/), with a [format guide](content/labs/README.md)), schema-validated in CI — including a check that each phase's per-event action counts sum to its declared total.
+  - Labs are indexed for search, added to the sitemap, and surfaced on the homepage and sidebar.
+
 - **Learning Platform Modernization**
   - **Module knowledge-check quizzes** - All 12 learning modules now end with an interactive quiz (60 questions total, defined in [content/quizzes/](content/quizzes/)) with explanations, pass tracking, and retakes
   - **[content/quizzes/README.md](content/quizzes/README.md)** - Contributor guide for the quiz JSON format, schema-validated in CI

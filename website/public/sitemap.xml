@@ -21,6 +21,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://asm-cheatsheet.vercel.app/labs</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://asm-cheatsheet.vercel.app/workflows</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -239,5 +244,15 @@
     <loc>https://asm-cheatsheet.vercel.app/guides/integrating_threat_intel</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/labs/frontier-lab-agent-intrusion-2026-07</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/labs/northwind-shadow-it-breach</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>

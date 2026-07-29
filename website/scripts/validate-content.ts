@@ -13,6 +13,7 @@ import {
   getAllTools,
   getAllQuizzes,
   getAllGuides,
+  getAllLabs,
   getSearchEntries,
 } from '../src/lib/content/loader';
 
@@ -92,6 +93,30 @@ async function main() {
   const guides = await getAllGuides();
   check(guides.length > 0, 'No guides found in content/guides/');
   ok(`${guides.length} guides extracted`);
+
+  // Labs are schema-validated (including per-phase action sums) inside
+  // extractLabs(); here we assert cross-references resolve at the set level.
+  const labs = await getAllLabs();
+  check(labs.length > 0, 'No labs found in content/labs/');
+  for (const lab of labs) {
+    check(
+      lab.events.length > 0,
+      `Lab "${lab.slug}" has no timeline events`
+    );
+    check(
+      lab.nodes.length > 0,
+      `Lab "${lab.slug}" has no attack-chain nodes`
+    );
+    const ignited = new Set(lab.events.flatMap((e) => e.ignites ?? []));
+    for (const node of lab.nodes) {
+      if (!ignited.has(node.id)) {
+        console.warn(
+          `⚠ Lab "${lab.slug}" node "${node.id}" is never ignited by an event`
+        );
+      }
+    }
+  }
+  ok(`${labs.length} labs validated`);
 
   const searchEntries = await getSearchEntries();
   check(searchEntries.length > 0, 'Search index is empty');
