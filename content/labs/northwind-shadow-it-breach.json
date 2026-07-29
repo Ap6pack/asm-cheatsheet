@@ -93,5 +93,44 @@
     "Long-lived deploy keys in backups chain cloud access into network access. Use short-lived, scoped credentials, and keep secrets out of anything that gets backed up in the clear.",
     "A flat network means one foothold equals full reach. Segment build infrastructure from production, and don't let a CI runner talk to the customer database.",
     "Every link here was a routine ASM finding — a forgotten subdomain, an open bucket, a reused credential. Continuous discovery catches these while they are still just findings, not incident timelines."
+  ],
+  "defenderBudget": 2,
+  "controls": [
+    {
+      "id": "ct-monitoring",
+      "label": "Monitor certificate transparency; decommission stale hosts",
+      "detail": "Watch CT logs for every certificate issued under your domain and retire hosts you no longer run. The forgotten staging subdomain never becomes a live target — the single highest-leverage control, because it's the one that knows your attack surface.",
+      "breaksAtNode": "staging-app"
+    },
+    {
+      "id": "harden-staging",
+      "label": "Disable debug endpoints; no prod credentials in staging",
+      "detail": "Ship builds with debug disabled and never place production cloud credentials in a staging environment. The debug endpoint has nothing to leak, so the foothold on staging never becomes cloud access.",
+      "breaksAtNode": "s3-bucket"
+    },
+    {
+      "id": "secrets-out-of-backups",
+      "label": "Short-lived scoped credentials; no secrets in backups",
+      "detail": "Keep long-lived deploy keys out of anything that gets backed up in the clear, and scope credentials tightly. Reading the backup bucket yields no reusable key, so the CI runner stays out of reach.",
+      "breaksAtNode": "ci-runner"
+    },
+    {
+      "id": "segment-ci-network",
+      "label": "Isolate CI runners from the production network",
+      "detail": "Put build infrastructure on its own segment with no path to production services. A foothold on the CI runner reaches nothing internal.",
+      "breaksAtNode": "vpc-internal"
+    },
+    {
+      "id": "segment-database",
+      "label": "Segment and restrict the customer database",
+      "detail": "Don't let anything in the VPC reach the customer database; require specific, authenticated principals. A general internal foothold can't touch customer data.",
+      "breaksAtNode": "db"
+    },
+    {
+      "id": "continuous-discovery",
+      "label": "Continuous attack-surface discovery + alerting",
+      "detail": "Run discovery on a schedule and alert on new or changed assets. It doesn't sever the chain, but it surfaces the forgotten host and the open bucket as findings — days before an attacker chains them.",
+      "detection": true
+    }
   ]
 }

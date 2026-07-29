@@ -135,3 +135,32 @@ describe("computeContainment on the real flagship lab", () => {
     expect(r.reachedNodeIds).toContain("source-control");
   });
 });
+
+describe("computeContainment on the Northwind lab", () => {
+  const northwind = extractLabs().find(
+    (l) => l.slug === "northwind-shadow-it-breach"
+  ) as Lab;
+
+  it("ships a Break-the-Chain challenge", () => {
+    expect(northwind.controls?.length).toBeGreaterThan(0);
+    expect(northwind.defenderBudget).toBeGreaterThan(0);
+  });
+
+  it("CT monitoring contains the whole chain at the source", () => {
+    const r = computeContainment(northwind, ["ct-monitoring"]);
+    expect(r.reachedNodeIds).toEqual(["ct-logs"]);
+    expect(r.tier).toBe("A+");
+  });
+
+  it("segmenting only the database still lets the network fall", () => {
+    const r = computeContainment(northwind, ["segment-database"]);
+    expect(r.reachedNodeIds).toContain("vpc-internal");
+    expect(r.reachedNodeIds).not.toContain("db");
+  });
+
+  it("no controls ends at the customer database (full compromise)", () => {
+    const r = computeContainment(northwind, []);
+    expect(r.tier).toBe("F");
+    expect(r.reachedNodeIds).toContain("db");
+  });
+});
