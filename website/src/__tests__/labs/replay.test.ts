@@ -3,6 +3,7 @@ import {
   computeReplayState,
   getReplayBounds,
   getTotalActions,
+  getPhaseTotal,
   msToFraction,
   nextEventFraction,
   prevEventFraction,
@@ -107,7 +108,9 @@ describe("replay helpers", () => {
     for (const f of [0, 0.25, 0.5, 0.75, 1]) {
       const s = computeReplayState(lab, f);
       for (const p of lab.phases) {
-        expect(s.phaseCounts[p.id]).toBeLessThanOrEqual(p.total);
+        expect(s.phaseCounts[p.id]).toBeLessThanOrEqual(
+          getPhaseTotal(lab, p.id)
+        );
       }
     }
   });

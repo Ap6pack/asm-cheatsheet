@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 
 export interface Bookmark {
   id: string;
-  type: "command" | "tool" | "workflow" | "scenario";
+  type: "command" | "tool" | "workflow" | "scenario" | "lab";
   title: string;
   category?: string;
   addedAt: string;

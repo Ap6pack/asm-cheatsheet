@@ -179,13 +179,20 @@ export interface LabStage {
   note?: string;
 }
 
-/** A phase is an attacker activity category with a running action count. */
+/** A phase is an attacker activity category with a running progress count. */
 export interface LabPhase {
   id: string;
   label: string;
   note?: string;
-  /** Final cumulative action count once the whole replay has played. */
-  total: number;
+  /**
+   * Final cumulative action count once the whole replay has played.
+   *
+   * Optional on purpose. Only incidents whose responders published action
+   * telemetry can state this honestly; for everything else the replay counts
+   * timeline events instead, rather than inventing a number that implies
+   * forensic precision the public record doesn't support.
+   */
+  total?: number;
 }
 
 /** A node in the attack-chain graph; ignites when the agent reaches it. */
@@ -214,8 +221,11 @@ export interface LabEvent {
   t: string; // ISO timestamp within [meta.startUtc, meta.endUtc]
   phaseId: string;
   stageId: string;
-  /** Actions attributed to this event (added to the phase + grand total). */
-  actions: number;
+  /**
+   * Actions attributed to this event. Present only for labs built from
+   * published action telemetry; see LabPhase.total.
+   */
+  actions?: number;
   title: string;
   detail?: string;
   blastRadius: string; // e.g. "third-party sandbox", "HF internal network"

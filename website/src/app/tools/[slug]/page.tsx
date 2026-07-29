@@ -6,10 +6,26 @@ import { ToolStatusBadge } from "@/components/tools/tool-status-badge";
 import { Separator } from "@/components/ui/separator";
 import { ExternalLink } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
+import { BookmarkButton } from "@/components/content/bookmark-button";
 
 export async function generateStaticParams() {
   const tools = await getAllTools();
   return tools.map((t) => ({ slug: t.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const items = await getAllTools();
+  const item = items.find((t) => t.slug === slug);
+  if (!item) return {};
+  return {
+    title: `${item.name} - Tool`,
+    description: (item.purpose || `How to install and use ${item.name} for attack surface management.`).slice(0, 160),
+  };
 }
 
 export default async function ToolDetailPage({
@@ -33,6 +49,12 @@ export default async function ToolDetailPage({
             <Badge variant="outline">{tool.difficulty}</Badge>
           )}
           <ToolStatusBadge status={tool.status} note={tool.statusNote} />
+          <BookmarkButton
+            id={tool.slug}
+            type="tool"
+            title={tool.name}
+            category={tool.category}
+          />
         </div>
         {tool.status === "legacy" && tool.statusNote && (
           <p className="mb-3 rounded-md border border-amber-500/40 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">

@@ -1,0 +1,145 @@
+{
+  "slug": "capital-one-ssrf-2019",
+  "title": "One SSRF to 106 Million Records",
+  "subtitle": "The 2019 Capital One breach, reconstructed from the public record",
+  "category": "Incident Replay",
+  "difficulty": "intermediate",
+  "estimatedMinutes": 18,
+  "fictional": false,
+  "source": {
+    "label": "U.S. Department of Justice — United States v. Paige Thompson (W.D. Wash.)",
+    "url": "https://www.justice.gov/usao-wdwa/united-states-v-paige-thompson"
+  },
+  "disclaimer": "Educational reconstruction based on public court records and Capital One's disclosure. This replay is event-counted rather than action-counted: unlike incidents where responders published action telemetry, the public record supports a sequence of events, not a per-step action tally. Dates come from the public record; the commands shown are representative illustrations of the documented techniques, not recovered artifacts.",
+  "summary": "In 2019 a single **server-side request forgery** against a misconfigured web application firewall turned into the theft of **106 million** credit card applicants' records. The chain is short and every link is an ordinary cloud misconfiguration: an internet-facing WAF that could be coerced into making requests on the attacker's behalf, an EC2 metadata service that handed out credentials to anyone who asked, an IAM role with far more S3 access than it needed, and no alerting on bulk data egress. The intrusion began in March 2019 and was not discovered until July — and then only because someone emailed Capital One's responsible-disclosure address after the attacker posted about it publicly. Press play, then switch to Defend mode and try to break the chain.",
+  "stages": [
+    { "id": "stage-1", "name": "From the internet to credentials", "note": "SSRF against a misconfigured WAF" },
+    { "id": "stage-2", "name": "Data discovery and exfiltration", "note": "over-permissioned role, 700+ buckets" }
+  ],
+  "phases": [
+    { "id": "recon", "label": "recon", "note": "finding the exposed, misconfigured proxy" },
+    { "id": "ssrf", "label": "ssrf", "note": "coercing the WAF into internal requests" },
+    { "id": "cred-access", "label": "cred-access", "note": "harvesting instance role credentials" },
+    { "id": "discovery", "label": "discovery", "note": "enumerating what the role can reach" },
+    { "id": "exfil", "label": "exfil", "note": "bulk copy of S3 objects" },
+    { "id": "impact", "label": "impact", "note": "cryptomining on stolen compute" },
+    { "id": "detection", "label": "detection", "note": "external tip, months later" }
+  ],
+  "nodes": [
+    { "id": "internet", "stageId": "stage-1", "group": "Public internet", "label": "Internet-facing endpoint", "sub": "attacker's starting position" },
+    { "id": "waf", "stageId": "stage-1", "group": "Capital One AWS · perimeter", "label": "Misconfigured WAF", "sub": "EC2 · coercible into internal requests" },
+    { "id": "imds", "stageId": "stage-1", "group": "Capital One AWS · instance", "label": "Instance metadata service", "sub": "169.254.169.254 · IMDSv1" },
+    { "id": "iam-role", "stageId": "stage-1", "group": "Capital One AWS · instance", "label": "WAF instance role", "sub": "temporary credentials · broad S3 access" },
+    { "id": "s3", "stageId": "stage-2", "group": "Capital One AWS · storage", "label": "S3 buckets", "sub": "700+ buckets readable by the role" },
+    { "id": "customer-data", "stageId": "stage-2", "group": "Capital One AWS · storage", "label": "Customer records", "sub": "credit card applications · SSNs · account numbers" }
+  ],
+  "edges": [
+    { "from": "internet", "to": "waf", "label": "reach the proxy" },
+    { "from": "waf", "to": "imds", "label": "SSRF" },
+    { "from": "imds", "to": "iam-role", "label": "request credentials" },
+    { "from": "iam-role", "to": "s3", "label": "list + read" },
+    { "from": "s3", "to": "customer-data", "label": "sync" }
+  ],
+  "events": [
+    {
+      "id": "e01", "t": "2019-03-22T00:00:00Z", "phaseId": "recon", "stageId": "stage-1",
+      "title": "Finding an exposed, misconfigured proxy", "blastRadius": "public internet", "ignites": ["internet", "waf"],
+      "detail": "The public record dates the first unauthorized access to on or about 22 March 2019. The entry point is an internet-facing web application firewall running on EC2 whose configuration allows it to be coerced into making requests on a caller's behalf.",
+      "commands": ["# identify internet-facing hosts and the proxy in front of them", "curl -sI https://<target-endpoint>/"]
+    },
+    {
+      "id": "e02", "t": "2019-03-22T01:00:00Z", "phaseId": "ssrf", "stageId": "stage-1",
+      "title": "SSRF reaches the metadata service", "blastRadius": "EC2 instance", "ignites": ["imds"],
+      "detail": "The WAF is induced to request a URL of the attacker's choosing. Pointed at the link-local metadata address, it returns the instance's own metadata — a resource that is supposed to be reachable only from the instance itself.",
+      "commands": ["# coerce the proxy into fetching the link-local metadata address", "# -> http://169.254.169.254/latest/meta-data/"]
+    },
+    {
+      "id": "e03", "t": "2019-03-22T01:30:00Z", "phaseId": "cred-access", "stageId": "stage-1",
+      "title": "Instance role credentials retrieved", "blastRadius": "AWS account", "ignites": ["iam-role"],
+      "detail": "Metadata exposes the IAM role attached to the instance, and then the temporary credentials issued to it. On IMDSv1 this is a plain GET — no token, no proof the request came from the instance's own workload.",
+      "commands": [
+        "# role name, then its temporary credentials",
+        "GET /latest/meta-data/iam/security-credentials/",
+        "GET /latest/meta-data/iam/security-credentials/<role-name>"
+      ]
+    },
+    {
+      "id": "e04", "t": "2019-03-22T02:00:00Z", "phaseId": "discovery", "stageId": "stage-2",
+      "title": "Enumerating what the role can reach", "blastRadius": "AWS account", "ignites": ["s3"],
+      "detail": "The credentials belong to a WAF — a component whose job needs almost no storage access. Instead the role can list and read across the account's S3 estate. Court records describe access to more than 700 buckets.",
+      "commands": ["aws s3 ls", "aws s3 ls s3://<bucket>/ --recursive | head"]
+    },
+    {
+      "id": "e05", "t": "2019-03-22T03:00:00Z", "phaseId": "exfil", "stageId": "stage-2",
+      "title": "Bulk copy of customer records", "blastRadius": "customer data", "ignites": ["customer-data"],
+      "detail": "Data is synced out in bulk: credit card application data spanning years, together with Social Security numbers and bank account numbers for a subset of applicants. Roughly 106 million individuals across the US and Canada were affected. Nothing in the environment alerted on the volume of egress.",
+      "commands": ["aws s3 sync s3://<bucket> ./local-copy", "# repeated across hundreds of buckets"]
+    },
+    {
+      "id": "e06", "t": "2019-04-01T00:00:00Z", "phaseId": "impact", "stageId": "stage-2",
+      "title": "Stolen compute used for cryptomining", "blastRadius": "AWS account",
+      "detail": "The same access was also used to mine cryptocurrency on the victim's compute — the DOJ case covers both the data theft and the theft of computing power. A second, noisier objective that still went unnoticed.",
+      "commands": ["# mining workload run on compute belonging to the victim"]
+    },
+    {
+      "id": "e07", "t": "2019-04-21T00:00:00Z", "phaseId": "impact", "stageId": "stage-2",
+      "title": "The attacker posts about it publicly", "blastRadius": "public internet",
+      "detail": "Details of the intrusion are posted to a public code-sharing account. This is what ultimately ends the incident — not any control inside the environment.",
+      "commands": ["# intrusion details published to a public repository"]
+    },
+    {
+      "id": "e08", "t": "2019-07-17T00:00:00Z", "phaseId": "detection", "stageId": "stage-2",
+      "title": "External tip to the disclosure address", "blastRadius": "customer data",
+      "detail": "Someone who saw the public post emails Capital One's responsible-disclosure address on 17 July 2019 — roughly four months after the first access. Detection came from outside the organization entirely.",
+      "commands": ["# inbound email to the published security contact"]
+    },
+    {
+      "id": "e09", "t": "2019-07-19T00:00:00Z", "phaseId": "detection", "stageId": "stage-2",
+      "title": "Confirmed, contained, disclosed", "blastRadius": "customer data",
+      "detail": "Capital One confirms the intrusion on 19 July and discloses publicly on 29 July 2019. The attacker was arrested that month, later convicted in 2022. The company was subsequently fined by the OCC.",
+      "commands": ["# credential rotation, IMDSv2 enforcement, IAM scope reduction"]
+    }
+  ],
+  "lessons": [
+    "Enforce IMDSv2 everywhere. Requiring a session token (PUT, then GET with the token, with a hop limit) is what turns a trivially-exploitable SSRF into a dead end. This is a one-setting change and it breaks the entire chain at step two.",
+    "Scope instance roles to the job. A web application firewall had list-and-read access across hundreds of S3 buckets. If the role had carried only what a WAF needs, stolen credentials would have unlocked nothing worth taking.",
+    "Treat SSRF as a cloud-credential vulnerability, not a web bug. In a cloud environment, any component that can be induced to fetch an attacker-chosen URL is one request away from the credential store.",
+    "Alert on bulk egress. Hundreds of buckets synced out over months produced no alarm. Volume-based detection on data access and egress is the control that shortens dwell time when prevention fails.",
+    "Encrypt or tokenize the sensitive fields. Read access to an object should not automatically mean read access to the SSNs inside it — field-level protection limits what a successful exfiltration is actually worth.",
+    "Publish and monitor a responsible-disclosure address. It is genuinely how this incident ended. That channel is a security control; make sure someone reads it.",
+    "The whole chain is four ordinary misconfigurations. No zero-day, no malware, no insider access to production. Attack surface management is largely the discipline of not leaving these four in place at the same time."
+  ],
+  "defenderBudget": 2,
+  "controls": [
+    {
+      "id": "enforce-imdsv2",
+      "label": "Enforce IMDSv2 (token-required metadata)",
+      "detail": "Require a session token for metadata requests and set a low hop limit. An SSRF can still be triggered, but it cannot mint the PUT request needed to obtain a token — the highest-leverage single control in this chain.",
+      "breaksAtNode": "imds"
+    },
+    {
+      "id": "fix-waf-ssrf",
+      "label": "Remove the SSRF primitive at the perimeter",
+      "detail": "Patch the proxy configuration so user-controlled input cannot drive outbound requests, and deny the link-local range from perimeter workloads. The attacker reaches the WAF but gets no further.",
+      "breaksAtNode": "imds"
+    },
+    {
+      "id": "least-privilege-role",
+      "label": "Least-privilege instance role",
+      "detail": "A WAF's role should not list and read the account's S3 estate. Stolen credentials remain valid but grant nothing worth stealing.",
+      "breaksAtNode": "s3"
+    },
+    {
+      "id": "field-level-encryption",
+      "label": "Encrypt / tokenize sensitive fields",
+      "detail": "Protect SSNs and account numbers at field level so object read access does not equal plaintext access. Exfiltration still happens; its value collapses.",
+      "breaksAtNode": "customer-data"
+    },
+    {
+      "id": "egress-anomaly-detection",
+      "label": "Bulk-egress and API anomaly detection",
+      "detail": "Alert on unusual volumes of S3 listing and object retrieval. It does not sever the chain, but it replaces a four-month external-tip discovery with same-day internal detection.",
+      "detection": true
+    }
+  ]
+}

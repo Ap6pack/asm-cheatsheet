@@ -6,10 +6,26 @@ import { AlertTriangle } from "lucide-react";
 import { SteppedRunner } from "@/components/content/stepped-runner";
 import { AuthorizationGate } from "@/components/content/authorization-gate";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
+import { BookmarkButton } from "@/components/content/bookmark-button";
 
 export async function generateStaticParams() {
   const scenarios = await getAllScenarios();
   return scenarios.map((sc) => ({ slug: sc.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const items = await getAllScenarios();
+  const item = items.find((s) => s.slug === slug);
+  if (!item) return {};
+  return {
+    title: `${item.title} - Scenario`,
+    description: (item.subtitle || `ASM scenario card: ${item.title}.`).slice(0, 160),
+  };
 }
 
 export default async function ScenarioDetailPage({
@@ -28,9 +44,10 @@ export default async function ScenarioDetailPage({
       <div className="max-w-4xl space-y-8">
         <Breadcrumbs title={sc.title} />
         <div>
-          <Badge variant="outline" className="mb-3">
-            Scenario {sc.id}
-          </Badge>
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <Badge variant="outline">Scenario {sc.id}</Badge>
+            <BookmarkButton id={sc.slug} type="scenario" title={sc.title} />
+          </div>
           <h1 className="text-3xl font-bold">{sc.title}</h1>
           {sc.subtitle && (
             <p className="mt-2 text-lg text-[var(--muted-foreground)]">

@@ -7,10 +7,26 @@ import { Clock, AlertTriangle } from "lucide-react";
 import { SteppedRunner } from "@/components/content/stepped-runner";
 import { AuthorizationGate } from "@/components/content/authorization-gate";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
+import { BookmarkButton } from "@/components/content/bookmark-button";
 
 export async function generateStaticParams() {
   const workflows = await getAllWorkflows();
   return workflows.map((wf) => ({ slug: wf.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const items = await getAllWorkflows();
+  const item = items.find((w) => w.slug === slug);
+  if (!item) return {};
+  return {
+    title: `${item.title} - Workflow`,
+    description: (item.scenario || `Step-by-step ASM workflow: ${item.title}.`).slice(0, 160),
+  };
 }
 
 export default async function WorkflowDetailPage({
@@ -29,8 +45,9 @@ export default async function WorkflowDetailPage({
       <div className="max-w-4xl space-y-8">
         <Breadcrumbs title={wf.title} />
         <div>
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex flex-wrap items-center gap-3 mb-3">
             <DifficultyBadge difficulty={wf.difficulty} />
+            <BookmarkButton id={wf.slug} type="workflow" title={wf.title} />
             {wf.timeEstimate.display && (
               <span className="flex items-center gap-1 text-sm text-[var(--muted-foreground)]">
                 <Clock className="h-3.5 w-3.5" />

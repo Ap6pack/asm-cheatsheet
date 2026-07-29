@@ -4,13 +4,20 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { ServiceWorkerProvider } from "@/components/layout/sw-provider";
+import { Analytics } from "@/components/layout/analytics";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
 });
 
+// Absolute URLs for Open Graph / Twitter cards. Without this, generated image
+// URLs fall back to localhost and social previews break in production.
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://asm-cheatsheet.vercel.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "ASM Cheatsheet - Attack Surface Management Reference",
     template: "%s | ASM Cheatsheet",
@@ -64,6 +71,7 @@ export default function RootLayout({
           Skip to main content
         </a>
         <ServiceWorkerProvider />
+        <Analytics />
         <ThemeProvider>
           <AppShell>{children}</AppShell>
         </ThemeProvider>

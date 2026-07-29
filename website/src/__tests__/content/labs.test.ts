@@ -131,10 +131,10 @@ describe("extractLabs (real content)", () => {
     for (const lab of labs) {
       const perPhase: Record<string, number> = {};
       for (const e of lab.events) {
-        perPhase[e.phaseId] = (perPhase[e.phaseId] ?? 0) + e.actions;
+        perPhase[e.phaseId] = (perPhase[e.phaseId] ?? 0) + (e.actions ?? 0);
       }
       for (const p of lab.phases) {
-        expect(perPhase[p.id] ?? 0).toBe(p.total);
+        if (p.total !== undefined) expect(perPhase[p.id] ?? 0).toBe(p.total);
       }
     }
   });
