@@ -1254,6 +1254,48 @@ export function validateLab(
     fail('"lessons" must be a non-empty array');
   }
 
+  // Optional "Break the Chain" controls
+  if (lab.controls !== undefined) {
+    if (!Array.isArray(lab.controls) || lab.controls.length === 0) {
+      fail('"controls", when present, must be a non-empty array');
+    }
+    const seenControlIds = new Set<string>();
+    for (const raw of lab.controls as Record<string, unknown>[]) {
+      if (typeof raw.id !== 'string' || raw.id.length === 0) {
+        fail('each control needs a string id');
+      }
+      if (seenControlIds.has(raw.id as string)) {
+        fail(`duplicate control id "${raw.id}"`);
+      }
+      seenControlIds.add(raw.id as string);
+      if (typeof raw.label !== 'string' || typeof raw.detail !== 'string') {
+        fail(`control "${raw.id}" needs a label and detail`);
+      }
+      const hasCut =
+        typeof raw.breaksAtNode === 'string' && raw.breaksAtNode.length > 0;
+      const isDetection = raw.detection === true;
+      if (!hasCut && !isDetection) {
+        fail(
+          `control "${raw.id}" must either set breaksAtNode or detection: true`
+        );
+      }
+      if (hasCut && !nodeIds.has(raw.breaksAtNode as string)) {
+        fail(
+          `control "${raw.id}" breaksAtNode references unknown node "${raw.breaksAtNode}"`
+        );
+      }
+    }
+    if (lab.defenderBudget !== undefined) {
+      if (
+        typeof lab.defenderBudget !== 'number' ||
+        lab.defenderBudget < 1 ||
+        !Number.isInteger(lab.defenderBudget)
+      ) {
+        fail('"defenderBudget" must be a positive integer');
+      }
+    }
+  }
+
   return lab as unknown as Lab;
 }
 

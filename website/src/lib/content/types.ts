@@ -194,6 +194,19 @@ export interface LabSource {
   url: string;
 }
 
+/**
+ * A defensive control for the "Break the Chain" mode. A control either severs
+ * the attack chain at a specific node (breaksAtNode) — that node and everything
+ * downstream of it becomes unreachable — or improves detection without cutting.
+ */
+export interface LabControl {
+  id: string;
+  label: string;
+  detail: string;
+  breaksAtNode?: string;
+  detection?: boolean;
+}
+
 export interface Lab {
   slug: string;
   title: string;
@@ -220,6 +233,10 @@ export interface Lab {
   edges: LabEdge[];
   events: LabEvent[];
   lessons: string[];
+  /** Optional "Break the Chain" defender challenge. */
+  controls?: LabControl[];
+  /** How many controls the defender may deploy (defaults to all). */
+  defenderBudget?: number;
 }
 
 // Search index entry

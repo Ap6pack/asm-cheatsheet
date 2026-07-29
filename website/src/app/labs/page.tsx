@@ -48,6 +48,9 @@ export default async function LabsPage() {
                   ) : (
                     <Badge variant="outline">Real incident</Badge>
                   )}
+                  {lab.controls && lab.controls.length > 0 && (
+                    <Badge variant="outline">🛡 Defender challenge</Badge>
+                  )}
                   <span className="ml-auto">
                     <LabSolvedBadge slug={lab.slug} />
                   </span>

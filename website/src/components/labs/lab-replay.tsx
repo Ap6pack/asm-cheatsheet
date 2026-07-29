@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils/cn";
 import { useProgressStore, useHydration } from "@/lib/stores";
 import type { Lab } from "@/lib/content/types";
+import { AttackChain, type NodeState } from "@/components/labs/attack-chain";
 import {
   computeReplayState,
   getReplayBounds,
@@ -146,6 +147,12 @@ export function LabReplay({ lab }: { lab: Lab }) {
   const activePhase = state.activePhaseId
     ? lab.phases.find((p) => p.id === state.activePhaseId)
     : null;
+
+  const watchStates = React.useMemo(() => {
+    const map: Record<string, NodeState> = {};
+    for (const id of state.litNodeIds) map[id] = "lit";
+    return map;
+  }, [state.litNodeIds]);
 
   const ticks = React.useMemo(() => eventFractions(lab), [lab]);
   const dayTicks = React.useMemo(() => {
@@ -333,9 +340,10 @@ export function LabReplay({ lab }: { lab: Lab }) {
       <div className="grid gap-4 lg:grid-cols-2">
         <AttackChain
           lab={lab}
-          litNodeIds={state.litNodeIds}
-          lastIgnitedNodeId={state.lastIgnitedNodeId}
+          states={watchStates}
+          activeNodeId={state.lastIgnitedNodeId}
           reducedMotion={reducedMotion}
+          caption="Nodes ignite as the agent reaches them."
         />
         <PhaseActivity
           lab={lab}
@@ -431,86 +439,6 @@ function StatTile({
         {label}
       </div>
       {children}
-    </div>
-  );
-}
-
-function AttackChain({
-  lab,
-  litNodeIds,
-  lastIgnitedNodeId,
-  reducedMotion,
-}: {
-  lab: Lab;
-  litNodeIds: string[];
-  lastIgnitedNodeId: string | null;
-  reducedMotion: boolean;
-}) {
-  // Incoming edge label for each node, for the connector caption between nodes.
-  const incomingLabel = React.useMemo(() => {
-    const map: Record<string, string | undefined> = {};
-    for (const e of lab.edges) map[e.to] = e.label;
-    return map;
-  }, [lab.edges]);
-
-  return (
-    <div className="rounded-xl border border-[var(--border)] bg-[var(--background-card)] p-4">
-      <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-        <span className="inline-block h-2.5 w-2.5 rounded-full bg-[var(--primary)]" />
-        Attack chain across trust boundaries
-      </div>
-      <ol className="space-y-1">
-        {lab.nodes.map((node, i) => {
-          const lit = litNodeIds.includes(node.id);
-          const active = lastIgnitedNodeId === node.id;
-          const prevGroup = i > 0 ? lab.nodes[i - 1].group : null;
-          const showGroup = node.group !== prevGroup;
-          const label = incomingLabel[node.id];
-          return (
-            <li key={node.id}>
-              {showGroup && (
-                <div className="mt-3 mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)] first:mt-0">
-                  {node.group}
-                </div>
-              )}
-              {i > 0 && label && (
-                <div className="ml-3 flex items-center gap-1 py-0.5 text-[10px] text-[var(--muted-foreground)]">
-                  <span className="text-[var(--primary)]">↓</span>
-                  {label}
-                </div>
-              )}
-              <div
-                className={cn(
-                  "flex items-center gap-3 rounded-lg border px-3 py-2 transition-colors",
-                  lit
-                    ? "border-[var(--primary)]/60 bg-[var(--primary)]/5"
-                    : "border-[var(--border)] opacity-50",
-                  active &&
-                    !reducedMotion &&
-                    "ring-2 ring-[var(--primary)]/40 animate-pulse"
-                )}
-              >
-                <span
-                  className={cn(
-                    "inline-block h-2.5 w-2.5 shrink-0 rounded-full",
-                    lit ? "bg-[var(--primary)]" : "bg-[var(--muted-foreground)]/40"
-                  )}
-                />
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-medium">
-                    {node.label}
-                  </div>
-                  {node.sub && (
-                    <div className="truncate font-mono text-[11px] text-[var(--muted-foreground)]">
-                      {node.sub}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
     </div>
   );
 }

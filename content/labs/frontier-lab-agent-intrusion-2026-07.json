@@ -228,5 +228,44 @@
     "Deny privileged and hostPath pods, and scope CSI RBAC tightly. Node root came from a bare privileged pod plus a CSI ClusterRole that granted cluster-wide pod creation — an admission policy would have blocked the escape.",
     "Detection has to correlate low-signal events at machine speed. The successful path hid inside thousands of failed ones; ~17,600 actions across systems overwhelmed the first automated scan, and the alert's criticality was under-rated — costing response time. Behavioral correlation and correct severity escalation are the defense.",
     "Machine-speed offense makes ordinary weaknesses more expensive. The individual flaws were familiar — unsafe dataset processing, exposed metadata, broad access, long-lived credentials. What changed was the volume of paths tested, the speed of switching channels, and the amount of evidence defenders had to interpret."
+  ],
+  "defenderBudget": 3,
+  "controls": [
+    {
+      "id": "isolate-eval-egress",
+      "label": "Isolate the evaluation sandbox",
+      "detail": "Default-deny network egress from eval sandboxes, so a benchmark run has no route to the open internet — even through a permitted package proxy. This is the highest-leverage control: it contains the campaign at the very first hop.",
+      "breaksAtNode": "package-registry"
+    },
+    {
+      "id": "sanitize-dataset-config",
+      "label": "Sanitize dataset-config processing",
+      "detail": "Stop the data loader from evaluating template expressions or resolving HDF5 external references. Removes both Stage-2 injection vectors at the door, so the agent's launchpad never becomes a foothold inside your perimeter.",
+      "breaksAtNode": "hf-dataset-processor"
+    },
+    {
+      "id": "block-pod-imds",
+      "label": "Block pod access to cloud metadata (IMDS)",
+      "detail": "Deny workloads access to 169.254.169.254 so a single pod RCE cannot become node credentials — cutting the hinge between 'a pod' and 'the cluster'.",
+      "breaksAtNode": "cloud-metadata"
+    },
+    {
+      "id": "deny-privileged-pods",
+      "label": "Deny privileged & hostPath pods",
+      "detail": "An admission policy rejecting privileged/hostPath pods stops the node-root escape that unlocked the 136-key secret store — and with it the mesh-VPN key the pivot depended on.",
+      "breaksAtNode": "mesh-vpn"
+    },
+    {
+      "id": "scope-credentials",
+      "label": "Scope credentials per-cluster, short-lived",
+      "detail": "No single connector credential shared across clusters and bound to system:masters; short-lived, cluster-scoped tokens. Breaks the one-credential-everywhere pivot into source control.",
+      "breaksAtNode": "source-control"
+    },
+    {
+      "id": "behavioral-detection",
+      "label": "Behavioral detection + severity escalation",
+      "detail": "Correlate low-signal events across systems and escalate criticality correctly. It doesn't sever a node, but it catches the campaign during the noisy middle of the kill chain instead of days later.",
+      "detection": true
+    }
   ]
 }

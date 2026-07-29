@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { MDXRenderer } from "@/components/content/mdx-renderer";
-import { LabReplay } from "@/components/labs/lab-replay";
+import { LabExperience } from "@/components/labs/lab-experience";
 import { EditOnGitHub } from "@/components/content/edit-on-github";
 import { Clock, ExternalLink, Lightbulb, Info } from "lucide-react";
 
@@ -95,8 +95,8 @@ export default async function LabPage({
 
       <Separator />
 
-      {/* Interactive replay */}
-      <LabReplay lab={lab} />
+      {/* Interactive experience: Break-the-Chain defender challenge + replay */}
+      <LabExperience lab={lab} />
 
       {/* Defensive lessons */}
       <section>
