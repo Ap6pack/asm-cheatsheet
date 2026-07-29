@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Two new incident-replay labs**, both with Break-the-Chain defender challenges:
+  - **[One SSRF to 106 Million Records](content/labs/capital-one-ssrf-2019.json)** — the 2019 Capital One breach, sourced to [DOJ court records](https://www.justice.gov/usao-wdwa/united-states-v-paige-thompson). A four-link chain of ordinary cloud misconfigurations; enforcing IMDSv2 alone contains it.
+  - **[A Credential in a Docker Image](content/labs/codecov-bash-uploader-2021.json)** — the 2021 Codecov Bash Uploader supply-chain compromise, sourced to [Codecov's published post-mortem](https://about.codecov.io/apr-2021-post-mortem/). Shows how a leaked build credential compromises every downstream consumer.
+- **Event-counted replays.** Action telemetry is now optional in the lab schema. Labs built from incidents whose responders published per-phase action counts still show "attacker actions"; labs built from the public record alone count timeline steps instead — so a replay never implies forensic precision its sources don't support. The validator enforces all-or-nothing and rejects `totalActions` without phase totals.
 - **Open Graph image and per-page metadata.** A statically-generated 1200×630 OG image plus `generateMetadata` on every route — previously 7 of 17 pages (including the homepage and *every* detail route, ~40 generated pages) shared one generic title, and social shares rendered a blank card with a `localhost` image URL.
 - **Optional privacy-respecting analytics.** Cookieless Plausible or Umami, entirely env-gated and **off by default** — self-hosted builds and local development send nothing. Documented in [website/.env.example](website/.env.example).
 - **[SECURITY.md](SECURITY.md)** — a disclosure policy with scope, response targets, and safe-testing guidance. A project that teaches responsible disclosure previously had no channel to receive it.

@@ -21,6 +21,8 @@ import {
   getReplayBounds,
   getTotalActions,
   eventFractions,
+  getPhaseTotal,
+  getUnitLabel,
   msToFraction,
   nextEventFraction,
   prevEventFraction,
@@ -81,6 +83,7 @@ export function LabReplay({ lab }: { lab: Lab }) {
 
   const bounds = React.useMemo(() => getReplayBounds(lab), [lab]);
   const totalActions = React.useMemo(() => getTotalActions(lab), [lab]);
+  const units = React.useMemo(() => getUnitLabel(lab), [lab]);
   const state = React.useMemo(
     () => computeReplayState(lab, fraction),
     [lab, fraction]
@@ -177,7 +180,9 @@ export function LabReplay({ lab }: { lab: Lab }) {
           {formatUtc(bounds.startMs).slice(0, 10)} →{" "}
           {formatUtc(bounds.endMs).slice(0, 10)} UTC
         </MetaChip>
-        <MetaChip>{formatNumber(totalActions)} actions</MetaChip>
+        <MetaChip>
+          {formatNumber(totalActions)} {units.plural}
+        </MetaChip>
         {lab.clusters != null && (
           <MetaChip>~{formatNumber(lab.clusters)} clusters</MetaChip>
         )}
@@ -310,7 +315,7 @@ export function LabReplay({ lab }: { lab: Lab }) {
 
       {/* Stat tiles */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatTile label="Attacker actions replayed">
+        <StatTile label={`${units.plural} replayed`}>
           <div className="font-mono text-3xl font-bold tabular-nums text-[var(--primary)]">
             {formatNumber(state.actionsReplayed)}
           </div>
@@ -402,7 +407,7 @@ export function LabReplay({ lab }: { lab: Lab }) {
           <CheckCircle className="h-5 w-5 shrink-0 text-green-600 dark:text-green-400" />
           <span>
             Replay complete — you followed{" "}
-            {formatNumber(state.actionsReplayed)} classified actions across{" "}
+            {formatNumber(state.actionsReplayed)} {units.plural} across{" "}
             {lab.stages.length} stages
             {totalActions > state.actionsReplayed
               ? ` (of ~${formatNumber(totalActions)} recovered)`
@@ -462,13 +467,14 @@ function PhaseActivity({
           Phase activity
         </div>
         <span className="text-[10px] uppercase tracking-wider text-[var(--muted-foreground)]">
-          actions so far
+          {getUnitLabel(lab).singular}s so far
         </span>
       </div>
       <ul className="space-y-2.5">
         {lab.phases.map((phase) => {
           const count = phaseCounts[phase.id] ?? 0;
-          const pct = phase.total > 0 ? (count / phase.total) * 100 : 0;
+          const total = getPhaseTotal(lab, phase.id);
+          const pct = total > 0 ? (count / total) * 100 : 0;
           const color = phaseColor(phaseIndex[phase.id]);
           const isActive = activePhaseId === phase.id;
           return (

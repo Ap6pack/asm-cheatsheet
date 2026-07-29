@@ -21,13 +21,50 @@ export interface ReplayState {
 }
 
 /**
+ * How a lab measures progress.
+ *
+ * "actions" — the incident's responders published per-phase action counts, so
+ *   the replay can show attacker actions replayed out of a real total.
+ * "events"  — no such telemetry exists publicly, so the replay counts its own
+ *   timeline steps instead of inventing action numbers.
+ */
+export type TelemetryMode = "actions" | "events";
+
+export function getTelemetryMode(lab: Lab): TelemetryMode {
+  return lab.phases.some((p) => typeof p.total === "number")
+    ? "actions"
+    : "events";
+}
+
+/** Units the counters are expressed in, for UI labelling. */
+export function getUnitLabel(lab: Lab): { singular: string; plural: string } {
+  return getTelemetryMode(lab) === "actions"
+    ? { singular: "action", plural: "attacker actions" }
+    : { singular: "step", plural: "timeline steps" };
+}
+
+/** What one event contributes to the counters under the lab's mode. */
+function eventWeight(lab: Lab, event: LabEvent): number {
+  return getTelemetryMode(lab) === "actions" ? (event.actions ?? 0) : 1;
+}
+
+/** Final total for a phase under the lab's mode. */
+export function getPhaseTotal(lab: Lab, phaseId: string): number {
+  if (getTelemetryMode(lab) === "actions") {
+    return lab.phases.find((p) => p.id === phaseId)?.total ?? 0;
+  }
+  return lab.events.filter((e) => e.phaseId === phaseId).length;
+}
+
+/**
  * The grand total shown as the denominator. Uses the lab's explicit
  * totalActions when set (some recovered actions may be unclassified), else
- * falls back to the sum of phase totals.
+ * the sum of phase totals — or, in events mode, the number of events.
  */
 export function getTotalActions(lab: Lab): number {
+  if (getTelemetryMode(lab) === "events") return lab.events.length;
   if (typeof lab.totalActions === "number") return lab.totalActions;
-  return lab.phases.reduce((sum, p) => sum + p.total, 0);
+  return lab.phases.reduce((sum, p) => sum + (p.total ?? 0), 0);
 }
 
 /** Incident-time bounds derived from the first and last event timestamps. */
@@ -72,9 +109,9 @@ export function computeReplayState(lab: Lab, fraction: number): ReplayState {
   lab.events.forEach((event: LabEvent, index) => {
     if (Date.parse(event.t) > playheadMs) return;
     activeEventIndex = index;
-    actionsReplayed += event.actions;
-    phaseCounts[event.phaseId] =
-      (phaseCounts[event.phaseId] ?? 0) + event.actions;
+    const weight = eventWeight(lab, event);
+    actionsReplayed += weight;
+    phaseCounts[event.phaseId] = (phaseCounts[event.phaseId] ?? 0) + weight;
     for (const nodeId of event.ignites ?? []) {
       if (!litNodeIds.includes(nodeId)) litNodeIds.push(nodeId);
       lastIgnitedNodeId = nodeId;

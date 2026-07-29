@@ -1242,15 +1242,29 @@ export function validateLab(
   if (!Array.isArray(phases) || phases.length === 0) {
     fail('"phases" must be a non-empty array');
   }
+  // A lab either has published action telemetry for every phase, or for none.
+  // Mixing the two would make the progress counters meaningless.
+  const phaseIds = new Set<string>();
   const phaseTotals = new Map<string, number>();
+  let phasesWithTotals = 0;
   for (const p of phases as Record<string, unknown>[]) {
     if (typeof p.id !== 'string' || typeof p.label !== 'string') {
       fail('each phase needs a string id and label');
     }
-    if (typeof p.total !== 'number' || p.total < 0) {
-      fail(`phase "${p.id}" needs a non-negative numeric "total"`);
+    phaseIds.add(p.id as string);
+    if (p.total !== undefined) {
+      if (typeof p.total !== 'number' || p.total < 0) {
+        fail(`phase "${p.id}" has a non-numeric or negative "total"`);
+      }
+      phasesWithTotals++;
+      phaseTotals.set(p.id as string, p.total as number);
     }
-    phaseTotals.set(p.id as string, p.total as number);
+  }
+  const usesActionTelemetry = phasesWithTotals > 0;
+  if (usesActionTelemetry && phasesWithTotals !== (phases as unknown[]).length) {
+    fail(
+      'either every phase declares a "total" (action telemetry) or none do (event-counted replay)'
+    );
   }
 
   const nodes = lab.nodes;
@@ -1293,14 +1307,22 @@ export function validateLab(
     if (typeof raw.blastRadius !== 'string') {
       fail(`${label} needs a blastRadius`);
     }
-    if (!phaseTotals.has(raw.phaseId as string)) {
+    if (!phaseIds.has(raw.phaseId as string)) {
       fail(`${label} references unknown phaseId "${raw.phaseId}"`);
     }
     if (!stageIds.has(raw.stageId as string)) {
       fail(`${label} references unknown stageId "${raw.stageId}"`);
     }
-    if (typeof raw.actions !== 'number' || raw.actions < 0) {
-      fail(`${label} needs a non-negative numeric "actions"`);
+    if (usesActionTelemetry) {
+      if (typeof raw.actions !== 'number' || raw.actions < 0) {
+        fail(
+          `${label} needs a non-negative numeric "actions" (this lab declares phase totals)`
+        );
+      }
+    } else if (raw.actions !== undefined) {
+      fail(
+        `${label} sets "actions" but no phase declares a "total" — add totals to every phase or drop the per-event counts`
+      );
     }
     const t = Date.parse(raw.t as string);
     if (Number.isNaN(t)) fail(`${label} has an invalid timestamp "${raw.t}"`);
@@ -1312,10 +1334,12 @@ export function validateLab(
         fail(`${label} ignites unknown node "${nodeId}"`);
       }
     }
-    phaseSums.set(
-      raw.phaseId as string,
-      (phaseSums.get(raw.phaseId as string) ?? 0) + (raw.actions as number)
-    );
+    if (usesActionTelemetry) {
+      phaseSums.set(
+        raw.phaseId as string,
+        (phaseSums.get(raw.phaseId as string) ?? 0) + (raw.actions as number)
+      );
+    }
   }
 
   // The action counters only stay honest if event sums match phase totals
@@ -1332,6 +1356,11 @@ export function validateLab(
 
   // A display total, when given, must not undercount the classified actions
   if (lab.totalActions !== undefined) {
+    if (!usesActionTelemetry) {
+      fail(
+        '"totalActions" requires phase totals — an event-counted replay derives its total from the timeline'
+      );
+    }
     const totalActions = lab.totalActions;
     if (typeof totalActions !== 'number' || totalActions < 0) {
       fail('"totalActions" must be a non-negative number');

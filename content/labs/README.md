@@ -38,9 +38,8 @@ application code. CI validates every file (`pnpm validate:content` in
   "stages": [ { "id": "stage-1", "name": "...", "note": "..." } ],
 
   "phases": [
-    // Attacker activity categories. `total` is the final cumulative action
-    // count once the whole replay has played; the sum of all event `actions`
-    // for a phase MUST equal its `total`.
+    // Attacker activity categories. `total` is OPTIONAL — see
+    // "Action counts vs. event counts" below.
     { "id": "recon", "label": "recon", "note": "...", "total": 1200 }
   ],
 
@@ -59,7 +58,7 @@ application code. CI validates every file (`pnpm validate:content` in
       "t": "2026-03-15T08:00:00Z",   // within [meta start, meta end], ascending
       "phaseId": "recon",             // must match a phase id
       "stageId": "stage-1",           // must match a stage id
-      "actions": 700,                 // added to the phase + grand totals
+      "actions": 700,                 // OPTIONAL — only with phase totals
       "title": "Certificate-transparency sweep",
       "detail": "One or two sentences of narration.",
       "blastRadius": "public internet",
@@ -72,6 +71,29 @@ application code. CI validates every file (`pnpm validate:content` in
 }
 ```
 
+## Action counts vs. event counts
+
+A replay measures progress one of two ways, and the lab's data decides which:
+
+- **Action-counted** — every phase declares a `total` and every event declares
+  `actions`. Use this **only** when the incident's responders published action
+  telemetry you can cite. The UI then counts "attacker actions".
+- **Event-counted** — no phase declares a `total` and no event declares
+  `actions`. The replay counts its own timeline steps instead, and the UI says
+  "timeline steps". **This is the right default for most real incidents**,
+  because the public record usually supports a sequence of events but not a
+  per-step action tally.
+
+Do not invent action counts to make a replay look more forensic than its
+sources are. Mixing the two modes is rejected by the validator.
+
+| | Action-counted | Event-counted |
+|---|---|---|
+| `phases[].total` | required on every phase | omitted everywhere |
+| `events[].actions` | required on every event | omitted everywhere |
+| `totalActions` | optional | not allowed |
+| UI label | "attacker actions" | "timeline steps" |
+
 ## Validation rules (enforced in CI)
 
 - `slug` matches the filename (`<slug>.json`)
@@ -81,7 +103,9 @@ application code. CI validates every file (`pnpm validate:content` in
 - Every id in an event's `ignites` references a declared node
 - Every edge `from`/`to` references a declared node
 - Event timestamps are strictly ascending
-- For each phase, the sum of its events' `actions` equals the phase `total`
+- Either **every** phase declares a `total` or **none** do
+- In action-counted labs, the sum of each phase's event `actions` equals its `total`
+- In event-counted labs, no event may declare `actions` and `totalActions` is rejected
 
 ## Writing a good replay
 
