@@ -8,6 +8,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ToolStatusBadge } from "@/components/tools/tool-status-badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ExternalLink, LayoutGrid } from "lucide-react";
 
@@ -57,6 +58,10 @@ export default async function ToolsPage() {
                           {tool.difficulty}
                         </Badge>
                       )}
+                      <ToolStatusBadge
+                        status={tool.status}
+                        note={tool.statusNote}
+                      />
                     </div>
                     <CardDescription className="line-clamp-2">
                       {tool.purpose}

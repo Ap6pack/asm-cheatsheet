@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **[Modern ASM Toolchain](content/tools/modern_tools.md)** — 15 newly documented tools covering the stack most external ASM work actually runs on today: **nuclei**, **httpx**, **katana**, **naabu**, **dnsx**, **tlsx**, **asnmap**, **ffuf**, **gau**, **TruffleHog**, **Gitleaks**, **BBOT**, **uncover**, **notify**, and **cloudlist** — each with purpose, install, usage, and pipeline examples, plus an end-to-end assessment script. Tool coverage went from 11 to 26.
+- **Maintenance status on every tool.** A `**Status:**` field distinguishes actively-maintained tools from legacy ones, surfaced as a badge on tool cards and detail pages, with an explanatory callout on legacy tools (Recon-ng and Fierce) pointing at modern replacements.
+- **Rewrote [Integrating Threat Intelligence](content/guides/integrating_threat_intel.md)** from a 24-line outline into a full guide — CISA KEV/EPSS-first prioritization, a normalize → correlate → score → act pipeline, a working KEV cross-reference script, a transparent risk-scoring formula, and operational cautions. It is Module 9's primary resource.
 - **Reference section (`/reference`)** — 11 long-form pages that previously existed in the repo but were invisible on the website (~4,600 lines), including Getting Started, Security/Legal & Ethical Considerations, Advanced Techniques, Docker Quickstart, Change Tracking, Screenshot Tools, Modern Tooling, Automation Scripts, and the Reading List. Published via an authored manifest ([content/reference-pages.json](content/reference-pages.json)) rather than inferred from prose, and validated in CI.
 
 - **Interactive Labs — Incident Replays**
@@ -60,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Added website development workflow, quiz, lab, and reference-page contribution guidance
 
 ### Fixed
+- **Tool docs silently lost their usage examples.** The extractor matched usage headings against a hardcoded allowlist of names, so any doc using a different heading extracted zero examples (Fierce shipped with none). It now matches on heading shape.
 - **`/commands` showed mis-parsed sections as tools.** Policy and checklist sections ("Before You Scan — MANDATORY CHECKLIST", "Safe Practice Targets", "Incident Response") were extracted as if they were tools. Commands are now classified as `tool` or `technique`, and non-command policy sections are excluded (they live on the security-considerations reference page instead).
 - **Every command lacked a description.** All 28 entries now carry an authored description, and the commands explorer renders it — previously the field was searched but never displayed.
 - **Cloud tools were mis-categorised.** Tools documented as H2 headings took their own name as their category (`CloudEnum → CloudEnum`), breaking grouping and filtering on `/tools`. They now use a per-file default category.

@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowUpDown, ExternalLink, Filter, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import type { ToolStatus } from "@/lib/content/types";
+import { ToolStatusBadge } from "@/components/tools/tool-status-badge";
 
 interface ToolData {
   id: string;
@@ -16,6 +18,8 @@ interface ToolData {
   difficulty: string;
   link: string;
   category: string;
+  status: ToolStatus;
+  statusNote?: string;
   installationCount: number;
   usageCount: number;
 }
@@ -154,7 +158,7 @@ export function ToolComparison({ tools }: ToolComparisonProps) {
                 </button>
               </th>
               <th className="p-3 text-left">Purpose</th>
-              <th className="p-3 text-left">Examples</th>
+              <th className="p-3 text-left">Maintenance</th>
               <th className="p-3 text-left">Links</th>
             </tr>
           </thead>
@@ -196,12 +200,11 @@ export function ToolComparison({ tools }: ToolComparisonProps) {
                 <td className="p-3 max-w-xs truncate text-[var(--muted-foreground)]">
                   {tool.purpose}
                 </td>
-                <td className="p-3 text-center">
-                  {tool.usageCount > 0 && (
-                    <span className="text-xs text-[var(--muted-foreground)]">
-                      {tool.usageCount} examples
-                    </span>
-                  )}
+                <td className="p-3">
+                  <ToolStatusBadge
+                    status={tool.status}
+                    note={tool.statusNote}
+                  />
                 </td>
                 <td className="p-3">
                   {tool.link && (

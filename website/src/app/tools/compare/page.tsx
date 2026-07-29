@@ -18,6 +18,8 @@ export default async function ToolComparisonPage() {
     difficulty: t.difficulty,
     link: t.link,
     category: t.category,
+    status: t.status,
+    statusNote: t.statusNote,
     installationCount: t.installation.length,
     usageCount: t.usage.length,
   }));

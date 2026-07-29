@@ -106,6 +106,12 @@ export interface CaseStudy {
 }
 
 // Tool from recon_tools.md and cloud_enum_tools.md
+/**
+ * Maintenance signal for a documented tool. Practitioners need to know whether
+ * something is still actively developed before adopting it.
+ */
+export type ToolStatus = 'active' | 'legacy' | 'unknown';
+
 export interface Tool {
   id: string;
   name: string;
@@ -113,6 +119,9 @@ export interface Tool {
   purpose: string;
   difficulty: string;
   link: string;
+  status: ToolStatus;
+  /** Free-text note explaining the status, e.g. a suggested replacement. */
+  statusNote?: string;
   category: string; // parent H2 heading
   sourceFile: string; // which file it came from
   installation: { language: string; code: string }[];

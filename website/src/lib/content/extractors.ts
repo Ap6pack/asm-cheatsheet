@@ -18,6 +18,7 @@ import type {
   Lab,
   LabDifficulty,
   ReferencePage,
+  ToolStatus,
 } from './types';
 
 // Base content directory - try multiple locations to support local dev and Vercel
@@ -799,6 +800,26 @@ export function extractCaseStudies(): CaseStudy[] {
   return caseStudies;
 }
 
+/**
+ * Parse a `**Status:**` line into a structured maintenance signal.
+ * Example: "Legacy — superseded by dnsx for most workflows"
+ */
+function parseToolStatus(raw: string): {
+  status: ToolStatus;
+  statusNote?: string;
+} {
+  const text = raw.trim();
+  if (!text) return { status: 'unknown' };
+  const [head, ...rest] = text.split(/\s+[—–-]\s+/);
+  const note = rest.join(' - ').trim();
+  const key = head.trim().toLowerCase();
+  const status: ToolStatus =
+    key.startsWith('active') ? 'active'
+    : key.startsWith('legacy') || key.startsWith('deprecated') ? 'legacy'
+    : 'unknown';
+  return note ? { status, statusNote: note } : { status };
+}
+
 // ---- extractTools() ----
 
 export function extractTools(): Tool[] {
@@ -816,6 +837,11 @@ export function extractTools(): Tool[] {
       path: 'tools/cloud_enum_tools.md',
       sourceFile: 'cloud_enum_tools.md',
       defaultCategory: 'Cloud Enumeration Tools',
+    },
+    {
+      path: 'tools/modern_tools.md',
+      sourceFile: 'modern_tools.md',
+      defaultCategory: 'Modern ASM Toolchain',
     },
   ];
 
@@ -916,6 +942,8 @@ export function extractTools(): Tool[] {
           /\*\*Difficulty:\*\*\s*(.+)/
         );
         const linkMatch = toolContent.match(/\*\*Link:\*\*\s*(.+)/);
+        // **Status:** Active | Legacy — optional note after an em/en dash
+        const statusMatch = toolContent.match(/\*\*Status:\*\*\s*(.+)/);
 
         // Only include if it has Purpose (to filter out non-tool sections)
         if (purposeMatch) {
@@ -937,9 +965,12 @@ export function extractTools(): Tool[] {
               inUsage = false;
               continue;
             }
+            // Any bold header describing usage starts a usage section. Matching
+            // on the shape rather than an allowlist of names means new tool
+            // docs don't silently lose their examples.
             if (
               tl.match(
-                /^\*\*(?:Basic Usage|Usage Examples?|Basic Searches|Advanced (?:Queries|Techniques|Options|Module Usage)|Programmatic Usage|Basic Workflow|Common Modules|Session Management|Custom Rules):\*\*/
+                /^\*\*[^*]*\b(?:Usage|Examples?|Searches|Queries|Techniques|Options|Workflow|Modules|Scans?|Commands?|Rules|Templates?|Session Management):\*\*/i
               )
             ) {
               inUsage = true;
@@ -989,6 +1020,7 @@ export function extractTools(): Tool[] {
               ? difficultyMatch[1].trim()
               : '',
             link: linkMatch ? linkMatch[1].trim() : '',
+            ...parseToolStatus(statusMatch ? statusMatch[1] : ''),
             category: currentCategory,
             sourceFile: file.sourceFile,
             installation,
