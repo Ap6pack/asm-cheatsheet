@@ -16,6 +16,7 @@ import {
   FileText,
   BookOpen,
   FlaskConical,
+  Library,
   Search,
   Loader2,
 } from "lucide-react";
@@ -35,6 +36,7 @@ const typeIcons: Record<SearchEntry["type"], React.ElementType> = {
   "case-study": FileText,
   guide: BookOpen,
   lab: FlaskConical,
+  reference: Library,
 };
 
 const typeLabels: Record<SearchEntry["type"], string> = {
@@ -46,6 +48,7 @@ const typeLabels: Record<SearchEntry["type"], string> = {
   "case-study": "Case Study",
   guide: "Guide",
   lab: "Lab",
+  reference: "Reference",
 };
 
 export function SearchDialog() {

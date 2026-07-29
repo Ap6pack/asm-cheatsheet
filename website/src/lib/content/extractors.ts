@@ -17,6 +17,7 @@ import type {
   Guide,
   Lab,
   LabDifficulty,
+  ReferencePage,
 } from './types';
 
 // Base content directory - try multiple locations to support local dev and Vercel
@@ -256,6 +257,42 @@ export function extractModules(): LearningModule[] {
 
 // ---- extractCommands() ----
 
+/**
+ * Categories in command_cheatsheet.md that document policy/checklists rather
+ * than runnable commands. Their code fences hold `echo` checklists and target
+ * lists, so surfacing them as commands is misleading — they belong on the
+ * security-considerations reference page instead.
+ */
+const NON_COMMAND_CATEGORIES = new Set([
+  'CRITICAL SECURITY WARNINGS',
+  'Legal and Ethical Guidelines',
+]);
+
+/**
+ * Categories whose H3 sections name an actual tool. Everything else documents
+ * a technique (jq processing, cron scheduling, troubleshooting), which has a
+ * heading but no tool page to link to.
+ */
+const TOOL_CATEGORIES = new Set([
+  'Subdomain Discovery',
+  'Web Service Discovery',
+  'Port Scanning',
+  'Screenshots',
+  'Search Engine Reconnaissance',
+  'OSINT and Information Gathering',
+  'Cloud Asset Discovery',
+]);
+
+/**
+ * Section headings inside a tool category that still describe a technique
+ * rather than a named tool.
+ */
+const NON_TOOL_HEADINGS = new Set([
+  'Certificate Transparency',
+  'Google Dorking',
+  'S3 Bucket Discovery',
+]);
+
 export function extractCommands(): Command[] {
   const content = readContentFile('resources/command_cheatsheet.md');
   const lines = content.split('\n');
@@ -263,7 +300,7 @@ export function extractCommands(): Command[] {
 
   let currentCategory = '';
   let currentCategoryEmoji = '';
-  let currentTool = '';
+  let currentHeading = '';
   let inCodeBlock = false;
   let codeLanguage = '';
   let codeLines: string[] = [];
@@ -278,15 +315,15 @@ export function extractCommands(): Command[] {
     if (catMatch && !line.startsWith('###')) {
       currentCategoryEmoji = catMatch[1];
       currentCategory = catMatch[2].trim();
-      currentTool = '';
+      currentHeading = '';
       descriptionLines = [];
       continue;
     }
 
-    // Detect tool: ### Amass
-    const toolMatch = line.match(/^###\s+(.+)$/);
-    if (toolMatch && currentCategory) {
-      currentTool = toolMatch[1].trim();
+    // Detect section heading: ### Amass
+    const headingMatch = line.match(/^###\s+(.+)$/);
+    if (headingMatch && currentCategory) {
+      currentHeading = headingMatch[1].trim();
       descriptionLines = [];
       continue;
     }
@@ -302,11 +339,20 @@ export function extractCommands(): Command[] {
     // Code block end
     if (line.startsWith('```') && inCodeBlock) {
       inCodeBlock = false;
-      if (currentCategory && currentTool) {
+      if (
+        currentCategory &&
+        currentHeading &&
+        !NON_COMMAND_CATEGORIES.has(currentCategory)
+      ) {
+        const isTool =
+          TOOL_CATEGORIES.has(currentCategory) &&
+          !NON_TOOL_HEADINGS.has(currentHeading);
         commandIndex++;
         commands.push({
           id: `cmd-${commandIndex}`,
-          tool: currentTool,
+          name: currentHeading,
+          kind: isTool ? 'tool' : 'technique',
+          ...(isTool ? { tool: currentHeading } : {}),
           category: currentCategory,
           categoryEmoji: currentCategoryEmoji,
           code: codeLines.join('\n'),
@@ -320,7 +366,9 @@ export function extractCommands(): Command[] {
 
     if (inCodeBlock) {
       codeLines.push(line);
-    } else if (currentTool && !line.startsWith('#')) {
+    } else if (currentHeading && !line.startsWith('#')) {
+      // Prose between the heading and the fence describes the commands.
+      // Skip blockquote/callout markers so the description stays clean.
       descriptionLines.push(line);
     }
   }
@@ -756,9 +804,19 @@ export function extractCaseStudies(): CaseStudy[] {
 export function extractTools(): Tool[] {
   const tools: Tool[] = [];
 
+  // `defaultCategory` covers tools documented as top-level H2 headings (as in
+  // cloud_enum_tools.md), which have no enclosing category heading of their own.
   const files = [
-    { path: 'tools/recon_tools.md', sourceFile: 'recon_tools.md' },
-    { path: 'tools/cloud_enum_tools.md', sourceFile: 'cloud_enum_tools.md' },
+    {
+      path: 'tools/recon_tools.md',
+      sourceFile: 'recon_tools.md',
+      defaultCategory: 'Reconnaissance Tools',
+    },
+    {
+      path: 'tools/cloud_enum_tools.md',
+      sourceFile: 'cloud_enum_tools.md',
+      defaultCategory: 'Cloud Enumeration Tools',
+    },
   ];
 
   for (const file of files) {
@@ -817,7 +875,9 @@ export function extractTools(): Tool[] {
           .join('\n');
         if (lookahead.includes('**Purpose:**')) {
           toolName = toolH2WithToolMatch[1].trim();
-          currentCategory = toolName;
+          // A tool documented at H2 has no enclosing category — fall back to
+          // the file's default rather than labelling it with its own name.
+          currentCategory = file.defaultCategory;
           isH2Tool = true;
         } else {
           currentCategory = toolH2WithToolMatch[1].trim();
@@ -1320,6 +1380,71 @@ export function extractLabs(): Lab[] {
     }
     return validateLab(parsed, `labs/${file}`, file.replace(/\.json$/, ''));
   });
+}
+
+// ---- Reference pages (content/reference-pages.json) ----
+
+/**
+ * Publish long-form markdown from content/ as site pages. The manifest is
+ * authored (title, description, category) rather than scraped from prose, so
+ * adding a page is a data change with no parsing guesswork.
+ */
+export function extractReferencePages(): ReferencePage[] {
+  const manifestPath = path.join(getContentDir(), 'reference-pages.json');
+  if (!fs.existsSync(manifestPath)) return [];
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+  } catch (err) {
+    throw new Error(
+      `Invalid reference-pages.json: not valid JSON (${(err as Error).message})`
+    );
+  }
+
+  const manifest = parsed as { pages?: unknown };
+  if (!Array.isArray(manifest.pages)) {
+    throw new Error('Invalid reference-pages.json: "pages" must be an array');
+  }
+
+  const seenSlugs = new Set<string>();
+  const pages: ReferencePage[] = [];
+
+  for (const raw of manifest.pages as Record<string, unknown>[]) {
+    for (const key of ['slug', 'file', 'title', 'description', 'category']) {
+      if (typeof raw[key] !== 'string' || (raw[key] as string).length === 0) {
+        throw new Error(
+          `Invalid reference-pages.json: entry ${JSON.stringify(raw.slug ?? raw.file ?? '?')} is missing "${key}"`
+        );
+      }
+    }
+    const slug = raw.slug as string;
+    if (seenSlugs.has(slug)) {
+      throw new Error(`Invalid reference-pages.json: duplicate slug "${slug}"`);
+    }
+    seenSlugs.add(slug);
+
+    const filePath = path.join(getContentDir(), raw.file as string);
+    if (!fs.existsSync(filePath)) {
+      throw new Error(
+        `Invalid reference-pages.json: "${slug}" points at missing file "${raw.file}"`
+      );
+    }
+
+    pages.push({
+      slug,
+      file: raw.file as string,
+      title: raw.title as string,
+      description: raw.description as string,
+      category: raw.category as string,
+      order: typeof raw.order === 'number' ? raw.order : 0,
+      content: fs.readFileSync(filePath, 'utf-8'),
+    });
+  }
+
+  return pages.sort(
+    (a, b) => a.category.localeCompare(b.category) || a.order - b.order
+  );
 }
 
 // Used by tests and validation scripts that need to mirror quiz question typing

@@ -131,12 +131,44 @@ describe('extractCommands', () => {
     expect(categories).toContain('Port Scanning');
   });
 
-  it('should extract tool names', () => {
-    const tools = [...new Set(commands.map((c) => c.tool))];
+  it('should extract section names', () => {
+    const names = [...new Set(commands.map((c) => c.name))];
+    expect(names).toContain('Amass');
+    expect(names).toContain('Subfinder');
+    expect(names).toContain('httpx');
+    expect(names).toContain('Nmap');
+  });
+
+  it('should classify tools separately from techniques', () => {
+    const tools = commands.filter((c) => c.kind === 'tool').map((c) => c.name);
+    const techniques = commands
+      .filter((c) => c.kind === 'technique')
+      .map((c) => c.name);
+
     expect(tools).toContain('Amass');
-    expect(tools).toContain('Subfinder');
-    expect(tools).toContain('httpx');
     expect(tools).toContain('Nmap');
+    // Techniques have a heading but no tool page to link to
+    expect(techniques).toContain('JSON Processing with jq');
+    expect(techniques).toContain('Certificate Transparency');
+
+    // Entries flagged as tools carry a tool reference; techniques do not
+    for (const cmd of commands) {
+      if (cmd.kind === 'tool') expect(cmd.tool).toBe(cmd.name);
+      else expect(cmd.tool).toBeUndefined();
+    }
+  });
+
+  it('should not surface policy/checklist sections as commands', () => {
+    const names = commands.map((c) => c.name);
+    expect(names).not.toContain('Before You Scan - MANDATORY CHECKLIST');
+    expect(names).not.toContain('Safe Practice Targets');
+    expect(names).not.toContain('Incident Response');
+  });
+
+  it('should give every command a description', () => {
+    for (const cmd of commands) {
+      expect(cmd.description.trim().length).toBeGreaterThan(0);
+    }
   });
 
   it('should have non-empty code blocks', () => {

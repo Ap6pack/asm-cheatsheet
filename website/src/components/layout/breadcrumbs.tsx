@@ -9,6 +9,7 @@ const routeLabels: Record<string, string> = {
   commands: "Commands",
   tools: "Tools",
   labs: "Labs",
+  reference: "Reference",
   workflows: "Workflows",
   scenarios: "Scenarios",
   "case-studies": "Case Studies",

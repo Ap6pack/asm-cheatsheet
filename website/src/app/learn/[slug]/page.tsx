@@ -18,13 +18,30 @@ const GITHUB_CONTENT_BASE =
  * Map markdown resource paths to app routes or GitHub URLs.
  */
 function resolveResourceUrl(url: string): { href: string; external: boolean } {
-  // Map known internal paths to app routes
+  // Module resources are authored as relative paths from content/resources/.
+  // Keep learners on the site wherever a published page exists for the target.
   const routeMap: Record<string, string> = {
     "command_cheatsheet.md": "/commands",
     "../tools/recon_tools.md": "/tools",
-    "../tools/screenshots.md": "/tools",
-    "security_considerations.md": "/guides",
+    "../tools/cloud_enum_tools.md": "/tools",
+    "../tools/screenshots.md": "/reference/screenshot-tools",
+    "security_considerations.md": "/reference/security-considerations",
+    "modern_tools_update.md": "/reference/modern-tools",
+    "reading_list.md": "/reference/reading-list",
+    "../scripts/README.md": "/reference/automation-scripts",
+    "../examples/change_tracking.md": "/reference/change-tracking",
+    "../examples/github_leak_queries.md": "/reference/github-leak-queries",
+    "../quick-reference/README.md": "/reference/quick-reference",
+    "../quick-reference/advanced-techniques.md": "/reference/advanced-techniques",
+    "../quick-reference/docker-quickstart.md": "/reference/docker-quickstart",
+    "../quick-reference/scenario-cards.md": "/scenarios",
+    "../getting-started.md": "/reference/getting-started",
+    "../guides/building_your_own_asm_stack.md": "/guides/building_your_own_asm_stack",
+    "../guides/integrating_threat_intel.md": "/guides/integrating_threat_intel",
+    "../examples/practical_workflows.md": "/workflows",
+    "../examples/case_studies.md": "/case-studies",
     "../README.md": "/",
+    "README.md": "/reference/quick-reference",
   };
 
   // Check for exact match (without hash)
@@ -33,10 +50,8 @@ function resolveResourceUrl(url: string): { href: string; external: boolean } {
     return { href: routeMap[basePath], external: false };
   }
 
-  // For markdown file links, point to GitHub content
+  // Anything still unmapped falls back to the source on GitHub
   if (url.endsWith(".md") || url.includes(".md#")) {
-    // Normalize relative paths from resources/ directory
-    const normalized = url.replace(/^\.\.\//, "");
     return {
       href: `${GITHUB_CONTENT_BASE}/resources/${url}`.replace(
         "/resources/../",

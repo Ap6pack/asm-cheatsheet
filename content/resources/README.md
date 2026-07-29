@@ -65,7 +65,7 @@ This directory contains additional reference materials, cheat sheets, and extern
 - **[GitHub Leak Queries](../examples/github_leak_queries.md)** - Find exposed credentials and sensitive data
 
 ### 🚀 Getting Started
-- **[Complete Getting Started Guide](../GETTING_STARTED.md)** - 30-minute walkthrough from zero to first scan
+- **[Complete Getting Started Guide](../getting-started.md)** - 30-minute walkthrough from zero to first scan
 - **[Automation Scripts](../scripts/README.md)** - Ready-to-use scripts for common ASM tasks
 - **[Tool Documentation](../tools/)** - Comprehensive guides for ASM tools
 

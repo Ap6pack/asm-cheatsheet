@@ -8,6 +8,7 @@ import type {
   Quiz,
   Guide,
   Lab,
+  ReferencePage,
   SearchEntry,
 } from './types';
 import {
@@ -20,6 +21,7 @@ import {
   extractQuizzes,
   extractGuides,
   extractLabs,
+  extractReferencePages,
 } from './extractors';
 
 // Simple in-memory cache
@@ -32,6 +34,7 @@ let toolsCache: Tool[] | null = null;
 let quizzesCache: Quiz[] | null = null;
 let guidesCache: Guide[] | null = null;
 let labsCache: Lab[] | null = null;
+let referencePagesCache: ReferencePage[] | null = null;
 let searchEntriesCache: SearchEntry[] | null = null;
 
 export async function getAllModules(): Promise<LearningModule[]> {
@@ -109,6 +112,20 @@ export async function getLabBySlug(slug: string): Promise<Lab | null> {
   return labs.find((l) => l.slug === slug) ?? null;
 }
 
+export async function getAllReferencePages(): Promise<ReferencePage[]> {
+  if (!referencePagesCache) {
+    referencePagesCache = extractReferencePages();
+  }
+  return referencePagesCache;
+}
+
+export async function getReferencePageBySlug(
+  slug: string
+): Promise<ReferencePage | null> {
+  const pages = await getAllReferencePages();
+  return pages.find((p) => p.slug === slug) ?? null;
+}
+
 export async function getSearchEntries(): Promise<SearchEntry[]> {
   if (!searchEntriesCache) {
     searchEntriesCache = await buildSearchEntries();
@@ -141,10 +158,10 @@ async function buildSearchEntries(): Promise<SearchEntry[]> {
   for (const cmd of commands) {
     entries.push({
       id: cmd.id,
-      title: `${cmd.tool} - ${cmd.category}`,
+      title: `${cmd.name} - ${cmd.category}`,
       type: 'command',
-      content: [cmd.tool, cmd.category, cmd.description, cmd.code].join(' '),
-      url: `/commands#${cmd.tool.toLowerCase()}`,
+      content: [cmd.name, cmd.category, cmd.description, cmd.code].join(' '),
+      url: `/commands#${cmd.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
       category: cmd.category,
     });
   }
@@ -249,6 +266,22 @@ async function buildSearchEntries(): Promise<SearchEntry[]> {
     });
   }
 
+  const referencePages = await getAllReferencePages();
+  for (const page of referencePages) {
+    entries.push({
+      id: `reference-${page.slug}`,
+      title: page.title,
+      type: 'reference',
+      content: [page.title, page.description, page.content]
+        .join(' ')
+        .replace(/[#*`\[\]()>|-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .slice(0, 5000),
+      url: `/reference/${page.slug}`,
+      category: page.category,
+    });
+  }
+
   return entries;
 }
 
@@ -265,5 +298,6 @@ export function clearCache(): void {
   quizzesCache = null;
   guidesCache = null;
   labsCache = null;
+  referencePagesCache = null;
   searchEntriesCache = null;
 }
