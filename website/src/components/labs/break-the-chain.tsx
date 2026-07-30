@@ -150,9 +150,6 @@ export function BreakTheChain({ lab }: { lab: IncidentReplayLab }) {
         ]
       : null;
 
-  const cutNodeByControl = (id: string) =>
-    controls.find((c) => c.id === id)?.breaksAtNode;
-
   return (
     <div className="space-y-6">
       {/* Framing */}

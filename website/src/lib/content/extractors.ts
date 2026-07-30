@@ -563,8 +563,6 @@ export function extractScenarios(): Scenario[] {
         i++;
       }
 
-      const scenarioContent = scenarioLines.join('\n');
-
       // Parse phases: ### Phase N: Title (Time) or ### Intelligent Target Discovery etc
       const phases: ScenarioPhase[] = [];
       const phaseRegex =

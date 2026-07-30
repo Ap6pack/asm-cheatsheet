@@ -14,8 +14,8 @@ the triage type existed keep working unchanged.
 
 ## Incident-replay labs
 
-An incident-replay lab — an interactive, machine-speed replay of an
-intrusion timeline, rendered at `/labs/<slug>` on the website. A learner presses
+An incident-replay lab is an interactive, machine-speed replay of an intrusion
+timeline, rendered at `/labs/<slug>` on the website. A learner presses
 play and watches the attack chain fall one trust boundary at a time: nodes
 ignite as the agent reaches them, phase-activity bars fill, and the action
 counters climb.

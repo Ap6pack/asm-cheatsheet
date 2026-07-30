@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useProgressStore, useHydration } from "@/lib/stores";
-import { GraduationCap, GitBranch, Shield, CheckCircle } from "lucide-react";
+import { GraduationCap, GitBranch, Shield } from "lucide-react";
 
 interface ProgressOverviewProps {
   totalModules: number;
