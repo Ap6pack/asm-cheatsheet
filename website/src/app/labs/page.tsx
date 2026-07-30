@@ -48,8 +48,13 @@ export default async function LabsPage() {
                   ) : (
                     <Badge variant="outline">Real incident</Badge>
                   )}
-                  {lab.controls && lab.controls.length > 0 && (
-                    <Badge variant="outline">🛡 Defender challenge</Badge>
+                  {lab.kind === "incident-replay" &&
+                    lab.controls &&
+                    lab.controls.length > 0 && (
+                      <Badge variant="outline">🛡 Defender challenge</Badge>
+                    )}
+                  {lab.kind === "triage" && (
+                    <Badge variant="outline">🔎 Triage exercise</Badge>
                   )}
                   <span className="ml-auto">
                     <LabSolvedBadge slug={lab.slug} />
@@ -70,7 +75,9 @@ export default async function LabsPage() {
                     </span>
                     <span className="flex items-center gap-1">
                       <Activity className="h-3.5 w-3.5" />
-                      {getTotalActions(lab).toLocaleString("en-US")} actions
+                      {lab.kind === "incident-replay"
+                        ? `${getTotalActions(lab).toLocaleString("en-US")} steps`
+                        : `${lab.questions.length} decisions`}
                     </span>
                   </div>
                   <span className="inline-flex items-center text-[var(--primary)]">

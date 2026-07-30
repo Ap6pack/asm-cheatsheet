@@ -1226,193 +1226,301 @@ export function validateLab(
     }
   }
 
-  const stages = lab.stages;
-  if (!Array.isArray(stages) || stages.length === 0) {
-    fail('"stages" must be a non-empty array');
-  }
-  const stageIds = new Set<string>();
-  for (const s of stages as Record<string, unknown>[]) {
-    if (typeof s.id !== 'string' || typeof s.name !== 'string') {
-      fail('each stage needs a string id and name');
-    }
-    stageIds.add(s.id as string);
-  }
 
-  const phases = lab.phases;
-  if (!Array.isArray(phases) || phases.length === 0) {
-    fail('"phases" must be a non-empty array');
+  // Labs authored before the triage type existed have no `kind`; they are
+  // incident replays. Defaulting here keeps existing content files valid.
+  const kind = lab.kind === undefined ? 'incident-replay' : lab.kind;
+  if (kind !== 'incident-replay' && kind !== 'triage') {
+    fail('"kind" must be "incident-replay" or "triage"');
   }
-  // A lab either has published action telemetry for every phase, or for none.
-  // Mixing the two would make the progress counters meaningless.
-  const phaseIds = new Set<string>();
-  const phaseTotals = new Map<string, number>();
-  let phasesWithTotals = 0;
-  for (const p of phases as Record<string, unknown>[]) {
-    if (typeof p.id !== 'string' || typeof p.label !== 'string') {
-      fail('each phase needs a string id and label');
-    }
-    phaseIds.add(p.id as string);
-    if (p.total !== undefined) {
-      if (typeof p.total !== 'number' || p.total < 0) {
-        fail(`phase "${p.id}" has a non-numeric or negative "total"`);
-      }
-      phasesWithTotals++;
-      phaseTotals.set(p.id as string, p.total as number);
-    }
-  }
-  const usesActionTelemetry = phasesWithTotals > 0;
-  if (usesActionTelemetry && phasesWithTotals !== (phases as unknown[]).length) {
-    fail(
-      'either every phase declares a "total" (action telemetry) or none do (event-counted replay)'
-    );
-  }
-
-  const nodes = lab.nodes;
-  if (!Array.isArray(nodes) || nodes.length === 0) {
-    fail('"nodes" must be a non-empty array');
-  }
-  const nodeIds = new Set<string>();
-  for (const n of nodes as Record<string, unknown>[]) {
-    if (
-      typeof n.id !== 'string' ||
-      typeof n.label !== 'string' ||
-      typeof n.group !== 'string'
-    ) {
-      fail('each node needs a string id, label, and group');
-    }
-    if (!stageIds.has(n.stageId as string)) {
-      fail(`node "${n.id}" references unknown stageId "${n.stageId}"`);
-    }
-    nodeIds.add(n.id as string);
-  }
-
-  const edges = lab.edges;
-  if (!Array.isArray(edges)) fail('"edges" must be an array');
-  for (const e of edges as Record<string, unknown>[]) {
-    if (!nodeIds.has(e.from as string) || !nodeIds.has(e.to as string)) {
-      fail(`edge ${JSON.stringify(e)} references an unknown node`);
-    }
-  }
-
-  const events = lab.events;
-  if (!Array.isArray(events) || events.length === 0) {
-    fail('"events" must be a non-empty array');
-  }
-  const phaseSums = new Map<string, number>();
-  let prevTime = -Infinity;
-  for (const [i, raw] of (events as Record<string, unknown>[]).entries()) {
-    const label = `event ${i + 1}`;
-    if (typeof raw.id !== 'string') fail(`${label} needs a string id`);
-    if (typeof raw.title !== 'string') fail(`${label} needs a title`);
-    if (typeof raw.blastRadius !== 'string') {
-      fail(`${label} needs a blastRadius`);
-    }
-    if (!phaseIds.has(raw.phaseId as string)) {
-      fail(`${label} references unknown phaseId "${raw.phaseId}"`);
-    }
-    if (!stageIds.has(raw.stageId as string)) {
-      fail(`${label} references unknown stageId "${raw.stageId}"`);
-    }
-    if (usesActionTelemetry) {
-      if (typeof raw.actions !== 'number' || raw.actions < 0) {
-        fail(
-          `${label} needs a non-negative numeric "actions" (this lab declares phase totals)`
-        );
-      }
-    } else if (raw.actions !== undefined) {
-      fail(
-        `${label} sets "actions" but no phase declares a "total" — add totals to every phase or drop the per-event counts`
-      );
-    }
-    const t = Date.parse(raw.t as string);
-    if (Number.isNaN(t)) fail(`${label} has an invalid timestamp "${raw.t}"`);
-    if (t < prevTime) fail(`${label} timestamp is out of ascending order`);
-    prevTime = t;
-
-    for (const nodeId of (raw.ignites as string[] | undefined) ?? []) {
-      if (!nodeIds.has(nodeId)) {
-        fail(`${label} ignites unknown node "${nodeId}"`);
-      }
-    }
-    if (usesActionTelemetry) {
-      phaseSums.set(
-        raw.phaseId as string,
-        (phaseSums.get(raw.phaseId as string) ?? 0) + (raw.actions as number)
-      );
-    }
-  }
-
-  // The action counters only stay honest if event sums match phase totals
-  let phaseGrandTotal = 0;
-  for (const [phaseId, total] of phaseTotals) {
-    const sum = phaseSums.get(phaseId) ?? 0;
-    if (sum !== total) {
-      fail(
-        `phase "${phaseId}" total is ${total} but its events sum to ${sum}`
-      );
-    }
-    phaseGrandTotal += total;
-  }
-
-  // A display total, when given, must not undercount the classified actions
-  if (lab.totalActions !== undefined) {
-    if (!usesActionTelemetry) {
-      fail(
-        '"totalActions" requires phase totals — an event-counted replay derives its total from the timeline'
-      );
-    }
-    const totalActions = lab.totalActions;
-    if (typeof totalActions !== 'number' || totalActions < 0) {
-      fail('"totalActions" must be a non-negative number');
-    } else if (totalActions < phaseGrandTotal) {
-      fail(
-        `"totalActions" (${totalActions}) is less than the sum of phase totals (${phaseGrandTotal})`
-      );
-    }
-  }
+  lab.kind = kind;
 
   if (!Array.isArray(lab.lessons) || lab.lessons.length === 0) {
     fail('"lessons" must be a non-empty array');
   }
 
-  // Optional "Break the Chain" controls
-  if (lab.controls !== undefined) {
-    if (!Array.isArray(lab.controls) || lab.controls.length === 0) {
-      fail('"controls", when present, must be a non-empty array');
+  if (kind === 'incident-replay') {
+    const stages = lab.stages;
+    if (!Array.isArray(stages) || stages.length === 0) {
+      fail('"stages" must be a non-empty array');
     }
-    const seenControlIds = new Set<string>();
-    for (const raw of lab.controls as Record<string, unknown>[]) {
-      if (typeof raw.id !== 'string' || raw.id.length === 0) {
-        fail('each control needs a string id');
+    const stageIds = new Set<string>();
+    for (const s of stages as Record<string, unknown>[]) {
+      if (typeof s.id !== 'string' || typeof s.name !== 'string') {
+        fail('each stage needs a string id and name');
       }
-      if (seenControlIds.has(raw.id as string)) {
-        fail(`duplicate control id "${raw.id}"`);
+      stageIds.add(s.id as string);
+    }
+
+    const phases = lab.phases;
+    if (!Array.isArray(phases) || phases.length === 0) {
+      fail('"phases" must be a non-empty array');
+    }
+    // A lab either has published action telemetry for every phase, or for none.
+    // Mixing the two would make the progress counters meaningless.
+    const phaseIds = new Set<string>();
+    const phaseTotals = new Map<string, number>();
+    let phasesWithTotals = 0;
+    for (const p of phases as Record<string, unknown>[]) {
+      if (typeof p.id !== 'string' || typeof p.label !== 'string') {
+        fail('each phase needs a string id and label');
       }
-      seenControlIds.add(raw.id as string);
-      if (typeof raw.label !== 'string' || typeof raw.detail !== 'string') {
-        fail(`control "${raw.id}" needs a label and detail`);
-      }
-      const hasCut =
-        typeof raw.breaksAtNode === 'string' && raw.breaksAtNode.length > 0;
-      const isDetection = raw.detection === true;
-      if (!hasCut && !isDetection) {
-        fail(
-          `control "${raw.id}" must either set breaksAtNode or detection: true`
-        );
-      }
-      if (hasCut && !nodeIds.has(raw.breaksAtNode as string)) {
-        fail(
-          `control "${raw.id}" breaksAtNode references unknown node "${raw.breaksAtNode}"`
-        );
+      phaseIds.add(p.id as string);
+      if (p.total !== undefined) {
+        if (typeof p.total !== 'number' || p.total < 0) {
+          fail(`phase "${p.id}" has a non-numeric or negative "total"`);
+        }
+        phasesWithTotals++;
+        phaseTotals.set(p.id as string, p.total as number);
       }
     }
-    if (lab.defenderBudget !== undefined) {
+    const usesActionTelemetry = phasesWithTotals > 0;
+    if (usesActionTelemetry && phasesWithTotals !== (phases as unknown[]).length) {
+      fail(
+        'either every phase declares a "total" (action telemetry) or none do (event-counted replay)'
+      );
+    }
+
+    const nodes = lab.nodes;
+    if (!Array.isArray(nodes) || nodes.length === 0) {
+      fail('"nodes" must be a non-empty array');
+    }
+    const nodeIds = new Set<string>();
+    for (const n of nodes as Record<string, unknown>[]) {
       if (
-        typeof lab.defenderBudget !== 'number' ||
-        lab.defenderBudget < 1 ||
-        !Number.isInteger(lab.defenderBudget)
+        typeof n.id !== 'string' ||
+        typeof n.label !== 'string' ||
+        typeof n.group !== 'string'
       ) {
-        fail('"defenderBudget" must be a positive integer');
+        fail('each node needs a string id, label, and group');
+      }
+      if (!stageIds.has(n.stageId as string)) {
+        fail(`node "${n.id}" references unknown stageId "${n.stageId}"`);
+      }
+      nodeIds.add(n.id as string);
+    }
+
+    const edges = lab.edges;
+    if (!Array.isArray(edges)) fail('"edges" must be an array');
+    for (const e of edges as Record<string, unknown>[]) {
+      if (!nodeIds.has(e.from as string) || !nodeIds.has(e.to as string)) {
+        fail(`edge ${JSON.stringify(e)} references an unknown node`);
+      }
+    }
+
+    const events = lab.events;
+    if (!Array.isArray(events) || events.length === 0) {
+      fail('"events" must be a non-empty array');
+    }
+    const phaseSums = new Map<string, number>();
+    let prevTime = -Infinity;
+    for (const [i, raw] of (events as Record<string, unknown>[]).entries()) {
+      const label = `event ${i + 1}`;
+      if (typeof raw.id !== 'string') fail(`${label} needs a string id`);
+      if (typeof raw.title !== 'string') fail(`${label} needs a title`);
+      if (typeof raw.blastRadius !== 'string') {
+        fail(`${label} needs a blastRadius`);
+      }
+      if (!phaseIds.has(raw.phaseId as string)) {
+        fail(`${label} references unknown phaseId "${raw.phaseId}"`);
+      }
+      if (!stageIds.has(raw.stageId as string)) {
+        fail(`${label} references unknown stageId "${raw.stageId}"`);
+      }
+      if (usesActionTelemetry) {
+        if (typeof raw.actions !== 'number' || raw.actions < 0) {
+          fail(
+            `${label} needs a non-negative numeric "actions" (this lab declares phase totals)`
+          );
+        }
+      } else if (raw.actions !== undefined) {
+        fail(
+          `${label} sets "actions" but no phase declares a "total" — add totals to every phase or drop the per-event counts`
+        );
+      }
+      const t = Date.parse(raw.t as string);
+      if (Number.isNaN(t)) fail(`${label} has an invalid timestamp "${raw.t}"`);
+      if (t < prevTime) fail(`${label} timestamp is out of ascending order`);
+      prevTime = t;
+
+      for (const nodeId of (raw.ignites as string[] | undefined) ?? []) {
+        if (!nodeIds.has(nodeId)) {
+          fail(`${label} ignites unknown node "${nodeId}"`);
+        }
+      }
+      if (usesActionTelemetry) {
+        phaseSums.set(
+          raw.phaseId as string,
+          (phaseSums.get(raw.phaseId as string) ?? 0) + (raw.actions as number)
+        );
+      }
+    }
+
+    // The action counters only stay honest if event sums match phase totals
+    let phaseGrandTotal = 0;
+    for (const [phaseId, total] of phaseTotals) {
+      const sum = phaseSums.get(phaseId) ?? 0;
+      if (sum !== total) {
+        fail(
+          `phase "${phaseId}" total is ${total} but its events sum to ${sum}`
+        );
+      }
+      phaseGrandTotal += total;
+    }
+
+    // A display total, when given, must not undercount the classified actions
+    if (lab.totalActions !== undefined) {
+      if (!usesActionTelemetry) {
+        fail(
+          '"totalActions" requires phase totals — an event-counted replay derives its total from the timeline'
+        );
+      }
+      const totalActions = lab.totalActions;
+      if (typeof totalActions !== 'number' || totalActions < 0) {
+        fail('"totalActions" must be a non-negative number');
+      } else if (totalActions < phaseGrandTotal) {
+        fail(
+          `"totalActions" (${totalActions}) is less than the sum of phase totals (${phaseGrandTotal})`
+        );
+      }
+    }
+
+    // Optional "Break the Chain" controls
+    if (lab.controls !== undefined) {
+      if (!Array.isArray(lab.controls) || lab.controls.length === 0) {
+        fail('"controls", when present, must be a non-empty array');
+      }
+      const seenControlIds = new Set<string>();
+      for (const raw of lab.controls as Record<string, unknown>[]) {
+        if (typeof raw.id !== 'string' || raw.id.length === 0) {
+          fail('each control needs a string id');
+        }
+        if (seenControlIds.has(raw.id as string)) {
+          fail(`duplicate control id "${raw.id}"`);
+        }
+        seenControlIds.add(raw.id as string);
+        if (typeof raw.label !== 'string' || typeof raw.detail !== 'string') {
+          fail(`control "${raw.id}" needs a label and detail`);
+        }
+        const hasCut =
+          typeof raw.breaksAtNode === 'string' && raw.breaksAtNode.length > 0;
+        const isDetection = raw.detection === true;
+        if (!hasCut && !isDetection) {
+          fail(
+            `control "${raw.id}" must either set breaksAtNode or detection: true`
+          );
+        }
+        if (hasCut && !nodeIds.has(raw.breaksAtNode as string)) {
+          fail(
+            `control "${raw.id}" breaksAtNode references unknown node "${raw.breaksAtNode}"`
+          );
+        }
+      }
+      if (lab.defenderBudget !== undefined) {
+        if (
+          typeof lab.defenderBudget !== 'number' ||
+          lab.defenderBudget < 1 ||
+          !Number.isInteger(lab.defenderBudget)
+        ) {
+          fail('"defenderBudget" must be a positive integer');
+        }
+      }
+    }
+
+  } else {
+
+    // ---- Triage lab ----
+    const artifacts = lab.artifacts;
+    if (!Array.isArray(artifacts) || artifacts.length === 0) {
+      fail('a triage lab needs a non-empty "artifacts" array');
+    }
+    if (typeof lab.brief !== 'string' || lab.brief.length === 0) {
+      fail('a triage lab needs a "brief"');
+    }
+    const artifactIds = new Set<string>();
+    for (const raw of artifacts as Record<string, unknown>[]) {
+      for (const key of ['id', 'label', 'language', 'content']) {
+        if (typeof raw[key] !== 'string' || (raw[key] as string).length === 0) {
+          fail(
+            `artifact ${JSON.stringify(raw.id ?? '?')} is missing "${key}"`
+          );
+        }
+      }
+      if (artifactIds.has(raw.id as string)) {
+        fail(`duplicate artifact id "${raw.id}"`);
+      }
+      artifactIds.add(raw.id as string);
+    }
+
+    const questions = lab.questions;
+    if (!Array.isArray(questions) || questions.length === 0) {
+      fail('a triage lab needs a non-empty "questions" array');
+    }
+    const questionIds = new Set<string>();
+    for (const [i, raw] of (questions as Record<string, unknown>[]).entries()) {
+      const label = `question ${i + 1}`;
+      if (typeof raw.id !== 'string' || raw.id.length === 0) {
+        fail(`${label} needs a string id`);
+      }
+      if (questionIds.has(raw.id as string)) {
+        fail(`duplicate question id "${raw.id}"`);
+      }
+      questionIds.add(raw.id as string);
+      if (typeof raw.prompt !== 'string' || raw.prompt.length === 0) {
+        fail(`${label} needs a "prompt"`);
+      }
+      if (raw.type !== 'single' && raw.type !== 'multi') {
+        fail(`${label} "type" must be "single" or "multi"`);
+      }
+      if (
+        !Array.isArray(raw.options) ||
+        raw.options.length < 2 ||
+        !(raw.options as unknown[]).every(
+          (o) => typeof o === 'string' && o.length > 0
+        )
+      ) {
+        fail(`${label} needs at least 2 non-empty string options`);
+      }
+      const correct = raw.correct;
+      if (!Array.isArray(correct) || correct.length === 0) {
+        fail(`${label} needs a non-empty "correct" array`);
+      }
+      const optionCount = (raw.options as unknown[]).length;
+      for (const c of correct as unknown[]) {
+        if (
+          typeof c !== 'number' ||
+          !Number.isInteger(c) ||
+          c < 0 ||
+          c >= optionCount
+        ) {
+          fail(`${label} has an out-of-range index in "correct"`);
+        }
+      }
+      if (new Set(correct as number[]).size !== (correct as number[]).length) {
+        fail(`${label} has duplicate indices in "correct"`);
+      }
+      // A "single" question with several right answers is an authoring mistake
+      if (raw.type === 'single' && (correct as number[]).length !== 1) {
+        fail(`${label} is type "single" but declares ${(correct as number[]).length} correct answers`);
+      }
+      if (typeof raw.explanation !== 'string' || raw.explanation.length === 0) {
+        fail(`${label} needs an "explanation"`);
+      }
+      // Questions may point at the evidence they are asking about
+      for (const aid of (raw.artifactIds as string[] | undefined) ?? []) {
+        if (!artifactIds.has(aid)) {
+          fail(`${label} references unknown artifact "${aid}"`);
+        }
+      }
+    }
+
+    if (lab.passingScore !== undefined) {
+      if (
+        typeof lab.passingScore !== 'number' ||
+        lab.passingScore <= 0 ||
+        lab.passingScore > 100
+      ) {
+        fail('"passingScore" must be a percentage between 1 and 100');
       }
     }
   }

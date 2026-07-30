@@ -346,6 +346,16 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://asm-cheatsheet.vercel.app/labs/triage-first-scan</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://asm-cheatsheet.vercel.app/labs/triage-prioritize-findings</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://asm-cheatsheet.vercel.app/reference/automation-scripts</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>

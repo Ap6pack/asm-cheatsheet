@@ -252,9 +252,18 @@ async function buildSearchEntries(): Promise<SearchEntry[]> {
         lab.title,
         lab.subtitle,
         lab.summary,
-        ...lab.phases.map((p) => `${p.label} ${p.note ?? ''}`),
-        ...lab.nodes.map((n) => `${n.label} ${n.sub ?? ''} ${n.group}`),
-        ...lab.events.map((e) => `${e.title} ${e.detail ?? ''}`),
+        // Index whichever shape this lab has
+        ...(lab.kind === 'incident-replay'
+          ? [
+              ...lab.phases.map((p) => `${p.label} ${p.note ?? ''}`),
+              ...lab.nodes.map((n) => `${n.label} ${n.sub ?? ''} ${n.group}`),
+              ...lab.events.map((e) => `${e.title} ${e.detail ?? ''}`),
+            ]
+          : [
+              lab.brief,
+              ...lab.artifacts.map((a) => `${a.label} ${a.command ?? ''}`),
+              ...lab.questions.map((q) => q.prompt),
+            ]),
       ]
         .join(' ')
         .replace(/[#*`\[\]()>|-]/g, ' ')

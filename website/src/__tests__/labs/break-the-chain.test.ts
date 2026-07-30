@@ -1,11 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { computeContainment } from "@/lib/labs/break-the-chain";
 import { extractLabs } from "@/lib/content/extractors";
-import type { Lab } from "@/lib/content/types";
+import type { IncidentReplayLab } from "@/lib/content/types";
 
 // A small linear chain A -> B -> C -> D across two stages, with controls
 // cutting at B, C, and D, plus a detection-only control.
-const lab: Lab = {
+const lab: IncidentReplayLab = {
+  kind: "incident-replay",
   slug: "t",
   title: "T",
   subtitle: "s",
@@ -100,7 +101,7 @@ describe("computeContainment", () => {
 describe("computeContainment on the real flagship lab", () => {
   const flagship = extractLabs().find((l) =>
     l.slug.startsWith("frontier-lab-agent-intrusion")
-  ) as Lab;
+  ) as IncidentReplayLab;
 
   it("the flagship ships a Break-the-Chain challenge", () => {
     expect(flagship.controls?.length).toBeGreaterThan(0);
@@ -139,7 +140,7 @@ describe("computeContainment on the real flagship lab", () => {
 describe("computeContainment on the Northwind lab", () => {
   const northwind = extractLabs().find(
     (l) => l.slug === "northwind-shadow-it-breach"
-  ) as Lab;
+  ) as IncidentReplayLab;
 
   it("ships a Break-the-Chain challenge", () => {
     expect(northwind.controls?.length).toBeGreaterThan(0);

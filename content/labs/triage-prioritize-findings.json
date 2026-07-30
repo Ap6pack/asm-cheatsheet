@@ -1,0 +1,119 @@
+{
+  "kind": "triage",
+  "slug": "triage-prioritize-findings",
+  "title": "Forty Findings, One Afternoon",
+  "subtitle": "Everything is 'high'. Decide what actually gets fixed first.",
+  "category": "Triage Exercise",
+  "difficulty": "intermediate",
+  "estimatedMinutes": 20,
+  "fictional": true,
+  "disclaimer": "Fictional training scenario. All output is synthetic. CVE identifiers shown are illustrative placeholders and do not refer to real advisories — the exercise is about the prioritization method, not about looking up specific vulnerabilities.",
+  "summary": "Your scanner produced forty findings and labelled most of them 'high'. You have one afternoon and one engineer. This exercise is about the step nobody teaches: turning a severity-sorted dump into a **defensible priority order** using exposure, exploitation evidence, and business context — the approach set out in [Integrating Threat Intelligence](/guides/integrating_threat_intel). Read the scanner output, the exploitation feed, and the asset inventory together, because none of them is sufficient alone.",
+  "brief": "You're the security engineer at Northwind. A nuclei scan of your external estate finished overnight, you have this week's exploitation feed, and you have the asset inventory that says what each host actually does. Your manager wants to know what gets fixed today. Read all three and decide.",
+  "passingScore": 70,
+  "artifacts": [
+    {
+      "id": "nuclei",
+      "label": "nuclei findings",
+      "command": "nuclei -l live.txt -severity critical,high,medium -jsonl | jq -r '[.info.severity,.info.name,.host]|@tsv'",
+      "language": "text",
+      "content": "critical  Remote code execution in FreightRouter (CVE-2026-11001)   https://legacy-router.northwind.example\nhigh      Outdated TLS configuration — TLS 1.0 enabled              https://marketing.northwind.example\nhigh      Exposed .git directory                                    https://api.northwind.example\nhigh      Authenticated RCE in AdminPanel (CVE-2026-11042)          https://admin.northwind.internal\nhigh      Default credentials accepted                              https://printer-3f.northwind.internal\nhigh      SQL injection in order lookup (CVE-2026-11077)            https://shop.northwind.example\nmedium    Missing security headers                                  https://www.northwind.example\nmedium    Directory listing enabled                                 https://cdn.northwind.example\nmedium    Verbose error messages                                    https://blog.northwind.example"
+    },
+    {
+      "id": "exploitation",
+      "label": "exploitation feed",
+      "command": "curl -s $KEV_FEED | jq -r '.vulnerabilities[] | [.cveID, .product, .dateAdded] | @tsv'",
+      "language": "text",
+      "content": "# Vulnerabilities with confirmed in-the-wild exploitation (this week)\nCVE-2026-11077   Northwind Shop Platform      2026-07-24\nCVE-2026-09318   Acme Mail Gateway            2026-07-19\nCVE-2026-08812   Contoso VPN Appliance        2026-07-11\n\n# Not present in the feed:\n#   CVE-2026-11001  (no confirmed exploitation)\n#   CVE-2026-11042  (no confirmed exploitation)"
+    },
+    {
+      "id": "inventory",
+      "label": "asset inventory",
+      "command": "cloudlist -silent | join-inventory --annotate",
+      "language": "text",
+      "content": "HOST                              EXPOSURE          DATA                       OWNER\nshop.northwind.example            internet-facing   customer PII + payments    commerce-team\napi.northwind.example             internet-facing   customer records           platform-team\nwww.northwind.example             internet-facing   none (static marketing)    marketing\nmarketing.northwind.example       internet-facing   none (static marketing)    marketing\ncdn.northwind.example             internet-facing   public assets only         platform-team\nblog.northwind.example            internet-facing   none (public content)      marketing\nlegacy-router.northwind.example   DECOMMISSIONED — DNS record remains, host powered off 2026-06\nadmin.northwind.internal          internal-only     admin console              platform-team\nprinter-3f.northwind.internal     internal-only     none (office printer)      facilities"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Which finding gets fixed first?",
+      "type": "single",
+      "artifactIds": ["nuclei", "exploitation", "inventory"],
+      "options": [
+        "The critical RCE on legacy-router — it's the only 'critical' in the scan",
+        "The SQL injection on shop.northwind.example — internet-facing, holds customer PII and payments, and is under confirmed active exploitation",
+        "The authenticated RCE on admin.northwind.internal — RCE on an admin console is always the top priority",
+        "The default credentials on the office printer — default creds are trivially exploitable"
+      ],
+      "correct": [1],
+      "explanation": "Only the shop finding scores high on all three axes at once: internet-facing exposure, the most sensitive data in the estate, and a CVE the feed confirms is being exploited right now. The 'critical' on legacy-router looks worse by severity label alone, but the inventory says that host is decommissioned — the scanner found a stale DNS record, not a live system. Severity describes the vulnerability; exposure, exploitation, and business context describe your risk."
+    },
+    {
+      "id": "q2",
+      "prompt": "The scan reports a critical RCE on legacy-router.northwind.example. What's the correct action?",
+      "type": "single",
+      "artifactIds": ["nuclei", "inventory"],
+      "options": [
+        "Patch it immediately — it's a critical RCE",
+        "Ignore it entirely; the inventory says it's decommissioned",
+        "Verify the host is genuinely unreachable, then remove the stale DNS record — a dangling record is itself a subdomain-takeover risk",
+        "Downgrade it to informational and move on"
+      ],
+      "correct": [2],
+      "explanation": "Neither patching a powered-off box nor ignoring the entry is right. The real finding here isn't the RCE — it's the dangling DNS record. A record pointing at released infrastructure can be claimed by someone else (subdomain takeover), letting an attacker serve content from your domain. Verify, then clean up the record. Decommissioning is not complete until DNS is too."
+    },
+    {
+      "id": "q3",
+      "prompt": "Which findings can reasonably wait? Select all that apply.",
+      "type": "multi",
+      "artifactIds": ["nuclei", "inventory"],
+      "options": [
+        "Missing security headers on the static marketing site",
+        "TLS 1.0 enabled on the static marketing site",
+        "Exposed .git directory on api.northwind.example",
+        "Directory listing on the CDN, which serves public assets only",
+        "Verbose error messages on the public blog"
+      ],
+      "correct": [0, 1, 3, 4],
+      "explanation": "The exposed .git directory is the one that cannot wait: it can leak source code, configuration, and often credentials and API keys from commit history — on a host that holds customer records. The others are real hygiene issues on assets with no sensitive data (static marketing, public CDN assets, a public blog) and belong in the backlog. Note that TLS 1.0 may still be urgent for compliance reasons even when the risk is low — priority and compliance are different clocks."
+    },
+    {
+      "id": "q4",
+      "prompt": "How should the internal-only findings (admin console RCE, printer default credentials) affect your ordering?",
+      "type": "single",
+      "artifactIds": ["nuclei", "inventory"],
+      "options": [
+        "Internal means safe — deprioritize both indefinitely",
+        "Internal reduces exposure but doesn't eliminate it: they rank below the internet-facing exploited finding, but the admin console RCE stays high because it's exactly what an attacker pivots to after any foothold",
+        "The printer outranks the admin console because default credentials are easier to exploit",
+        "Both should be treated identically to internet-facing findings"
+      ],
+      "correct": [1],
+      "explanation": "'Internal-only' is a reduction in exposure, not immunity — it assumes an attacker has no foothold, which is precisely the assumption that fails during an incident. An admin console with RCE is a prime post-compromise target and stays near the top. The printer is genuinely lower risk, though default credentials on any device are worth fixing because printers make useful pivot points and often hold cached documents."
+    },
+    {
+      "id": "q5",
+      "prompt": "Your manager asks why a 'high' is being fixed before a 'critical'. What's the defensible answer?",
+      "type": "single",
+      "artifactIds": ["exploitation", "inventory"],
+      "options": [
+        "The scanner's severity ratings are unreliable and should be ignored",
+        "Severity rates the vulnerability in the abstract; we rank by exposure, confirmed exploitation, and business impact — the critical is on a decommissioned host, while the high is internet-facing, holds payment data, and is being exploited in the wild this week",
+        "We always prioritize whatever affects revenue systems first",
+        "The critical will be handled in next quarter's patch cycle"
+      ],
+      "correct": [1],
+      "explanation": "This is the whole point of the exercise. A documented, repeatable rule — exposure × threat × business criticality — survives scrutiny in a way that intuition or a raw CVSS sort does not. It also produces the right answer here, and it lets you explain the decision to someone who only sees 'critical vs high' in a dashboard."
+    }
+  ],
+  "lessons": [
+    "Severity is an input, not an answer. CVSS describes a vulnerability in the abstract; your risk is exposure × confirmed exploitation × business impact. Sorting by severity alone produces a queue nobody can defend.",
+    "Confirmed in-the-wild exploitation is the highest-value filter available, and it's free. Anything in your estate that appears on an exploitation feed goes to the top regardless of its severity label.",
+    "Cross-reference findings against an asset inventory before acting. A 'critical' on a decommissioned host and a 'high' on your payment platform are not comparable, and only the inventory tells you which is which.",
+    "A dangling DNS record is its own finding. Decommissioning isn't finished until the DNS record is gone, or someone else can claim the name and serve content from your domain.",
+    "'Internal-only' lowers exposure without granting immunity. Rank internal findings below internet-facing ones, but keep admin consoles and RCE high — they're what an attacker reaches for after the first foothold.",
+    "Exposed .git directories are credential leaks, not configuration nits. Source, config, and commit history frequently contain keys that outlive the code.",
+    "Write the prioritization rule down. A documented, tunable formula survives the 'why is this ranked above that?' conversation. Intuition does not, and it can't be handed to the next person on call."
+  ]
+}

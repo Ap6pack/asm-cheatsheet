@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Triage labs — a second lab interaction model.** Every lab so far was an incident replay, so a learner who finished them had watched-and-defended four times and never practised the skill discovery tooling doesn't teach: *reading output and deciding what matters*. A triage lab shows realistic tool output in tabbed evidence panels and asks the calls a real assessment demands, with the evidence staying on screen while you answer.
+  - **[Read Your First Scan](content/labs/triage-first-scan.json)** (beginner) — subfinder, httpx, and nmap output against a fictional company. Find the forgotten debug payments host, tell a finding from a working 401, and pick the discovery technique that would have caught it.
+  - **[Forty Findings, One Afternoon](content/labs/triage-prioritize-findings.json)** (intermediate) — cross-reference scanner output, an exploitation feed, and an asset inventory to build a defensible priority order. The "critical" is on a decommissioned host; the "high" is under active exploitation.
+  - Labs are now a discriminated union on `kind` (`incident-replay` | `triage`). Files without a `kind` default to `incident-replay`, so existing content works unchanged. Both kinds are schema-validated in CI and documented in [content/labs/README.md](content/labs/README.md).
 - **Two new incident-replay labs**, both with Break-the-Chain defender challenges:
   - **[One SSRF to 106 Million Records](content/labs/capital-one-ssrf-2019.json)** — the 2019 Capital One breach, sourced to [DOJ court records](https://www.justice.gov/usao-wdwa/united-states-v-paige-thompson). A four-link chain of ordinary cloud misconfigurations; enforcing IMDSv2 alone contains it.
   - **[A Credential in a Docker Image](content/labs/codecov-bash-uploader-2021.json)** — the 2021 Codecov Bash Uploader supply-chain compromise, sourced to [Codecov's published post-mortem](https://about.codecov.io/apr-2021-post-mortem/). Shows how a leaked build credential compromises every downstream consumer.

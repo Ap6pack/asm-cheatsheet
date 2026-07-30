@@ -3,12 +3,12 @@
 import * as React from "react";
 import { CheckCircle, ShieldCheck, Circle } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-import type { Lab } from "@/lib/content/types";
+import type { IncidentReplayLab } from "@/lib/content/types";
 
 export type NodeState = "dark" | "lit" | "contained";
 
 interface AttackChainProps {
-  lab: Lab;
+  lab: IncidentReplayLab;
   /** Visual state per node id; missing ids default to "dark". */
   states: Record<string, NodeState>;
   /** Node to emphasize (pulse in watch mode, or the containment point). */

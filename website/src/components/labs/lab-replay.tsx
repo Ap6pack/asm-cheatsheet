@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useProgressStore, useHydration } from "@/lib/stores";
-import type { Lab } from "@/lib/content/types";
+import type { IncidentReplayLab } from "@/lib/content/types";
 import { AttackChain, type NodeState } from "@/components/labs/attack-chain";
 import {
   computeReplayState,
@@ -71,7 +71,7 @@ function usePrefersReducedMotion(): boolean {
   return reduced;
 }
 
-export function LabReplay({ lab }: { lab: Lab }) {
+export function LabReplay({ lab }: { lab: IncidentReplayLab }) {
   const hydrated = useHydration();
   const markLabComplete = useProgressStore((s) => s.markLabComplete);
   const reducedMotion = usePrefersReducedMotion();
@@ -454,7 +454,7 @@ function PhaseActivity({
   activePhaseId,
   phaseIndex,
 }: {
-  lab: Lab;
+  lab: IncidentReplayLab;
   phaseCounts: Record<string, number>;
   activePhaseId: string | null;
   phaseIndex: Record<string, number>;
