@@ -8,9 +8,10 @@ import {
   nextEventFraction,
   prevEventFraction,
 } from "@/lib/labs/replay";
-import type { Lab } from "@/lib/content/types";
+import type { IncidentReplayLab } from "@/lib/content/types";
 
-const lab: Lab = {
+const lab: IncidentReplayLab = {
+  kind: "incident-replay",
   slug: "test-lab",
   title: "Test Lab",
   subtitle: "for unit tests",

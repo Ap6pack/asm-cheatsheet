@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useProgressStore, useHydration } from "@/lib/stores";
-import type { Lab } from "@/lib/content/types";
+import type { IncidentReplayLab } from "@/lib/content/types";
 import { AttackChain, type NodeState } from "@/components/labs/attack-chain";
 import {
   computeContainment,
@@ -64,7 +64,7 @@ function usePrefersReducedMotion(): boolean {
 
 type Phase = "select" | "running" | "result";
 
-export function BreakTheChain({ lab }: { lab: Lab }) {
+export function BreakTheChain({ lab }: { lab: IncidentReplayLab }) {
   const hydrated = useHydration();
   const reducedMotion = usePrefersReducedMotion();
   const markLabComplete = useProgressStore((s) => s.markLabComplete);
@@ -293,7 +293,7 @@ function ResultCard({
   result,
   budget,
 }: {
-  lab: Lab;
+  lab: IncidentReplayLab;
   result: ContainmentResult;
   budget: number;
 }) {

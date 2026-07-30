@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { extractLabs, validateLab } from "@/lib/content/extractors";
+import type { IncidentReplayLab } from "@/lib/content/types";
 import {
   getTelemetryMode,
   getTotalActions,
@@ -74,7 +75,7 @@ describe("optional action telemetry", () => {
   });
 
   it("counts events, not actions, in event mode", () => {
-    const lab = validateLab(eventCountedLab(), "t.json");
+    const lab = validateLab(eventCountedLab(), "t.json") as IncidentReplayLab;
     expect(getTelemetryMode(lab)).toBe("events");
     expect(getTotalActions(lab)).toBe(2);
     expect(getPhaseTotal(lab, "recon")).toBe(2);
@@ -87,7 +88,9 @@ describe("optional action telemetry", () => {
 });
 
 describe("shipped labs use the mode their sources support", () => {
-  const labs = extractLabs();
+  const labs = extractLabs().filter(
+    (l): l is IncidentReplayLab => l.kind === "incident-replay"
+  );
 
   it("ships both action-counted and event-counted labs", () => {
     const modes = new Set(labs.map(getTelemetryMode));

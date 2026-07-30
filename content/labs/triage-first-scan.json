@@ -1,0 +1,119 @@
+{
+  "kind": "triage",
+  "slug": "triage-first-scan",
+  "title": "Read Your First Scan",
+  "subtitle": "You ran the tools. Now work out what actually matters.",
+  "category": "Triage Exercise",
+  "difficulty": "beginner",
+  "estimatedMinutes": 15,
+  "fictional": true,
+  "disclaimer": "Fictional training scenario. Northwind Logistics is an invented company and all output below is synthetic, written to be realistic rather than captured from a real target.",
+  "summary": "Running the tools is the easy part. The skill that separates a scan from an assessment is **reading the output** — knowing which of forty live hosts deserves your attention in the next ten minutes, and which is noise. This exercise gives you real-shaped output from a standard passive-to-active pipeline against a fictional company and asks you to triage it. The evidence stays on screen while you answer.",
+  "brief": "You have authorization to assess northwind.example. You've run passive subdomain discovery, probed for live web services, and port-scanned the hosts that responded. Nothing has been exploited and nothing has been reported yet. Read the three outputs and decide what matters.",
+  "passingScore": 70,
+  "artifacts": [
+    {
+      "id": "subfinder",
+      "label": "subfinder",
+      "command": "subfinder -d northwind.example -silent",
+      "language": "text",
+      "content": "www.northwind.example\napi.northwind.example\nmail.northwind.example\ncdn.northwind.example\nshop.northwind.example\nblog.northwind.example\nstaging-payments.northwind.example\nvpn.northwind.example\nautodiscover.northwind.example\ndocs.northwind.example\njenkins-old.northwind.example\nsupport.northwind.example"
+    },
+    {
+      "id": "httpx",
+      "label": "httpx",
+      "command": "httpx -l subs.txt -silent -status-code -title -tech-detect",
+      "language": "text",
+      "content": "https://www.northwind.example      [200] [Northwind Logistics — Freight & Fulfilment] [Cloudflare,React]\nhttps://api.northwind.example      [401] [Unauthorized] [nginx]\nhttps://shop.northwind.example     [200] [Northwind Store] [Shopify]\nhttps://blog.northwind.example     [200] [Northwind Blog] [WordPress 6.5.2]\nhttps://docs.northwind.example     [200] [Northwind Docs] [Docusaurus]\nhttps://support.northwind.example  [200] [Support — Zendesk] [Zendesk]\nhttps://vpn.northwind.example      [200] [Global Protect Portal] [nginx]\nhttps://staging-payments.northwind.example  [200] [Payments API — DEBUG BUILD] [Flask/2.0.1,Werkzeug/2.0.1]\nhttps://jenkins-old.northwind.example       [200] [Dashboard [Jenkins]] [Jetty,Jenkins/2.190.1]\nhttps://cdn.northwind.example      [403] [Forbidden] [CloudFront]"
+    },
+    {
+      "id": "naabu-nmap",
+      "label": "naabu + nmap",
+      "command": "naabu -list live.txt -top-ports 1000 -silent | naabu -nmap-cli 'nmap -sV'",
+      "language": "text",
+      "content": "staging-payments.northwind.example (203.0.113.41)\n  443/tcp  open  https   Werkzeug/2.0.1 Python/3.9.2\n  5432/tcp open  postgresql PostgreSQL 12.4\n\njenkins-old.northwind.example (203.0.113.58)\n  443/tcp  open  https   Jetty 9.4.z-SNAPSHOT (Jenkins 2.190.1)\n\napi.northwind.example (198.51.100.20)\n  443/tcp  open  https   nginx 1.24.0\n\nwww.northwind.example (198.51.100.10)\n  443/tcp  open  https   cloudflare\n\nblog.northwind.example (198.51.100.33)\n  443/tcp  open  https   nginx 1.24.0"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Which host should you look at first?",
+      "type": "single",
+      "artifactIds": ["httpx", "naabu-nmap"],
+      "options": [
+        "blog.northwind.example — it runs WordPress, which is frequently targeted",
+        "staging-payments.northwind.example — a debug build handling payments, with a database port exposed",
+        "cdn.northwind.example — it returns 403, which means something is being hidden",
+        "www.northwind.example — it's the main site, so it has the most users"
+      ],
+      "correct": [1],
+      "explanation": "staging-payments combines three red flags at once: it's a forgotten staging host, it advertises a DEBUG BUILD (debug modes routinely expose environment variables, stack traces, and interactive consoles), and it has PostgreSQL on 5432 reachable from the internet. Payments-adjacent naming raises the business impact further. WordPress is worth checking, but a current 6.5.x is far less alarming than a debug payments service with an exposed database."
+    },
+    {
+      "id": "q2",
+      "prompt": "Which findings here are genuinely concerning? Select all that apply.",
+      "type": "multi",
+      "artifactIds": ["httpx", "naabu-nmap"],
+      "options": [
+        "PostgreSQL on 5432 reachable from the internet",
+        "api.northwind.example returning 401",
+        "Jenkins 2.190.1 exposed on the internet",
+        "support.northwind.example running Zendesk",
+        "A Flask app served by the Werkzeug development server"
+      ],
+      "correct": [0, 2, 4],
+      "explanation": "An internet-reachable database, a years-old Jenkins (a well-known target that often permits unauthenticated access or script execution), and Werkzeug's development server in production (never intended for it, and its debugger can allow code execution) are all real problems. A 401 on the API is the system working correctly — authentication is required. Zendesk on a support subdomain is normal SaaS usage, not a finding."
+    },
+    {
+      "id": "q3",
+      "prompt": "subfinder returned autodiscover.northwind.example, but it never appears in the httpx output. What does that tell you?",
+      "type": "single",
+      "artifactIds": ["subfinder", "httpx"],
+      "options": [
+        "The subfinder result was a false positive and should be ignored",
+        "The host exists in DNS but isn't serving HTTP/HTTPS — it may still be a live service on another protocol, and is worth resolving before dismissing",
+        "The host has been decommissioned and can be removed from scope",
+        "httpx crashed while probing that host"
+      ],
+      "correct": [1],
+      "explanation": "httpx only reports hosts serving web services. A DNS record with no HTTP response can still be a live mail, VPN, or internal service — autodiscover is a Microsoft Exchange record. Absence from a web probe is not evidence of absence; confirm with DNS resolution and a broader port scan before dropping it from scope."
+    },
+    {
+      "id": "q4",
+      "prompt": "What is the right next action for jenkins-old.northwind.example?",
+      "type": "single",
+      "artifactIds": ["httpx", "naabu-nmap"],
+      "options": [
+        "Attempt default credentials to confirm whether it's exploitable",
+        "Run an exploit for the known Jenkins version to prove impact",
+        "Document it, check whether the dashboard is reachable without authentication, and report it — escalating only within your authorized scope",
+        "Ignore it — 'old' in the hostname means it's already decommissioned"
+      ],
+      "correct": [2],
+      "explanation": "Authorization defines what you may do, not what's technically possible. Observing that a dashboard loads without authentication is discovery; brute-forcing credentials or firing exploits is intrusion and usually outside an ASM engagement's scope. Report first and escalate only with explicit permission. And 'old' in a hostname is a strong hint that nobody owns it — which makes it more dangerous, not less."
+    },
+    {
+      "id": "q5",
+      "prompt": "Which discovery technique would most likely have found staging-payments before an attacker did?",
+      "type": "single",
+      "artifactIds": ["subfinder"],
+      "options": [
+        "Weekly authenticated vulnerability scans of the known asset inventory",
+        "Continuous certificate-transparency monitoring, alerting on newly issued certificates for the domain",
+        "Annual penetration testing",
+        "Reviewing firewall logs for unusual traffic"
+      ],
+      "correct": [1],
+      "explanation": "The host is invisible to inventory-based scanning precisely because nobody knew it existed — that's what makes it shadow IT. A certificate issued for staging-payments.northwind.example appears in public CT logs the day it's created, so CT monitoring flags it immediately and passively. This is the core ASM insight: your attack surface is what you forgot, and discovery has to run continuously rather than over a list you already maintain."
+    }
+  ],
+  "lessons": [
+    "Triage on exposure × severity × business context, not on tool output order. A debug payments service with an exposed database outranks a current-version WordPress every time.",
+    "A 401 is a control working. Learn to tell findings from evidence of correct configuration, or you'll drown your remediation queue in noise and lose credibility.",
+    "Absence from one tool's output is not absence. Web probes only see web services; cross-reference DNS, port scans, and certificate data before dropping a host from scope.",
+    "Development servers and debug builds in production are findings in their own right, independent of any CVE. They expose stack traces, environment variables, and sometimes interactive consoles.",
+    "'old', 'staging', 'test', and 'legacy' in a hostname mean nobody owns it. Unowned means unpatched and unmonitored — treat those names as a priority signal.",
+    "Discovery must be continuous, not inventory-based. The riskiest asset in this exercise is the one that was never on anyone's list, and only passive continuous monitoring would have caught it early.",
+    "Stay inside your authorization. Confirming that a dashboard loads is discovery; trying credentials is intrusion. The line matters legally and professionally, and it is yours to hold."
+  ]
+}

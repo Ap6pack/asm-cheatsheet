@@ -13,6 +13,7 @@ interface MutableLab {
   summary: string;
   source?: { label: string; url: string };
   stages: { id: string; name: string }[];
+  kind?: "incident-replay";
   phases: { id: string; label: string; total: number }[];
   nodes: { id: string; stageId: string; group: string; label: string }[];
   edges: { from: string; to: string; label?: string }[];
@@ -128,7 +129,7 @@ describe("extractLabs (real content)", () => {
   });
 
   it("every lab's event actions sum to its phase totals", () => {
-    for (const lab of labs) {
+    for (const lab of labs.filter((l) => l.kind === "incident-replay")) {
       const perPhase: Record<string, number> = {};
       for (const e of lab.events) {
         perPhase[e.phaseId] = (perPhase[e.phaseId] ?? 0) + (e.actions ?? 0);
@@ -140,8 +141,10 @@ describe("extractLabs (real content)", () => {
   });
 
   it("the flagship incident totals ~17,600 actions", () => {
-    const flagship = labs.find((l) =>
-      l.slug.startsWith("frontier-lab-agent-intrusion")
+    const flagship = labs.find(
+      (l): l is Extract<typeof l, { kind: "incident-replay" }> =>
+        l.kind === "incident-replay" &&
+        l.slug.startsWith("frontier-lab-agent-intrusion")
     );
     expect(flagship).toBeDefined();
     expect(getTotalActions(flagship!)).toBe(17613);

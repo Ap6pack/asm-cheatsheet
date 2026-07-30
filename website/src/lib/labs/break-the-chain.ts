@@ -1,4 +1,4 @@
-import type { Lab, LabControl } from "@/lib/content/types";
+import type { IncidentReplayLab, LabControl } from "@/lib/content/types";
 
 export type ContainmentTier = "A+" | "A" | "B" | "C" | "F";
 
@@ -20,7 +20,7 @@ export interface ContainmentResult {
   detail: string;
 }
 
-function buildAdjacency(lab: Lab): Map<string, string[]> {
+function buildAdjacency(lab: IncidentReplayLab): Map<string, string[]> {
   const adj = new Map<string, string[]>();
   for (const node of lab.nodes) adj.set(node.id, []);
   for (const edge of lab.edges) {
@@ -30,7 +30,7 @@ function buildAdjacency(lab: Lab): Map<string, string[]> {
 }
 
 /** Nodes with no incoming edge — where the agent starts. */
-function rootNodeIds(lab: Lab): string[] {
+function rootNodeIds(lab: IncidentReplayLab): string[] {
   const hasIncoming = new Set(lab.edges.map((e) => e.to));
   const roots = lab.nodes
     .filter((n) => !hasIncoming.has(n.id))
@@ -55,7 +55,7 @@ function downstreamOf(
 }
 
 export function getControlById(
-  lab: Lab,
+  lab: IncidentReplayLab,
   id: string
 ): LabControl | undefined {
   return lab.controls?.find((c) => c.id === id);
@@ -67,7 +67,7 @@ export function getControlById(
  * agent then reaches only the nodes still connected to a root.
  */
 export function computeContainment(
-  lab: Lab,
+  lab: IncidentReplayLab,
   deployedControlIds: string[]
 ): ContainmentResult {
   const controls = lab.controls ?? [];
@@ -142,7 +142,7 @@ export function computeContainment(
 }
 
 function gradeContainment(
-  lab: Lab,
+  lab: IncidentReplayLab,
   reachedNodeIds: string[]
 ): { tier: ContainmentTier; headline: string; detail: string } {
   const nodeById = new Map(lab.nodes.map((n) => [n.id, n]));

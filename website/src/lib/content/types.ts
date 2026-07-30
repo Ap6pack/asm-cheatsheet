@@ -251,7 +251,8 @@ export interface LabControl {
   detection?: boolean;
 }
 
-export interface Lab {
+/** Fields every lab shares, whatever its interaction model. */
+export interface LabBase {
   slug: string;
   title: string;
   subtitle: string;
@@ -262,6 +263,16 @@ export interface Lab {
   fictional: boolean;
   source?: LabSource;
   disclaimer?: string;
+  summary: string; // markdown overview
+  lessons: string[];
+}
+
+/**
+ * A replay of an intrusion timeline, optionally with a "Break the Chain"
+ * defender challenge. Labs without an explicit `kind` are treated as this.
+ */
+export interface IncidentReplayLab extends LabBase {
+  kind: 'incident-replay';
   /** Reconstructed action clusters, shown as a header stat when present. */
   clusters?: number;
   /**
@@ -270,17 +281,62 @@ export interface Lab {
    * source report). Defaults to the sum of phase totals when omitted.
    */
   totalActions?: number;
-  summary: string; // markdown overview
   stages: LabStage[];
   phases: LabPhase[];
   nodes: LabNode[];
   edges: LabEdge[];
   events: LabEvent[];
-  lessons: string[];
   /** Optional "Break the Chain" defender challenge. */
   controls?: LabControl[];
   /** How many controls the defender may deploy (defaults to all). */
   defenderBudget?: number;
+}
+
+/** A piece of evidence the learner reads — usually raw tool output. */
+export interface TriageArtifact {
+  id: string;
+  label: string;
+  /** Shown under the tab label, e.g. the exact command that produced this. */
+  command?: string;
+  language: string;
+  content: string;
+}
+
+export interface TriageQuestion {
+  id: string;
+  prompt: string;
+  /** "single" accepts one answer; "multi" requires every correct option. */
+  type: 'single' | 'multi';
+  /** Artifact ids this question is asking the learner to read. */
+  artifactIds?: string[];
+  options: string[];
+  /** Indices of the correct option(s). */
+  correct: number[];
+  explanation: string;
+}
+
+/**
+ * Given real tool output, decide what matters. Tests the interpretation and
+ * prioritization skill that discovery tooling itself never teaches.
+ */
+export interface TriageLab extends LabBase {
+  kind: 'triage';
+  /** Scenario framing shown above the evidence. */
+  brief: string;
+  artifacts: TriageArtifact[];
+  questions: TriageQuestion[];
+  /** Percentage required to pass. Defaults to 70. */
+  passingScore?: number;
+}
+
+export type Lab = IncidentReplayLab | TriageLab;
+
+export function isIncidentReplayLab(lab: Lab): lab is IncidentReplayLab {
+  return lab.kind === 'incident-replay';
+}
+
+export function isTriageLab(lab: Lab): lab is TriageLab {
+  return lab.kind === 'triage';
 }
 
 // Search index entry

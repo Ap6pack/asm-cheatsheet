@@ -1,4 +1,4 @@
-import type { Lab, LabEvent } from "@/lib/content/types";
+import type { IncidentReplayLab, LabEvent } from "@/lib/content/types";
 
 export interface ReplayBounds {
   startMs: number;
@@ -30,26 +30,26 @@ export interface ReplayState {
  */
 export type TelemetryMode = "actions" | "events";
 
-export function getTelemetryMode(lab: Lab): TelemetryMode {
+export function getTelemetryMode(lab: IncidentReplayLab): TelemetryMode {
   return lab.phases.some((p) => typeof p.total === "number")
     ? "actions"
     : "events";
 }
 
 /** Units the counters are expressed in, for UI labelling. */
-export function getUnitLabel(lab: Lab): { singular: string; plural: string } {
+export function getUnitLabel(lab: IncidentReplayLab): { singular: string; plural: string } {
   return getTelemetryMode(lab) === "actions"
     ? { singular: "action", plural: "attacker actions" }
     : { singular: "step", plural: "timeline steps" };
 }
 
 /** What one event contributes to the counters under the lab's mode. */
-function eventWeight(lab: Lab, event: LabEvent): number {
+function eventWeight(lab: IncidentReplayLab, event: LabEvent): number {
   return getTelemetryMode(lab) === "actions" ? (event.actions ?? 0) : 1;
 }
 
 /** Final total for a phase under the lab's mode. */
-export function getPhaseTotal(lab: Lab, phaseId: string): number {
+export function getPhaseTotal(lab: IncidentReplayLab, phaseId: string): number {
   if (getTelemetryMode(lab) === "actions") {
     return lab.phases.find((p) => p.id === phaseId)?.total ?? 0;
   }
@@ -61,14 +61,14 @@ export function getPhaseTotal(lab: Lab, phaseId: string): number {
  * totalActions when set (some recovered actions may be unclassified), else
  * the sum of phase totals — or, in events mode, the number of events.
  */
-export function getTotalActions(lab: Lab): number {
+export function getTotalActions(lab: IncidentReplayLab): number {
   if (getTelemetryMode(lab) === "events") return lab.events.length;
   if (typeof lab.totalActions === "number") return lab.totalActions;
   return lab.phases.reduce((sum, p) => sum + (p.total ?? 0), 0);
 }
 
 /** Incident-time bounds derived from the first and last event timestamps. */
-export function getReplayBounds(lab: Lab): ReplayBounds {
+export function getReplayBounds(lab: IncidentReplayLab): ReplayBounds {
   const times = lab.events.map((e) => Date.parse(e.t));
   return {
     startMs: Math.min(...times),
@@ -92,7 +92,7 @@ export function msToFraction(bounds: ReplayBounds, ms: number): number {
  * "has happened" once the playhead reaches its timestamp; counters, the active
  * phase, and lit nodes are all accumulated from the events that have passed.
  */
-export function computeReplayState(lab: Lab, fraction: number): ReplayState {
+export function computeReplayState(lab: IncidentReplayLab, fraction: number): ReplayState {
   const bounds = getReplayBounds(lab);
   const clamped = Math.min(1, Math.max(0, fraction));
   const playheadMs = fractionToMs(bounds, clamped);
@@ -138,13 +138,13 @@ export function computeReplayState(lab: Lab, fraction: number): ReplayState {
 }
 
 /** The fraction at which a given event sits on the timeline (for tick marks). */
-export function eventFractions(lab: Lab): number[] {
+export function eventFractions(lab: IncidentReplayLab): number[] {
   const bounds = getReplayBounds(lab);
   return lab.events.map((e) => msToFraction(bounds, Date.parse(e.t)));
 }
 
 /** Fraction of the next event after `fraction`, or 1 if none remain. */
-export function nextEventFraction(lab: Lab, fraction: number): number {
+export function nextEventFraction(lab: IncidentReplayLab, fraction: number): number {
   const fractions = eventFractions(lab);
   for (const f of fractions) {
     if (f > fraction + 1e-6) return f;
@@ -153,7 +153,7 @@ export function nextEventFraction(lab: Lab, fraction: number): number {
 }
 
 /** Fraction of the previous event before `fraction`, or 0 if none. */
-export function prevEventFraction(lab: Lab, fraction: number): number {
+export function prevEventFraction(lab: IncidentReplayLab, fraction: number): number {
   const fractions = eventFractions(lab);
   let prev = 0;
   for (const f of fractions) {

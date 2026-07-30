@@ -3,16 +3,24 @@
 import * as React from "react";
 import { Eye, Shield } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-import type { Lab } from "@/lib/content/types";
+import type { Lab, IncidentReplayLab } from "@/lib/content/types";
 import { LabReplay } from "@/components/labs/lab-replay";
 import { BreakTheChain } from "@/components/labs/break-the-chain";
+import { TriageRunner } from "@/components/labs/triage-runner";
 
 /**
- * A lab is experienced in one of two modes: "Defend" (the Break-the-Chain
- * challenge) or "Watch" (the passive replay). Labs without a controls layer
- * fall back to watch-only.
+ * Routes a lab to its interaction model.
+ *
+ * Triage labs are a single exercise. Incident replays offer "Defend" (the
+ * Break-the-Chain challenge) and "Watch" (the passive replay); replays with no
+ * controls layer fall back to watch-only.
  */
 export function LabExperience({ lab }: { lab: Lab }) {
+  if (lab.kind === "triage") return <TriageRunner lab={lab} />;
+  return <IncidentReplayExperience lab={lab} />;
+}
+
+function IncidentReplayExperience({ lab }: { lab: IncidentReplayLab }) {
   const hasChallenge = (lab.controls?.length ?? 0) > 0;
   const [mode, setMode] = React.useState<"defend" | "watch">(
     hasChallenge ? "defend" : "watch"
