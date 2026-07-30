@@ -2,7 +2,7 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import * as fs from 'fs';
 import * as path from 'path';
-import type { Root, Content, Heading, Code, Text, Link } from 'mdast';
+import type { Root, Content, Heading, Code, Link } from 'mdast';
 
 /**
  * Parse a markdown file and return its AST

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Shield, Terminal, BookOpen, Search } from "lucide-react";
+import { Shield, Terminal, BookOpen } from "lucide-react";
 
 export default function NotFound() {
   return (

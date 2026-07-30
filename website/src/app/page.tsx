@@ -28,7 +28,7 @@ export const metadata = {
   // Root layout supplies the default title; setting it here would double-apply
   // the "%s | ASM Cheatsheet" template on the homepage.
   description:
-    "Interactive Attack Surface Management reference: 26 documented tools, a 12-module learning path with knowledge checks, real-world workflows, and interactive incident-replay labs.",
+    "Interactive Attack Surface Management reference: 26 documented tools, a 12-module learning path with knowledge checks, real-world workflows, and hands-on labs — defend a replayed intrusion or triage real tool output.",
   alternates: { canonical: "/" },
 };
 
@@ -163,16 +163,15 @@ export default async function Home() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-semibold">
-                      Labs — Interactive Incident Replays
+                      Labs — Hands-On Exercises
                     </h3>
                     <span className="rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--primary)]">
                       New
                     </span>
                   </div>
                   <p className="mt-1 max-w-xl text-sm text-[var(--muted-foreground)]">
-                    Press play and watch an intrusion unfold at machine speed —
-                    the attack chain lights up one trust boundary at a time, with
-                    the commands and the defensive lesson at every step.{" "}
+                    Defend a real intrusion as it replays at machine speed, or
+                    read raw tool output and decide what actually matters.{" "}
                     {labs.length} {labs.length === 1 ? "lab" : "labs"} available.
                   </p>
                 </div>

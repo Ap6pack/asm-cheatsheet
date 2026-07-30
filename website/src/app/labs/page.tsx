@@ -16,7 +16,7 @@ import { getTotalActions } from "@/lib/labs/replay";
 export const metadata = {
   title: "Labs - Interactive Incident Replays",
   description:
-    "Watch real and reconstructed intrusions unfold at machine speed. Interactive attack-chain replays with phase-by-phase breakdowns.",
+    "Hands-on ASM exercises: interactive incident replays you defend, and triage exercises that ask what real tool output actually means.",
 };
 
 export default async function LabsPage() {
@@ -27,11 +27,12 @@ export default async function LabsPage() {
       <div>
         <h1 className="text-3xl font-bold">Labs</h1>
         <p className="mt-2 max-w-2xl text-[var(--muted-foreground)]">
-          Interactive <strong>incident replays</strong>. Press play and watch an
-          intrusion unfold at machine speed — the attack chain lights up one
-          trust boundary at a time, phase activity climbs, and every step is
-          annotated with the commands and the defensive lesson. The best way to
-          learn attack surface management is to watch a real one fail.
+          Hands-on exercises in two forms. <strong>Incident replays</strong> let
+          you watch an intrusion unfold at machine speed, then defend it — the
+          attack chain lights up one trust boundary at a time until a control
+          you deployed severs it. <strong>Triage exercises</strong> hand you real
+          tool output and ask the question the tooling never answers: which of
+          this actually matters?
         </p>
       </div>
 
@@ -81,7 +82,8 @@ export default async function LabsPage() {
                     </span>
                   </div>
                   <span className="inline-flex items-center text-[var(--primary)]">
-                    Replay <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                    {lab.kind === "triage" ? "Start triage" : "Replay"}{" "}
+                    <ArrowRight className="ml-1 h-3.5 w-3.5" />
                   </span>
                 </div>
               </CardContent>

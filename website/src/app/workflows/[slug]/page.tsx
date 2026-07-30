@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { getAllWorkflows } from "@/lib/content/loader";
 import { DifficultyBadge } from "@/components/content/difficulty-badge";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Clock, AlertTriangle } from "lucide-react";
 import { SteppedRunner } from "@/components/content/stepped-runner";
