@@ -75,6 +75,8 @@ api_keys.txt
 # Next.js
 website/.next/
 website/out/
+# TypeScript incremental build cache — regenerated on every build
+website/tsconfig.tsbuildinfo
 website/node_modules/
 
 # Dependencies
