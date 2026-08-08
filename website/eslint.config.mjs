@@ -1,21 +1,19 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
+import nextTypescript from "eslint-config-next/typescript";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
+// eslint-config-next 16 ships flat config directly, so the FlatCompat shim
+// used under v15 is no longer needed (and no longer works).
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...nextCoreWebVitals,
+  ...nextTypescript,
+  {
+    // `next lint` used to supply these; the ESLint CLI needs them explicitly.
+    ignores: [".next/**", "out/**", "node_modules/**"],
+  },
   {
     rules: {
       // next/core-web-vitals alone does not flag unused declarations, which is
-      // how dead code reached main. Underscore-prefixed names stay exempt so
-      // intentionally-unused args and catch bindings remain easy to express.
+      // how dead code reached main. Underscore-prefixed names stay exempt.
       "@typescript-eslint/no-unused-vars": [
         "error",
         {

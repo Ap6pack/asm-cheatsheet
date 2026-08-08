@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Shield } from "lucide-react";
 
@@ -10,6 +11,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const router = useRouter();
+
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
       <Shield className="h-12 w-12 text-[var(--destructive)] mb-4 opacity-60" />
@@ -26,7 +29,7 @@ export default function Error({
         <Button onClick={reset} variant="outline">
           Retry
         </Button>
-        <Button onClick={() => (window.location.href = "/")}>Go Home</Button>
+        <Button onClick={() => router.push("/")}>Go Home</Button>
       </div>
     </div>
   );
