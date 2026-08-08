@@ -59,22 +59,23 @@
     }
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.0.0",
-    "@playwright/test": "^1.49.0",
-    "@tailwindcss/postcss": "^4.0.0",
-    "@testing-library/jest-dom": "^6.6.0",
-    "@testing-library/react": "^16.1.0",
-    "@types/node": "^22.0.0",
+    "@eslint/eslintrc": "^3.3.6",
+    "@playwright/test": "^1.62.1",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^4.7.0",
+    "@vitejs/plugin-react": "^6.0.5",
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.3.0",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "jsdom": "^25.0.0",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^4.0.0",
+    "jsdom": "^30.0.1",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5.7.0",
-    "vitest": "^3.2.7"
+    "vite": "^8.2.1",
+    "vitest": "^4.1.10"
   }
 }
