@@ -92,3 +92,6 @@ pnpm-debug.log*
 # Logs
 *.log
 .vercel
+
+# This project uses pnpm; an npm lockfile would drift and double Dependabot work
+website/package-lock.json
